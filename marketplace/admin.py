@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import Cart, Tax
 
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'fooditem', 'quantity', 'updated_at')
+    list_display = ('user', 'product', 'quantity', 'updated_at')
 
 
 class TaxAdmin(admin.ModelAdmin):

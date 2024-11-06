@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import UserProfile
 from .context_processors import get_cart_counter, get_cart_amounts
-from menu.models import Category, FoodItem
+from menu.models import Category, Product
 
 from vendor.models import OpeningHour, Vendor
 from django.db.models import Prefetch
@@ -35,8 +35,8 @@ def vendor_detail(request, vendor_slug):
 
     categories = Category.objects.filter(vendor=vendor).prefetch_related(
         Prefetch(
-            'fooditems',
-            queryset = FoodItem.objects.filter(is_available=True)
+            'products',
+            queryset = Product.objects.filter(is_available=True)
         )
     )
 
@@ -66,16 +66,16 @@ def add_to_cart(request, food_id):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             # Check if the food item exists
             try:
-                fooditem = FoodItem.objects.get(id=food_id)
+                product = Product.objects.get(id=food_id)
                 # Check if the user has already added that food to the cart
                 try:
-                    chkCart = Cart.objects.get(user=request.user, fooditem=fooditem)
+                    chkCart = Cart.objects.get(user=request.user, product=product)
                     # Increase the cart quantity
                     chkCart.quantity += 1
                     chkCart.save()
                     return JsonResponse({'status': 'Success', 'message': 'Increased the cart quantity', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
                 except:
-                    chkCart = Cart.objects.create(user=request.user, fooditem=fooditem, quantity=1)
+                    chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
                     return JsonResponse({'status': 'Success', 'message': 'Added the food to the cart', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
             except:
                 return JsonResponse({'status': 'Failed', 'message': 'This food does not exist!'})
@@ -91,10 +91,10 @@ def decrease_cart(request, food_id):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             # Check if the food item exists
             try:
-                fooditem = FoodItem.objects.get(id=food_id)
+                product = Product.objects.get(id=food_id)
                 # Check if the user has already added that food to the cart
                 try:
-                    chkCart = Cart.objects.get(user=request.user, fooditem=fooditem)
+                    chkCart = Cart.objects.get(user=request.user, product=product)
                     if chkCart.quantity > 1:
                         # decrease the cart quantity
                         chkCart.quantity -= 1
@@ -149,13 +149,13 @@ def search(request):
         keyword = request.GET['keyword']
 
         # get vendor ids that has the food item the user is looking for
-        fetch_vendors_by_fooditems = FoodItem.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+        fetch_vendors_by_products = Product.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
         
-        vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
+        vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_products) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
         if latitude and longitude and radius:
             pnt = GEOSGeometry('POINT(%s %s)' % (longitude, latitude))
 
-            vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True),
+            vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_products) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True),
             user_profile__location__distance_lte=(pnt, D(km=radius))
             ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
 
