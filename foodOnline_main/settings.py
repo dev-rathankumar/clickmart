@@ -12,12 +12,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
-import os
+import os, socket
 from django import conf
+
+ip_address = socket.gethostbyname(socket.gethostname())
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CSRF_TRUSTED_ORIGINS = [f"http://{ip_address}","http://127.0.0.1"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -28,12 +31,13 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ['194.195.118.42', '127.0.0.1', 'djangofoodonline.com', 'www.djangofoodonline.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "colorfield",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +52,17 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'customers',
     'orders',
+
+    # POS
+    'jquery',
+    'mathfilters',
+    'pos',
+    'inventory',
+    'transaction',
+    'cart',
+    'import_export',
+    'rangefilter',
+    'django_admin_logs',
 ]
 
 MIDDLEWARE = [
@@ -194,6 +209,36 @@ RZP_KEY_ID = config('RZP_KEY_ID')
 RZP_KEY_SECRET = config('RZP_KEY_SECRET')
 
 
-os.environ['PATH'] = os.path.join(BASE_DIR, 'myenv/Lib/site-packages/osgeo') + ';' + os.environ['PATH']
-os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'myenv/Lib/site-packages/osgeo/data/proj') + ';' + os.environ['PATH']
-GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'myenv/Lib/site-packages/osgeo/gdal.dll')
+# os.environ['PATH'] = os.path.join(BASE_DIR, 'myenv/Lib/site-packages/osgeo') + ';' + os.environ['PATH']
+# os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'myenv/Lib/site-packages/osgeo/data/proj') + ';' + os.environ['PATH']
+# GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'myenv/Lib/site-packages/osgeo/gdal.dll')
+
+
+RECEIPT_CHAR_COUNT = int(config('RECEIPT_CHAR_COUNT', 32)) 
+STORE_NAME = config('STORE_NAME', "STORE NAME")  #Can not be more than RECEIPT_CHAR_COUNT 
+STORE_ADDRESS = config('STORE_ADDRESS', "STORE ADDRESS")
+STORE_PHONE = config('STORE_PHONE', "")
+RECEIPT_HEAD = f"{STORE_NAME}\n{STORE_ADDRESS}"  
+RECEIPT_HEAD = RECEIPT_HEAD + f"\n{STORE_PHONE}" if config('Include_Phone_In_Heading',"False").lower() == "true" else RECEIPT_HEAD
+RECEIPT_ADDITIONAL_HEADING = config('RECEIPT_ADDITIONAL_HEADING', "")
+RECEIPT_HEADER = f"{RECEIPT_HEAD}\n{RECEIPT_ADDITIONAL_HEADING}" if RECEIPT_ADDITIONAL_HEADING != "" else RECEIPT_HEAD
+RECEIPT_FOOTER = config('RECEIPT_FOOTER',"Thank You")
+
+# Printer Settings
+PRINTER_VENDOR_ID = config('PRINTER_VENDOR_ID', "")
+PRINTER_PRODUCT_ID = config('PRINTER_PRODUCT_ID', "")
+PRINT_RECEIPT = config('PRINT_RECEIPT', False)
+CASH_DRAWER = config('CASH_DRAWER', False)
+
+CART_SESSION_ID = 'cart'
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+ROOT_URLCONF = 'foodOnline_main.urls'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+

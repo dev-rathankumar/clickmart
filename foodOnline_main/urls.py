@@ -19,6 +19,8 @@ from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from marketplace import views as MarketplaceViews
+from django.contrib.auth import views as auth_views
+from inventory import views as inventory_views
 
 
 urlpatterns = [
@@ -38,5 +40,8 @@ urlpatterns = [
 
     # ORDERS
     path('orders/', include('orders.urls')),
+
+    # POS URL ENDPOINTS
+    path('pos/', include('pos.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
