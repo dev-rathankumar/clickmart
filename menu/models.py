@@ -51,6 +51,7 @@ class Product(models.Model):
     stock           = models.IntegerField(blank=True, null = True)
     is_available    = models.BooleanField(default=True)
     category        = models.ForeignKey(Category, on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Category, related_name='subcategory_products', on_delete=models.CASCADE)
     is_popular      = models.BooleanField(default=False, blank=True)
     is_active       = models.BooleanField(default=False)
     created_date    = models.DateTimeField(auto_now_add=True)

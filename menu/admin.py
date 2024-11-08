@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, FoodItem
+from .models import Category, FoodItem, Product
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -14,6 +14,10 @@ class FoodItemAdmin(admin.ModelAdmin):
     search_fields = ('food_title', 'category__category_name', 'vendor__vendor_name', 'price')
     list_filter = ('is_available',)
 
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('product_name','is_active', 'vendor', 'is_available', 'stock')
+
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(FoodItem, FoodItemAdmin)
+admin.site.register(Product, ProductAdmin)
