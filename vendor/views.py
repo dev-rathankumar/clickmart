@@ -294,7 +294,7 @@ def add_product(request):
     return render(request, 'vendor/add_product.html', context)
 def view_Product(request, pk=None):
     # Get the main product
-    product = get_object_or_404(Product, id=pk, vendor=get_vendor(request))
+    product = get_object_or_404(Product, id=pk)
     
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
