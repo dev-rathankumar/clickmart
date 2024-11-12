@@ -22,6 +22,9 @@ class Category(models.Model):
     
     def __str__(self):
         return self.category_name
+    
+    def get_subcategory_count(self):
+        return self.subcategories.count()
 
 class FoodItem(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)

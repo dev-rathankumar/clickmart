@@ -27,12 +27,19 @@
                                         <div class="col-lg-12 col-md-12 col-sm-12">
                                             <div class="field-holder">
                                                 <label>Main Category *</label>
+                                                <!-- Display the main category name as plain text -->
+                                                {% if form.initial.parent %}
+                                                    <input id="id_parent" name="parent" type="text" class="bolder" disabled value ="{{ form.initial.parent.category_name }}" />
+                                                {% else %}
+                                                    <p>No main category selected</p>
+                                                {% endif %}
+                                                <!-- Include the hidden parent field for form submission -->
                                                 {{ form.parent }}
                                             </div>
                                         </div>
                                         <div class="col-lg-12 col-md-12 col-sm-12">
                                             <div class="field-holder">
-                                                <label>Category Name *</label>
+                                                <label>SubCategory Name *</label>
                                                 {{ form.category_name }}
                                             </div>
                                         </div>
@@ -44,7 +51,7 @@
                                         </div>
                                     </div>
                                 </div>
-
+                            
                                 {% for field in form %}
                                     {% if field.errors %}
                                         {% for error in field.errors %}
@@ -52,9 +59,12 @@
                                         {% endfor %}
                                     {% endif %}
                                 {% endfor %}
-
-                                <button type="submit" class="btn btn-info"><i class="fa fa-check" aria-hidden="true"></i> Create</button>
+                            
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fa fa-check" aria-hidden="true"></i> Create
+                                </button>
                             </form>
+                            
                         </div>
                     </div>
                 </div>

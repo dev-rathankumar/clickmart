@@ -18,7 +18,7 @@
                 <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
                     <div class="user-dashboard loader-holder">
                         <div class="user-holder">
-                            <h5 class="text-uppercase">Build Your Product Category</h5>
+                            <h5 class="text-uppercase">Manage Categories</h5>
 							<hr>
                           
                             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
@@ -28,8 +28,8 @@
                             <br><br>
                             <h6>Category: <span class="text-uppercase text-success">{{category}}</span></h6>
 
-                            
-
+                            <br/>
+                            <h4>Sub Categories:</h4>
                             {% if subcategories %}
                             <table class="table table-hover table-borderless">
                                 
@@ -38,7 +38,9 @@
                                   <tr>
                                     <td class="text-left">{{ forloop.counter }}</td>
                                     <td class="text-left">
-                                        <a href=""><p class="mb-0 font-weight-bold">{{ subcat.category_name }}</p>
+                                        <span>
+                                            <p class="mb-0 font-weight-bold">{{ subcat.category_name }}</p>
+                                        </span>
                                         <small class="text-muted">{{subcat.description}}</small></a>
                                     </td>
                                     <td>

@@ -292,9 +292,22 @@ def add_product(request):
         'categories': categories,
     }
     return render(request, 'vendor/add_product.html', context)
-
-
-
+def view_Product(request, pk=None):
+    # Get the main product
+    product = get_object_or_404(Product, id=pk, vendor=get_vendor(request))
+    
+    # Fetch similar products from the same category, excluding the current product
+    similar_products = Product.objects.filter(
+        category=product.category,
+        is_available=True  # Optional: Only include available products
+    ).exclude(id=product.id)
+    
+    context = {
+        'product': product,
+        'similar_products': similar_products,
+    }
+    
+    return render(request, 'vendor/product_view.html', context)
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def edit_product(request, product_id):
