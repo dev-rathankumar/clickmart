@@ -8,7 +8,7 @@
             <li class="{% if 'opening-hour' in request.path %}active{% endif %}"><a href="{% url 'opening_hours' %}"><i class="icon-menu5"></i>Opening Hours</a></li>
             <li class="{% if '/my_orders/' in request.path %}active{% endif %}"><a href="{% url 'vendor_my_orders' %}"><i class="icon-add_shopping_cart"></i>Orders</a></li>
             <li class="{% if '/my_orders/' in request.path %}active{% endif %}"><a href="{% url 'vendor_my_orders' %}"><i class="fa fa-archive"></i>Inventory </a></li>
-            <li class="{% if '/my_orders/' in request.path %}active{% endif %}"><a href="{% url 'vendor_my_orders' %}"><i class="fa fa-credit-card"></i>POS</a></li>
+            <li class="{% if '/my_orders/' in request.path %}active{% endif %}"><a href="{% url 'pos_home' %}" target="_blank"><i class="fa fa-credit-card"></i>POS</a></li>
             <!-- <li><a href="restaurant-earnings.html"><i class="icon-money"></i>Earnings</a></li> -->
             <li><a class="logout-btn" href="{% url 'logout' %}"><i class="icon-log-out"></i>Signout</a></li>
         </ul>

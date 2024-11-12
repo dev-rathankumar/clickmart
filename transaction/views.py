@@ -38,7 +38,7 @@ class printer:
 def transactionReceipt(request,transNo):
     try:
         receipt = transaction.objects.get(transaction_id=transNo).receipt
-        return render(request,'receiptView.html',context={'receipt':receipt, 'transNo': transNo})
+        return render(request,'pos/receiptView.html',context={'receipt':receipt, 'transNo': transNo})
     except transaction.DoesNotExist:
         raise Http404("No Transactions Found!!!")
 
@@ -50,7 +50,7 @@ def transactionPrintReceipt(request,transNo):
             print("Connecting Printer")
         if printer.printer: 
             printer.printReceipt(receipt)
-        return redirect(f'/transaction_receipt/{transNo}/')
+        return redirect(f'/pos/transaction_receipt/{transNo}/')
     except Exception as e:
         print(e)
         return redirect('register')
