@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row">
+        <!-- Sidebar for Categories -->
+        <div class="col-md-3">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 sticky-sidebar">
+                <div class="filter-wrapper">
+                    <div class="categories-menu">
+                        <h3><i class="fa fa-list-alt me-2"></i> Categories</h3>
+                        <ul class="menu-list">
+                            <!-- Link to show all products when clicking "All Products" -->
+                            <li>
+                                <h6>
+                                    <a href="{% url 'all_products' %}" class="menu-category-link font-weight-bold">All Products</a>
+                                </h6>
+                            </li>
+                            {% for category in categories %}
+                            <li>
+                                <!-- Link to filter by category -->
+                                <h6>
+                                    <a href="{% url 'filter_by_category' category.id %}" class="menu-category-link font-weight-bold">{{ category.category_name }}</a>
+                                </h6>
+                                
+                                {% if category.subcategories.all %}
+                                    <ul class="submenu-list">
+                                        {% for subcategory in category.subcategories.all %}
+                                        <li>
+                                            <!-- Link to filter by subcategory -->
+                                            <a href="{% url 'filter_by_subcategory' subcategory.id %}" class="submenu-category-link font-weight-light font-italic">{{ subcategory.category_name }}</a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                {% if products %}
+                    <h3>Items found: <strong class="text-danger">{{ products|length }}</strong></h3>
+                {% else %}
+                    <h5>Items found: <strong class="text-danger">0</strong></h5>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ product.image.url }}" class="card-img-top w-50 m-auto" alt="product_image">
+                        <div class="card-body text-start">
+                            <h6 class="card-title">{{ product.product_name }}</h6>
+                            {% if product.sale_price %}
+                                <p class="card-text">Product sale price: ₹ {{ product.sale_price }}</p>
+                            {% else %}
+                                <p class="card-text">Product regular price: ₹ {{ product.regular_price }}</p>
+                            {% endif %}
+                            <a href="{% url 'view_product' product.id %}" class="btn btn-danger w-100 m-auto text-center py-2">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

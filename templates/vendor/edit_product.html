@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'includes/alerts.html' %}
+
+<div class="main-section">
+    {% include 'includes/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    {% include 'includes/v_sidebar.html' %}
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder">
+                        <div class="user-holder">
+                            <h5 class="text-uppercase">Edit Product</h5>
+                            <hr>
+                            <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
+                            <br><br>
+                            <h6>Update Product Information</h6>
+                            <form action="{% url 'edit_product' product.id %}" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="form-fields-set">
+                                    <div class="row">
+                                        
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Category *</label>
+                                                {{ form.category }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Subcategory *</label>
+                                                {{ form.subcategory }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Product Title *</label>
+                                                {{ form.product_name }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Image</label>
+                                                <img
+                                                    id="image-preview"
+                                                    class="thumbnail"
+                                                    src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}"
+                                                    alt="Product Image Preview"
+                                                    style="width: 100px; display: block; margin: 10px;">
+                                                {{ form.image }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Description</label>
+                                                {{ form.description }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label >Full Specification</label>
+                                                {{ form.full_specification }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Price *</label>
+                                                {{ form.regular_price }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Sale Price (Optional)</label>
+                                                {{ form.sale_price }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Stock</label>
+                                                {{ form.stock }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Is Available?</label>
+                                                {{ form.is_available }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Is Popular?</label>
+                                                {{ form.is_popular }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Is Active?</label>
+                                                {{ form.is_active }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% for field in form %}
+                                    {% if field.errors %}
+                                        {% for error in field.errors %}
+                                            <li style="color: red;">{{ error }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                <button type="submit" class="btn btn-info"><i class="fa fa-check" aria-hidden="true"></i> Update</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const categorySelect = document.querySelector('[name="category"]');
+        const subcategorySelect = document.querySelector('[name="subcategory"]');
+
+        categorySelect.addEventListener('change', function () {
+            const categoryId = categorySelect.value;
+
+            if (categoryId) {
+                fetch(`/vendor/get-subcategories/${categoryId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+                        data.subcategories.forEach(subcategory => {
+                            subcategorySelect.innerHTML += `<option value="${subcategory.id}">${subcategory.name}</option>`;
+                        });
+                    });
+            } else {
+                subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            }
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageInput = document.querySelector('[name="image"]');
+        const imagePreview = document.getElementById('image-preview');
+
+        imageInput.addEventListener('change', function () {
+            const file = imageInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Reset to default image if no file is selected
+                imagePreview.src = "{% static 'images/default-profile.png' %}";
+            }
+        });
+    });
+</script>
+
+{% endblock %}

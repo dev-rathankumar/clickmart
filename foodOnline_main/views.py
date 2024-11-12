@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from vendor.models import Vendor
-
+from menu.models import Product
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import D # ``D`` is a shortcut for ``Distance``
 from django.contrib.gis.db.models.functions import Distance
@@ -34,7 +34,10 @@ def home(request):
             v.kms = round(v.distance.km, 1)
     else:
         vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)[:8]
+
+    products = Product.objects.filter(is_active=True, is_popular=True)
     context = {
+        'products':products,
         'vendors': vendors,
     }
     return render(request, 'home.html', context)

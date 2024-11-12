@@ -4,8 +4,9 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import IntegrityError
 
-from menu.forms import CategoryForm, FoodItemForm
+from menu.forms import CategoryForm, FoodItemForm, SubCategoryForm, ProductForm,EditProductForm
 from orders.models import Order, OrderedFood
+from menu.models import Product
 import vendor
 from .forms import VendorForm, OpeningHourForm
 from accounts.forms import UserProfileForm
@@ -55,11 +56,12 @@ def vprofile(request):
     return render(request, 'vendor/vprofile.html', context)
 
 
+#*  ================ Category section =============== 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
-def menu_builder(request):
+def category_builder(request):
     vendor = get_vendor(request)
-    categories = Category.objects.filter(vendor=vendor).order_by('created_at')
+    categories = Category.objects.filter(vendor=vendor, parent=None).order_by('created_at')
     context = {
         'categories': categories,
     }
@@ -93,7 +95,7 @@ def add_category(request):
             category.slug = slugify(category_name)+'-'+str(category.id) # chicken-15
             category.save()
             messages.success(request, 'Category added successfully!')
-            return redirect('menu_builder')
+            return redirect('category_builder')
         else:
             print(form.errors)
 
@@ -118,7 +120,7 @@ def edit_category(request, pk=None):
             category.slug = slugify(category_name)
             form.save()
             messages.success(request, 'Category updated successfully!')
-            return redirect('menu_builder')
+            return redirect('category_builder')
         else:
             print(form.errors)
 
@@ -137,8 +139,209 @@ def delete_category(request, pk=None):
     category = get_object_or_404(Category, pk=pk)
     category.delete()
     messages.success(request, 'Category has been deleted successfully!')
-    return redirect('menu_builder')
+    return redirect('category_builder')
 
+
+
+
+#*  ================ Sub Category section =============== 
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def subcategory_builder(request, pk=None):
+    vendor = get_vendor(request)
+    # Fetch the main category by primary key (pk) and ensure it belongs to the vendor
+    category = get_object_or_404(Category, pk=pk, vendor=vendor)
+    # Fetch subcategories for the specified category
+    subcategories = Category.objects.filter(vendor=vendor, parent=category).order_by('created_at')
+    
+    context = {
+        'category': category,
+        'subcategories': subcategories,
+    }
+    return render(request, 'vendor/fooditems_by_category.html', context)
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def add_sub_category(request, category_id=None):
+    vendor = get_vendor(request)
+    main_category = None
+
+    # Fetch the main category if a category_id is provided
+    if category_id:
+        main_category = Category.objects.filter(id=category_id, vendor=vendor, parent=None).first()
+
+    if request.method == 'POST':
+        form = SubCategoryForm(request.POST, vendor=vendor)
+        if form.is_valid():
+            subcategory = form.save(commit=False)
+            subcategory.vendor = vendor
+            subcategory.parent = main_category  # Set the main category as parent
+            subcategory.slug = slugify(form.cleaned_data['category_name'])  # initial slug
+
+            subcategory.save()  # Save to generate an ID
+            # Update the slug with the ID appended for uniqueness
+            subcategory.slug = f"{slugify(subcategory.category_name)}-{subcategory.id}"
+            subcategory.save()
+
+            messages.success(request, 'Subcategory added successfully!')
+            return redirect('category_builder')
+    else:
+        # Pass main_category as the initial value for the parent field
+        form = SubCategoryForm(vendor=vendor, initial={'parent': main_category})
+
+    context = {
+        'form': form,
+        'main_category': main_category,
+    }
+    return render(request, 'vendor/add_sub_category.html', context)
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def edit_subcategory(request, category_id=None, pk=None):
+    subcategory = get_object_or_404(Category, pk=pk)
+    vendor = get_vendor(request)
+
+    # Fetch the main category if a category_id is provided
+    main_category = Category.objects.filter(id=category_id, vendor=vendor, parent=None).first()
+
+    # Ensure it’s a subcategory (has a parent)
+    if not subcategory.parent:
+        messages.error(request, "This is a main category, not a subcategory.")
+        return redirect('category_builder')
+
+    if request.method == 'POST':
+        form = SubCategoryForm(request.POST, instance=subcategory)
+        
+        # Set parent field to be read-only but keep its value
+        form.fields['parent'].initial = subcategory.parent
+        form.fields['parent'].widget.attrs['readonly'] = True
+        
+        if form.is_valid():
+            category_name = form.cleaned_data['category_name']
+            subcategory = form.save(commit=False)
+            subcategory.vendor = vendor
+            subcategory.slug = slugify(category_name)
+            subcategory.parent = main_category  # Ensure parent remains unchanged
+            subcategory.save()
+            messages.success(request, 'Subcategory updated successfully!')
+            return redirect('category_builder')
+        else:
+            print(form.errors)
+    else:
+        # Initialize form with current subcategory data
+        form = SubCategoryForm(instance=subcategory, initial={'parent': subcategory.parent})
+        
+        # Set parent field as read-only in the form
+        form.fields['parent'].widget.attrs['readonly'] = True
+
+    context = {
+        'form': form,
+        'subcategory': subcategory,
+    }
+    return render(request, 'vendor/edit_subcategory.html', context)
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def delete_subcategory(request, pk=None):
+    subcategory = get_object_or_404(Category, pk=pk, parent__isnull=False)  # Ensure it's a subcategory
+    if subcategory.vendor == get_vendor(request):  # Check if the subcategory belongs to the vendor
+        subcategory.delete()
+        messages.success(request, 'Subcategory deleted successfully!')
+    else:
+        messages.error(request, 'You are not authorized to delete this subcategory.')
+    
+    return redirect('category_builder')  # Redirect to the category builder page
+
+
+
+#*  ================ Prouduct section =============== 
+def product_list_view(request):
+    vendor = get_vendor(request)
+    products = Product.objects.filter(vendor=vendor)
+    context = {
+        'products': products,
+    }
+    return render(request, 'vendor/products_list.html', context)
+
+def get_subcategories(request, category_id):
+    subcategories = Category.objects.filter(parent_id=category_id)
+    subcategory_list = [{'id': subcategory.id, 'name': subcategory.category_name} for subcategory in subcategories]
+    return JsonResponse({'subcategories': subcategory_list})
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.vendor = get_vendor(request)
+            # Generate the slug from the product name
+            product.slug = slugify(product.product_name)
+            product.save()
+            messages.success(request, 'Product added successfully!')
+            return redirect('vendor_products_list')
+    else:
+        form = ProductForm()
+
+    # Pass categories to the template for the dropdown
+    categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
+    context = {
+        'form': form,
+        'categories': categories,
+    }
+    return render(request, 'vendor/add_product.html', context)
+def view_Product(request, pk=None):
+    # Get the main product
+    product = get_object_or_404(Product, id=pk)
+    
+    # Fetch similar products from the same category, excluding the current product
+    similar_products = Product.objects.filter(
+        category=product.category,
+        is_available=True  # Optional: Only include available products
+    ).exclude(id=product.id)
+    
+    context = {
+        'product': product,
+        'similar_products': similar_products,
+    }
+    
+    return render(request, 'vendor/product_view.html', context)
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, vendor=get_vendor(request))
+    if request.method == 'POST':
+        form = EditProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.slug = slugify(product.product_name)
+            product.save()
+            messages.success(request, 'Product updated successfully!')
+            return redirect('vendor_products_list')
+    else:
+        form = EditProductForm(instance=product)
+
+    categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
+    context = {
+        'form': form,
+        'categories': categories,
+        'product': product,
+    }
+    return render(request, 'vendor/edit_product.html', context)
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def delete_product(request, product_id=None):
+    product = get_object_or_404(Product, id=product_id)
+    if product.vendor == get_vendor(request):  # Ensure the product belongs to the vendor
+        product.delete()
+        messages.success(request, 'Product deleted successfully!')
+    else:
+        messages.error(request, 'You are not authorized to delete this product.')
+    
+    return redirect('vendor_products_list')  # Redirect to the product list page
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import UserProfile
 from .context_processors import get_cart_counter, get_cart_amounts
-from menu.models import Category, FoodItem
+from menu.models import Category, Product
 
 from vendor.models import OpeningHour, Vendor
 from django.db.models import Prefetch
@@ -29,16 +29,21 @@ def marketplace(request):
     }
     return render(request, 'marketplace/listings.html', context)
 
-
 def vendor_detail(request, vendor_slug):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
 
-    categories = Category.objects.filter(vendor=vendor).prefetch_related(
+    categories = Category.objects.filter(vendor=vendor, is_active=True, parent=None).prefetch_related(
         Prefetch(
-            'fooditems',
-            queryset = FoodItem.objects.filter(is_available=True)
+            'subcategories',  # related_name for subcategories
+            queryset=Category.objects.filter(is_active=True).prefetch_related(
+                Prefetch(
+                    'subcategory_products',  # related_name for products in subcategory
+                    queryset=Product.objects.filter(is_available=True)
+                )
+            )
         )
     )
+    print(categories)
 
     opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
     
@@ -60,22 +65,21 @@ def vendor_detail(request, vendor_slug):
     }
     return render(request, 'marketplace/vendor_detail.html', context)
 
-
 def add_to_cart(request, food_id):
     if request.user.is_authenticated:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             # Check if the food item exists
             try:
-                fooditem = FoodItem.objects.get(id=food_id)
+                product = Product.objects.get(id=food_id)
                 # Check if the user has already added that food to the cart
                 try:
-                    chkCart = Cart.objects.get(user=request.user, fooditem=fooditem)
+                    chkCart = Cart.objects.get(user=request.user, product=product)
                     # Increase the cart quantity
                     chkCart.quantity += 1
                     chkCart.save()
                     return JsonResponse({'status': 'Success', 'message': 'Increased the cart quantity', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
                 except:
-                    chkCart = Cart.objects.create(user=request.user, fooditem=fooditem, quantity=1)
+                    chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
                     return JsonResponse({'status': 'Success', 'message': 'Added the food to the cart', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
             except:
                 return JsonResponse({'status': 'Failed', 'message': 'This food does not exist!'})
@@ -91,10 +95,10 @@ def decrease_cart(request, food_id):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             # Check if the food item exists
             try:
-                fooditem = FoodItem.objects.get(id=food_id)
+                product = Product.objects.get(id=food_id)
                 # Check if the user has already added that food to the cart
                 try:
-                    chkCart = Cart.objects.get(user=request.user, fooditem=fooditem)
+                    chkCart = Cart.objects.get(user=request.user, product=product)
                     if chkCart.quantity > 1:
                         # decrease the cart quantity
                         chkCart.quantity -= 1
@@ -149,13 +153,13 @@ def search(request):
         keyword = request.GET['keyword']
 
         # get vendor ids that has the food item the user is looking for
-        fetch_vendors_by_fooditems = FoodItem.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+        fetch_vendors_by_products = Product.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
         
-        vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
+        vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_products) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
         if latitude and longitude and radius:
             pnt = GEOSGeometry('POINT(%s %s)' % (longitude, latitude))
 
-            vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True),
+            vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_products) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True),
             user_profile__location__distance_lte=(pnt, D(km=radius))
             ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
 
@@ -204,3 +208,28 @@ def checkout(request):
         'RZP_LOAD': RZP_LOAD,
     }
     return render(request, 'marketplace/checkout.html', context)
+
+def All_products(request, category_id=None, subcategory_id=None):
+    categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
+    
+    if subcategory_id:
+        # Filter by subcategory
+        selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
+        print("selecterd category", selected_subcategory)
+        products = Product.objects.filter(subcategory=selected_subcategory, is_available=True, is_active=True)
+        print(products)
+
+    elif category_id:
+        # Filter by category
+        selected_category = get_object_or_404(Category, id=category_id, is_active=True)
+        subcategories = selected_category.subcategories.all()
+        products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
+    else:
+        # Show all products if no filter is selected
+        products = Product.objects.filter(is_available=True, is_active=True)
+    print(products)
+    context = {
+        'categories': categories,
+        'products': products,
+    }
+    return render(request, 'marketplace/products.html', context)

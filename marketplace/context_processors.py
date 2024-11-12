@@ -1,5 +1,5 @@
 from .models import Cart, Tax
-from menu.models import FoodItem
+from menu.models import Product
 
 
 def get_cart_counter(request):
@@ -25,8 +25,8 @@ def get_cart_amounts(request):
     if request.user.is_authenticated:
         cart_items = Cart.objects.filter(user=request.user)
         for item in cart_items:
-            fooditem = FoodItem.objects.get(pk=item.fooditem.id)
-            subtotal += (fooditem.price * item.quantity) # subtotal = subtotal + (fooditem.price * item.quantity)
+            product = Product.objects.get(pk=item.product.id)
+            subtotal += (product.price * item.quantity) # subtotal = subtotal + (product.price * item.quantity)
 
         get_tax = Tax.objects.filter(is_active=True)
         for i in get_tax:
