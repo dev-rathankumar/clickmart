@@ -35,7 +35,8 @@
                                                     <th scope="col">Product Name</th>
                                                     <th scope="col">Category</th>
                                                     <th scope="col">SubCategory</th>
-                                                    <th scope="col">Price</th>
+                                                    <th scope="col">Regular Price</th>
+                                                    <th scope="col">Sale Price</th>
                                                     <th scope="col">Stock</th>
                                                     <th scope="col">Status</th>
                                                     <th scope="col">Actions</th>
@@ -47,7 +48,13 @@
                                                     <td>{{ product.product_name }}</td>
                                                     <td>{{ product.category.category_name }}</td>
                                                     <td>{{ product.subcategory.category_name }}</td>
-                                                    <td>${{ product.regular_price }}</td>
+                                                    <td>₹ {{ product.regular_price }}</td>
+                                                    
+                                                    {% if product.sale_price %}
+                                                    <td>₹ {{ product.sale_price }}</td>                                                        
+                                                    {% else %}
+                                                    <td>Not on Sale</td>
+                                                    {% endif %}
                                                     <td>{{ product.stock }}</td>
                                                     <td>{{ product.is_active|yesno:"Active,Inactive" }}</td>
                                                     <td>

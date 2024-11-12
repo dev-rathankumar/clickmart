@@ -28,14 +28,18 @@ class SubCategoryForm(forms.ModelForm):
 
         # Disable the parent field if it has an initial value
         if 'parent' in self.initial:
-            self.fields['parent'].widget.attrs['readonly'] = True
-            self.fields['parent'].widget.attrs['disabled'] = True  # disable the field to make it non-editable
+            self.fields['parent'].widget = forms.HiddenInput()
+from django.core.exceptions import ValidationError
+from PIL import Image
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-
-        fields = ['product_name', 'description', 'full_specification', 'regular_price', 'sale_price', 'image', 'stock', 'is_available', 'category', 'subcategory', 'is_popular', 'is_active']
+        fields = [
+            'product_name', 'description', 'full_specification', 'regular_price',
+            'sale_price', 'image', 'stock', 'is_available', 'category',
+            'subcategory', 'is_popular', 'is_active'
+        ]
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
@@ -53,6 +57,14 @@ class ProductForm(forms.ModelForm):
         else:
             self.fields['subcategory'].queryset = Category.objects.none()
 
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            img = Image.open(image)
+            if img.width != 480 or img.height != 480:
+                raise ValidationError("Image must be 480x480 pixels.")
+        return image
+    
 class EditProductForm(forms.ModelForm):
     class Meta:
         model = Product

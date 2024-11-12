@@ -29,16 +29,21 @@ def marketplace(request):
     }
     return render(request, 'marketplace/listings.html', context)
 
-
 def vendor_detail(request, vendor_slug):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
 
-    categories = Category.objects.filter(vendor=vendor).prefetch_related(
+    categories = Category.objects.filter(vendor=vendor, is_active=True, parent=None).prefetch_related(
         Prefetch(
-            'products',
-            queryset = Product.objects.filter(is_available=True)
+            'subcategories',  # related_name for subcategories
+            queryset=Category.objects.filter(is_active=True).prefetch_related(
+                Prefetch(
+                    'subcategory_products',  # related_name for products in subcategory
+                    queryset=Product.objects.filter(is_available=True)
+                )
+            )
         )
     )
+    print(categories)
 
     opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
     
@@ -59,7 +64,6 @@ def vendor_detail(request, vendor_slug):
         'current_opening_hours': current_opening_hours,
     }
     return render(request, 'marketplace/vendor_detail.html', context)
-
 
 def add_to_cart(request, food_id):
     if request.user.is_authenticated:
@@ -204,3 +208,28 @@ def checkout(request):
         'RZP_LOAD': RZP_LOAD,
     }
     return render(request, 'marketplace/checkout.html', context)
+
+def All_products(request, category_id=None, subcategory_id=None):
+    categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
+    
+    if subcategory_id:
+        # Filter by subcategory
+        selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
+        print("selecterd category", selected_subcategory)
+        products = Product.objects.filter(subcategory=selected_subcategory, is_available=True, is_active=True)
+        print(products)
+
+    elif category_id:
+        # Filter by category
+        selected_category = get_object_or_404(Category, id=category_id, is_active=True)
+        subcategories = selected_category.subcategories.all()
+        products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
+    else:
+        # Show all products if no filter is selected
+        products = Product.objects.filter(is_available=True, is_active=True)
+    print(products)
+    context = {
+        'categories': categories,
+        'products': products,
+    }
+    return render(request, 'marketplace/products.html', context)
