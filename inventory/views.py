@@ -79,4 +79,4 @@ def inventoryAdd(request):
             context['obj'] = obj
     form = AddProduct(initial={'qty':1})
     context['form'] = form
-    return render(request,'addInventory.html',context=context)
+    return render(request,'pos/addInventory.html',context=context)

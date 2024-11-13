@@ -13,7 +13,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 
 urlpatterns = [
 
-    path('',views.dashboard_sales, name="home"),
+    path('',views.dashboard_sales, name="pos_home"),
 
     # User URLs
     path("user/login/", views.user_login, name="user_login"),
