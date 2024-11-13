@@ -451,7 +451,7 @@ def remove_opening_hours(request, pk=None):
 def order_detail(request, order_number):
     try:
         order = Order.objects.get(order_number=order_number, is_ordered=True)
-        ordered_food = OrderedFood.objects.filter(order=order, fooditem__vendor=get_vendor(request))
+        ordered_food = OrderedFood.objects.filter(order=order, product__vendor=get_vendor(request))
 
         context = {
             'order': order,

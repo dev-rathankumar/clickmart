@@ -1,7 +1,7 @@
 import json
 from django.db import models
 from accounts.models import User
-from menu.models import FoodItem
+from menu.models import Product
 from vendor.models import Vendor
 
 
@@ -100,7 +100,7 @@ class OrderedFood(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    fooditem = models.ForeignKey(FoodItem, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
     amount = models.FloatField()
@@ -108,4 +108,4 @@ class OrderedFood(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.fooditem.food_title
+        return self.product.product_name

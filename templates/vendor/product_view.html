@@ -1,6 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<style>
+  .nav-item {
+    background-color: transparent;
+    transition: background-color 0.3s; /* Smooth transition */
+    border: none !important;
+  }
+  
+  /* Style the active nav-link's parent li */
+  .nav-link.active {
+    background-color: #dc3545 !important; /* Bootstrap "danger" color */
+    color: white !important; /* To make the text stand out */
+    border: none !important;
+  }
+</style>
 {% include 'includes/alerts.html' %}
   <!-- content -->
   <section class="py-5">
@@ -93,7 +107,7 @@
               </div>
             </div>
             {% comment %} <a href="#" class="btn btn-warning shadow-0"> Buy now </a> {% endcomment %}
-            <a href="#" class="btn btn-danger shadow-0 px-5 py-3"> <i class="me-1 fa fa-shopping-basket"></i> Add to cart </a>
+            <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}"> <i class="me-1 fa fa-shopping-basket"></i> Add to cart </a>
             {% comment %} <a href="#" class="btn btn-light border border-secondary py-2 icon-hover px-3"> <i class="me-1 fa fa-heart fa-lg"></i> Save </a> {% endcomment %}
           </div>
         </main>
@@ -101,66 +115,107 @@
     </div>
   </section>
   <!-- content -->
-  
   <section class="bg-light border-top py-4">
     <div class="container">
       <div class="row gx-4">
         <div class="col-lg-8 mb-4">
           <div class="border rounded-2 px-3 py-2 bg-white">
             <!-- Pills navs -->
-            <ul class="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
-              <li class="nav-item d-flex" role="presentation">
-                <strong class="nav-link d-flex align-items-center justify-content-center w-100 text-danger " id="ex1-tab-1" data-mdb-toggle="pill" href="#ex1-pills-1" role="tab" aria-controls="ex1-pills-1" aria-selected="true">Description</strong>
+            <ul class="nav nav-pills nav-justified mb-3  border-0" id="ex1" role="tablist">
+              <li class="nav-item d-flex border-0 active" role="presentation">
+                <button class="nav-link d-flex align-items-center justify-content-center w-100 border-0 active" id="description-tab" data-target="description-content">Description</button>
               </li>
-              <li class="nav-item d-flex" role="presentation">
-                <strong class="nav-link d-flex align-items-center justify-content-center w-100 text-danger " id="ex1-tab-1" data-mdb-toggle="pill" href="#ex1-pills-1" role="tab" aria-controls="ex1-pills-1" aria-selected="true">Full Description</strong>
+              <li class="nav-item d-flex border-0" role="presentation">
+                <button class="nav-link d-flex align-items-center justify-content-center w-100 border-0" id="full-description-tab" data-target="full-description-content">Full Description</button>
               </li>
             </ul>
             <!-- Pills navs -->
   
             <!-- Pills content -->
-            <div>
-                <p>{{product.description}}</p>
+            <div class="tab-content">
+              <div class="tab-pane show active" id="description-content">
+                <p>{{ product.description }}</p>
+              </div>
+              <div class="tab-pane" id="full-description-content" style="display: none;">
+                <p>{{ product.full_specification }}</p>
+              </div>
             </div>
             <!-- Pills content -->
           </div>
         </div>
+        
+        <!-- Similar items section -->
         <div class="col-lg-4">
           <div class="px-0 border rounded-2 shadow-0">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Similar items</h5>
-                
                 {% if similar_products %}
-                {% for similar_product in similar_products %}
-                <div class="d-flex mb-3">
-                  <a href="#" class="me-3">
-                    <img src="{{ similar_product.image.url }}" style="min-width: 96px; height: 96px;" class="img-md img-thumbnail" />
-                  </a>
-                  <div class="info">
-                    <a href="#" class="nav-link mb-1">
-                      {{similar_product.product_name}}
-                    </a>
-                    
-                    {% if similar_product.sale_price %}
-                        <strong class="text-dark">Sale Price: ₹{{similar_product.sale_price}}</strong>
+                  {% for similar_product in similar_products %}
+                    <div class="d-flex mb-3">
+                      <a href="#" class="me-3">
+                        <img src="{{ similar_product.image.url }}" style="min-width: 96px; height: 96px;" class="img-md img-thumbnail" />
+                      </a>
+                      <div class="info">
+                        <a href="#" class="nav-link mb-1">{{ similar_product.product_name }}</a>
+                        {% if similar_product.sale_price %}
+                          <strong class="text-dark">Sale Price: ₹{{ similar_product.sale_price }}</strong>
                         {% else %}
-                        <strong class="text-dark">Regular Price: ₹{{similar_product.regular_price}}</strong>
-                    {% endif %}
-                        
-                  </div>
-                </div>
-                {% endfor %}
+                          <strong class="text-dark">Regular Price: ₹{{ similar_product.regular_price }}</strong>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
                 {% else %}
-                <div><strong>No Similar Item Available</strong></div>
+                  <div><strong>No Similar Item Available</strong></div>
                 {% endif %}
               </div>
             </div>
           </div>
         </div>
+        <!-- End of Similar items section -->
       </div>
     </div>
   </section>
-
   
+  <!-- JavaScript to handle tab functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Select tab buttons and content
+      const tabs = document.querySelectorAll('.nav-link');
+      const tabContents = document.querySelectorAll('.tab-pane');
+  
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs
+          tabs.forEach(t => t.classList.remove('active'));
+          // Hide all tab content
+          tabContents.forEach(content => content.style.display = 'none');
+          
+          // Activate the clicked tab
+          tab.classList.add('active');
+          // Display the associated content
+          const targetContent = document.getElementById(tab.getAttribute('data-target'));
+          if (targetContent) {
+            targetContent.style.display = 'block';
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll('.nav-link').forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.nav-link').forEach(btn => {
+          btn.classList.remove('active');
+          btn.parentElement.style.backgroundColor = 'transparent'; // Reset background color
+        });
+        
+        // Add active class to the clicked button
+        this.classList.add('active');
+        this.parentElement.style.backgroundColor = '#dc3545'; // Set background color to Bootstrap danger
+      });
+    });
+  </script>
+
 {% endblock %}

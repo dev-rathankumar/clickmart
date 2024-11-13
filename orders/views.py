@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from marketplace.models import Cart, Tax
 from marketplace.context_processors import get_cart_amounts
-from menu.models import FoodItem
+from menu.models import Product
 from .forms import OrderForm
 from .models import Order, OrderedFood, Payment
 import simplejson as json
@@ -32,8 +32,8 @@ def place_order(request):
 
     vendors_ids = []
     for i in cart_items:
-        if i.fooditem.vendor.id not in vendors_ids:
-            vendors_ids.append(i.fooditem.vendor.id)
+        if i.product.vendor.id not in vendors_ids:
+            vendors_ids.append(i.product.vendor.id)
     
     # {"vendor_id":{"subtotal":{"tax_type": {"tax_percentage": "tax_amount"}}}}
     get_tax = Tax.objects.filter(is_active=True)
@@ -42,15 +42,22 @@ def place_order(request):
     k = {}
     items_count= 0
     for i in cart_items:
-        fooditem = FoodItem.objects.get(pk=i.fooditem.id, vendor_id__in=vendors_ids)
-        v_id = fooditem.vendor.id
+        product = Product.objects.get(pk=i.product.id, vendor_id__in=vendors_ids)
+        v_id = product.vendor.id
         if v_id in k:
             subtotal = k[v_id]
-            subtotal += (fooditem.price * i.quantity)
+            if product.sale_price is not None:
+                subtotal += (product.sale_price * i.quantity)
+            else:
+                subtotal += (product.regular_price * i.quantity)
+
             k[v_id] = subtotal
             items_count+=i.quantity
         else:
-            subtotal = (fooditem.price * i.quantity)
+            if product.sale_price is not None:
+                subtotal += (product.sale_price * i.quantity)
+            else:
+                subtotal += (product.regular_price * i.quantity)
             k[v_id] = subtotal
             items_count+=i.quantity
     
@@ -62,7 +69,7 @@ def place_order(request):
             tax_amount = round((tax_percentage * subtotal)/100, 2)
             tax_dict.update({tax_type: {str(tax_percentage) : str(tax_amount)}})
         # Construct total data
-        total_data.update({fooditem.vendor.id: {str(subtotal): str(tax_dict)}})
+        total_data.update({product.vendor.id: {str(subtotal): str(tax_dict)}})
     
 
         
@@ -156,10 +163,17 @@ def payments(request):
             ordered_food.order = order
             ordered_food.payment = payment
             ordered_food.user = request.user
-            ordered_food.fooditem = item.fooditem
+            ordered_food.product = item.product
             ordered_food.quantity = item.quantity
-            ordered_food.price = item.fooditem.price
-            ordered_food.amount = item.fooditem.price * item.quantity # total amount
+            if item.product.sale_price is not None:
+                ordered_food.price = item.product.sale_price
+            else:
+                ordered_food.price = item.product.regular_price
+            if item.product.sale_price is not None:
+                ordered_food.amount = item.product.sale_price * item.quantity # total amount
+            else:
+                ordered_food.amount = item.product.regular_price * item.quantity # total amount
+
             ordered_food.save()
 
         # SEND ORDER CONFIRMATION EMAIL TO THE CUSTOMER
@@ -188,20 +202,20 @@ def payments(request):
         mail_template = 'orders/new_order_received.html'
         to_emails = []
         for i in cart_items:
-            if i.fooditem.vendor.user.email not in to_emails:
-                to_emails.append(i.fooditem.vendor.user.email)
+            if i.product.vendor.user.email not in to_emails:
+                to_emails.append(i.product.vendor.user.email)
 
-                ordered_food_to_vendor = OrderedFood.objects.filter(order=order, fooditem__vendor=i.fooditem.vendor)
+                ordered_food_to_vendor = OrderedFood.objects.filter(order=order, product__vendor=i.product.vendor)
                 print(ordered_food_to_vendor)
 
         
                 context = {
                     'order': order,
-                    'to_email': i.fooditem.vendor.user.email,
+                    'to_email': i.product.vendor.user.email,
                     'ordered_food_to_vendor': ordered_food_to_vendor,
-                    'vendor_subtotal': order_total_by_vendor(order, i.fooditem.vendor.id)['subtotal'],
-                    'tax_data': order_total_by_vendor(order, i.fooditem.vendor.id)['tax_dict'],
-                    'vendor_grand_total': order_total_by_vendor(order, i.fooditem.vendor.id)['grand_total'],
+                    'vendor_subtotal': order_total_by_vendor(order, i.product.vendor.id)['subtotal'],
+                    'tax_data': order_total_by_vendor(order, i.product.vendor.id)['tax_dict'],
+                    'vendor_grand_total': order_total_by_vendor(order, i.product.vendor.id)['grand_total'],
                 }
                 send_notification(mail_subject, mail_template, context)
 

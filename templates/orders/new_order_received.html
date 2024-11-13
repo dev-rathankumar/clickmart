@@ -61,19 +61,23 @@
     <tbody>
         <tr>
             <th>Image</th>
-            <th>Food Item</th>
+            <th>Product Item</th>
             <th>Qty</th>
             <th>Price</th>
         </tr>
 
         {% for food in ordered_food_to_vendor %}
         <tr>
-            <td><img src="http://{{domain}}{{ food.fooditem.image.url }}" alt="Food Image" width="60"></td>
-            <td><p style="margin: 0;">{{ food.fooditem }}</p>
-            <small><a href="http://{{ domain }}{% url 'vendor_detail' food.fooditem.vendor.vendor_slug %}" style="color:#ccc;">{{ food.fooditem.vendor.vendor_name }}</a></small>
+            <td><img src="http://{{domain}}{{ food.product.image.url }}" alt="Food Image" width="60"></td>
+            <td><p style="margin: 0;">{{ food.product }}</p>
+            <small><a href="http://{{ domain }}{% url 'vendor_detail' food.product.vendor.vendor_slug %}" style="color:#ccc;">{{ food.product.vendor.vendor_name }}</a></small>
             </td>
             <td>{{ food.quantity }}</td>
-            <td>${{ food.price }}</td>
+          {% if item.product.sale_price %}
+            <td>₹{{ item.product.sale_price }}</td>
+          {% else %}
+            <td>₹{{ item.product.regular_price }}</td>
+          {% endif %}
         </tr>
         {% endfor %}
     </tbody>
@@ -83,17 +87,17 @@
   <!-- Order amounts -->
   <table bgcolor="#EAF0F6" width="100%" role="presentation" border="0" cellpadding="0" cellspacing="10px" style="padding: 30px 30px 60px 60px;">
     <tbody>
-        <tr>Subtotal: ${{ vendor_subtotal }}</tr>
+        <tr>Subtotal: ₹{{ vendor_subtotal }}</tr>
         
         {% for key, val in tax_data.items %}
             {% for i, j in val.items %}
                 <tr>
-                    <td>{{ key }} <small>({{ i }}%)</small> : <span>${{ j }}</span></td>
+                    <td>{{ key }} <small>({{ i }}%)</small> : <span>₹{{ j }}</span></td>
                 </tr>
             {% endfor %}
         {% endfor %}
 
-        <tr>Grand total: ${{ vendor_grand_total }}</tr>
+        <tr>Grand total: ₹{{ vendor_grand_total }}</tr>
     </tbody>
   </table>
 
