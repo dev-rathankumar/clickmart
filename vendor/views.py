@@ -20,6 +20,8 @@ from accounts.views import check_role_vendor
 from menu.models import Category, FoodItem
 from django.template.defaultfilters import slugify
 
+from marketplace.models import Cart
+from django.db.models import Sum
 
 def get_vendor(request):
     vendor = Vendor.objects.get(user=request.user)
@@ -295,7 +297,8 @@ def add_product(request):
 def view_Product(request, pk=None):
     # Get the main product
     product = get_object_or_404(Product, id=pk)
-    
+    chkCart = Cart.objects.filter(user=request.user, product=product)
+    chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
         category=product.category,
@@ -305,6 +308,8 @@ def view_Product(request, pk=None):
     context = {
         'product': product,
         'similar_products': similar_products,
+        'check_cart':chkCart,
+        'chkCart_count':chkCart_count,
     }
     
     return render(request, 'vendor/product_view.html', context)

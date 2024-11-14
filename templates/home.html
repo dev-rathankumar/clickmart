@@ -90,13 +90,13 @@
 							<div class="card" style="width: 270px;">
 								<img class="card-img-top w-50 m-auto pt-3" src="{{ product.image.url }}" alt="Card image cap">
 								<div class="card-body">
-								  <h5 class="card-text">{{product.product_name}}</h5>
-								
-								{% if product.sale_price %}
-									<strong class="text-danger">Product Sale Price: ₹ {{product.sale_price}}</strong>
-								{% else %}
-								<strong class="text-danger">Product Regular Price: ₹ {{product.regular_price}}</strong>
-								{% endif %}
+								  <h5 class="card-text font-weight-normal ">{{product.product_name}}</h5>
+										
+									{% if product.sale_price %}
+										<span class="text-dark">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sale_price }}</span>
+									{% else %}
+										<span class="text-dark">Price: ₹ {{ product.regular_price }}</span>
+									{% endif %}
 									
 								</div>
 							  </div>
@@ -107,7 +107,39 @@
 			</div>
 		</div>
 	</div>
-	<!-- Top Restarurants Section End -->
+	<div class="page-section nopadding cs-nomargin" style="margin-top: 0px;padding-top: 60px;margin-bottom: 0px;background: #ffffff;">
+		<!-- Top Restarurants Section start-->
+		<div class="container">
+		<div class="row">
+			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+				<div class="element-title align-left">
+					<h2>Top Merchants</h2>
+					<p>Explore Merchants for unbeatable deals and trusted quality.</p>
+				</div>
+			</div>
+			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-right: 0 !important; padding-left: 0 !important;">
+				<div class="company-logo">
+					<ul>
+						{% for vendor in vendors %}
+						<li class="has-border">
+							<figure>
+								
+								<a href="{% url 'vendor_detail' vendor.vendor_slug %}">
+								{% if vendor.user_profile.profile_picture %}
+									<img src="{{ vendor.user_profile.profile_picture.url }}" height="125" class="attachment-full size-full wp-post-image" alt=""></a>
+								{% else %}
+									<img src="{% static 'images/default-profile.png' %}" height="125" class="attachment-full size-full wp-post-image" alt=""></a>
+								{% endif %}
+								
+							</figure>
+						</li>
+						{% endfor %}
+					</ul> 
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 	<!-- Choose From Most Popular Listin Start -->
 	<div class="page-section nopadding cs-nomargin" style="margin-top: 0px;padding-top: 60px;padding-bottom: 50px;margin-bottom: 0px;background: #ffffff;">
 		<div class="container">
@@ -122,7 +154,7 @@
 					<div class="listing fancy">
 						<ul class="row">
 							{% for vendor in vendors %}
-							<li class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+							<li class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
 								<div class="list-post featured">
 									<div class="img-holder">
 										<figure>
@@ -161,20 +193,9 @@
 											<span><small><b>{{vendor.kms}} km </b>away</small></span>
 										{% endif %}
 									</div>
-									<div class="list-option">
-										<a href="javascript:void(0);" class="shortlist-btn" data-toggle="modal" data-target="#sign-in">
-											<i class="icon-heart-o"></i>
-										</a>
-									</div>
 								</div>
 							</li>
 							{% endfor %}
-							
-							
-							
-							
-							
-
 						</ul>
 					</div>
 				</div>

@@ -19,6 +19,7 @@ urlpatterns = [
     path('manage-categories/edit-subcategory/<int:category_id>/<int:pk>/', views.edit_subcategory, name='edit_subcategory'),
     path('manage-categories/subcategory/delete/<int:pk>/', views.delete_subcategory, name='delete_subcategory'),
     path('get-subcategories/<int:category_id>/', views.get_subcategories, name='get_subcategories'),
+    path('manage-categories/category/add/', views.add_category, name='add_category'),
 
     #Product 
     path('manage-products/products/', views.product_list_view, name='vendor_products_list'),
@@ -27,7 +28,6 @@ urlpatterns = [
     path('manage-products/product-delete/<int:product_id>/', views.delete_product, name='delete_product'),
     path('view-product/<int:pk>/', views.view_Product, name='view_product'),
     # Category CRUD
-    path('menu-builder/category/add/', views.add_category, name='add_category'),
 
     # FoodItem CRUD
     path('menu-builder/food/add/', views.add_food, name='add_food'),
