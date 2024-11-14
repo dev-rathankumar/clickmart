@@ -1,5 +1,43 @@
 {% load static %}
 
+<style>
+  /* Basic styling for dropdown */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: fixed;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    border: 1px solid #ccc;
+    margin: 11px 0px 0px 48px;
+    z-index: 1;
+}
+.dropdown-content a {
+    color: black;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
+}
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+.show {
+    display: block;
+}
+.subcategory {
+    margin-left: 20px;
+    font-size: 0.9em;
+}
+.btn-category{
+    padding: 6px 50px 5px 50px;
+    margin: 0px 10px 0px 40px;
+    font-weight: 600;
+}
+</style>
+
 <!--Main Wrapper-->
 <div class="wrapper">
     <!-- Header Start -->
@@ -8,27 +46,42 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                       <div class="d-flex flex-row justify-content-start align-items-center flex-wrap">
                         <div class="logo">
                             <figure>
-                                <a href="{% url 'home' %}" class="light-logo">
+                                <a href="/" class="light-logo">
                                     <img src="{% static 'logo/foodOnlineLogo.png' %}" alt="FoodOnline" width="250">
                                 </a>
                             </figure>
                         </div>
-                        
-                        
-                        <div class="main-location ml-5">
+                        <div class="dropdown">
+                            <button onclick="toggleDropdown()" class='btn btn-outline-danger btn-category text-uppercase'>Categories</button>
+                            <div id="categoryDropdown" class="dropdown-content">
+                                {% for category in categories %}
+                                    <a href="javascript:void(0)" onclick="toggleSubcategories({{ category.id }})">{{ category.category_name }}</a>
+                                    <div id="subcategory-{{ category.id }}" class="subcategory" style="display: none;">
+                                        {% for subcategory in category.subcategories.all %}
+                                            <a href="#">{{ subcategory.category_name }}</a>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="main-location ml-4">
                             <ul>
                                 <li class="location-has-children choose-location">
                                     <form action="#">
                                         <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
-                                        <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()"><i class="icon-target5"></i></span>
+                                        <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()">
+                                            <i class="icon-target5"></i>
+                                        </span>
                                     </form>
-                                    
                                 </li>
                             </ul>
-                            </div>
+                        </div>
+                       </div>
                     </div>
+
                     <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
                         <div class="login-option">
                             {% if user.is_authenticated %}
@@ -42,10 +95,9 @@
                             <a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'myAccount' %}">My Account</a>
                             <a class="cs-color cs-popup-joinus-btn login-popup text-danger" href="{% url 'logout' %}">Logout</a>
                             {% else %}
-                            <a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'login' %}">Login</a> / 
-                                <span><a href="{% url 'registerUser' %}" class="cs-color cs-popup-joinus-btn login-popup ml-0">Register</a></span><a class="get-start-btn" href="{% url 'registerVendor' %}">
-                                Register
-                                Restaurant </a>
+                            <a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'login' %}">Login</a> /
+                            <span><a href="{% url 'registerUser' %}" class="cs-color cs-popup-joinus-btn login-popup ml-0">Register</a></span>
+                            <a class="get-start-btn" href="{% url 'registerVendor' %}">Register Restaurant</a>
                             {% endif %}
                         </div>
                     </div>
@@ -56,40 +108,60 @@
     <!-- Header End -->
 
     <script>
-    var x = document.getElementById("location");
-    var current_location = sessionStorage.getItem("current_location")
-    if(current_location != ""){
-        x.value = current_location;
-    }
-    
-    function getLocation() {
-        if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
-        } else { 
-        x.innerHTML = "Geolocation is not supported by this browser.";
+ // Toggle dropdown display when clicking the button
+function toggleDropdown() {
+    document.getElementById("categoryDropdown").classList.toggle("show");
+}
+
+// Toggle subcategory display for each category and prevent dropdown from closing
+function toggleSubcategories(categoryId) {
+    var subcategoryDiv = document.getElementById("subcategory-" + categoryId);
+    subcategoryDiv.style.display = subcategoryDiv.style.display === "none" ? "block" : "none";
+}
+
+// Close the dropdown if clicked outside, but ignore clicks on the dropdown content
+window.onclick = function(event) {
+    if (!event.target.matches('.dropdown button') && !event.target.matches('.dropdown-content a')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
         }
     }
-    
-    function showPosition(position) {
-        var lat = position.coords.latitude
-        var lng = position.coords.longitude
+};
+        // Geolocation Script
+        var x = document.getElementById("location");
+        var current_location = sessionStorage.getItem("current_location");
+        if (current_location != "") {
+            x.value = current_location;
+        }
 
-        // var lat = '19.0713949'
-        // var lng = '72.9984126'
-
-        // hit AJAX request to googlemaps api endpoint and get the location data using those lat and lng
-        var GOOGLE_API_KEY = "{{ GOOGLE_API_KEY }}"
-        var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng="+lat+","+lng+"+&key="+GOOGLE_API_KEY
-        
-        $.ajax({
-            url: url,
-            type: "GET",
-            success: function(response){
-                var current_location = response.results[0].formatted_address
-                x.value = current_location
-                sessionStorage.setItem("current_location", current_location)
-                window.location = '?lat='+lat+'&lng='+lng
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                x.innerHTML = "Geolocation is not supported by this browser.";
             }
-        })
-    }
+        }
+
+        function showPosition(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var GOOGLE_API_KEY = "{{ GOOGLE_API_KEY }}";
+            var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + lat + "," + lng + "&key=" + GOOGLE_API_KEY;
+
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function(response) {
+                    var current_location = response.results[0].formatted_address;
+                    x.value = current_location;
+                    sessionStorage.setItem("current_location", current_location);
+                    window.location = '?lat=' + lat + '&lng=' + lng;
+                }
+            });
+        }
     </script>
+</div>

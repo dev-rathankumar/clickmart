@@ -52,7 +52,7 @@
              {{product.product_name}}
             </h4>
             {% if product.is_active %}
-            <span class="text-success ms-2">In stock</span>
+            <span class="text-success ms-2">In stock ({{product.stock}})</span>
             {% else %}
             <span class="text-danger ms-2">Out of stock</span>
             {% endif %}
@@ -62,9 +62,9 @@
             <div class="mb-3">
                 
                 {% if product.sale_price %}
-                    <span class="h5">Product Sale Price: ₹{{product.sale_price}}</span>
+                  <span class="text-dark h5">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sale_price }}</span>
                 {% else %}
-                    <span class="h5">Product Regular: ₹{{product.regular_price}}</span>
+                  <span class="text-dark h5">Price: ₹ {{ product.regular_price }}</span>
                 {% endif %}
             </div>
   
@@ -83,32 +83,41 @@
   
             <hr />
   
-            <div class="row mb-4">
-              {% comment %} <div class="col-md-4 col-6">
-                <label class="mb-2">Size</label>
-                <select class="form-select border border-secondary" style="height: 35px;">
-                  <option>Small</option>
-                  <option>Medium</option>
-                  <option>Large</option>
-                </select>
-              </div> {% endcomment %}
-              <!-- col.// -->
-              <div class="col-md-4 col-6 mb-3">
-                <label class="mb-2 d-block">Quantity</label>
-                <div class="input-group mb-3" style="width: 170px;">
-                  {% comment %} <button class="btn btn-white border border-secondary px-3" type="button" id="button-addon1" data-mdb-ripple-color="dark">
-                    <i class="fas fa-minus"></i>
-                  </button> {% endcomment %}
-                  <input type="text" class="form-control text-center border border-secondary" placeholder="{{product.stock}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled />
-                  {% comment %} <button class="btn btn-white border border-secondary px-3" type="button" id="button-addon2" data-mdb-ripple-color="dark">
-                    <i class="fas fa-plus"></i>
-                  </button> {% endcomment %}
-                </div>
+           <!-- Quantity Input Section -->
+          <div class="row mb-4">
+            {% if check_cart %}
+            <div class="col-md-4 col-6 mb-3">
+              <label class="mb-2 d-block">Quantity</label>
+              <div class="input-group mb-3" style="width: 170px;">
+                <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="{{chkCart_count}}" aria-label="Product quantity" aria-describedby="quantity-controls" disabled />
               </div>
             </div>
-            {% comment %} <a href="#" class="btn btn-warning shadow-0"> Buy now </a> {% endcomment %}
-            <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}"> <i class="me-1 fa fa-shopping-basket"></i> Add to cart </a>
-            {% comment %} <a href="#" class="btn btn-light border border-secondary py-2 icon-hover px-3"> <i class="me-1 fa fa-heart fa-lg"></i> Save </a> {% endcomment %}
+            {% else %}
+            <div class="col-md-4 col-6 mb-3">
+              <label class="mb-2 d-block">Quantity</label>
+              <div class="input-group mb-3" style="width: 170px;">
+                <button class="btn btn-white border border-secondary px-3" type="button" id="decrease-quantity" data-mdb-ripple-color="dark">
+                  <i class="fa fa-minus"></i>
+                </button>
+                <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
+                <button class="btn btn-white border border-secondary px-3" type="button" id="increase-quantity" data-mdb-ripple-color="dark">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Add to Cart Button -->
+          {% if check_cart %}
+          <a href="{% url 'cart' %}" class="btn btn-success icon-hover px-5 py-3 font-weight-bold">
+            <i class="me-1 fa fa-eye fa-lg"></i> View Cart
+          </a>
+          {% else %}
+          <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"> 
+            <i class="me-1 fa fa-shopping-basket"></i> Add to cart 
+          </a>
+          {% endif %}          
           </div>
         </main>
       </div>
@@ -146,7 +155,7 @@
         
         <!-- Similar items section -->
         <div class="col-lg-4">
-          <div class="px-0 border rounded-2 shadow-0">
+          <div class="px-0 shadow-0">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Similar items</h5>
@@ -180,6 +189,56 @@
   
   <!-- JavaScript to handle tab functionality -->
   <script>
+
+
+// Add Product to Cart
+document.querySelectorAll('.add_to_cart').forEach(button => {
+  button.addEventListener('click', function(event) {
+      event.preventDefault();
+
+      var productId = button.getAttribute('data-id');
+      var quantity = document.getElementById('quantity-input').value;
+      var url = button.getAttribute('data-url');
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+              product_id: productId,
+              quantity: parseInt(quantity) 
+          })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {// Display a success message
+              window.location.href = data.redirect_url;  // Redirect to the cart or another page
+          } else {
+              alert(data.message);  // Display an error message
+          }
+      });
+  });
+});
+
+// Utility function to get CSRF token
+function getCookie(name) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+
+
     document.addEventListener('DOMContentLoaded', function() {
       // Select tab buttons and content
       const tabs = document.querySelectorAll('.nav-link');
@@ -214,6 +273,29 @@
         // Add active class to the clicked button
         this.classList.add('active');
         this.parentElement.style.backgroundColor = '#dc3545'; // Set background color to Bootstrap danger
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const decreaseButton = document.getElementById('decrease-quantity');
+      const increaseButton = document.getElementById('increase-quantity');
+      const quantityInput = document.getElementById('quantity-input');
+      const maxStock = {{ product.stock|default:0 }};  // Max available stock, passed from the backend
+    
+      decreaseButton.addEventListener('click', function() {
+        let currentQuantity = parseInt(quantityInput.value);
+        
+        if (currentQuantity > 1) {
+          quantityInput.value = currentQuantity - 1;
+        }
+      });
+    
+      increaseButton.addEventListener('click', function() {
+        let currentQuantity = parseInt(quantityInput.value);
+        
+        if (currentQuantity < maxStock) {
+          quantityInput.value = currentQuantity + 1;
+        }
       });
     });
   </script>
