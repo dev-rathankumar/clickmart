@@ -22,26 +22,21 @@
       <div class="row gx-5">
         <aside class="col-lg-6">
           <div class="border rounded-4 mb-3 d-flex justify-content-center">
-            <a data-fslightbox="mygalley" class="rounded-4" target="_blank" data-type="image" href="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big.webp">
-              <img style="max-width: 100%; max-height: 100vh; margin: auto;" class="rounded-4 fit" src="{{product.image.url}}" />
+            <!-- Main Image Display -->
+            <a data-fslightbox="mygalley" class="rounded-4" target="_blank" data-type="image" id="main-image-link" href="{{ product.image.url }}">
+              <img id="main-image" style="max-width: 100%; max-height: 100vh; margin: auto;" class="rounded-4 fit" src="{{ product.image.url }}" />
             </a>
           </div>
           <div class="d-flex justify-content-center mb-3">
-            <a data-fslightbox="mygalley" class="border mx-1 rounded-2" target="_blank" data-type="image" href="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big1.webp" class="item-thumb">
-              <img width="60" height="60" class="rounded-2" src="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big1.webp" />
+            <!-- Thumbnails -->
+            <a data-fslightbox="mygalley" class="border mx-1 rounded-2 gallery-thumbnail" target="_blank" data-type="image" href="{{ product.image.url }}">
+              <img width="60" height="60" class="rounded-2" src="{{ product.image.url }}" data-full-url="{{ product.image.url }}" />
             </a>
-            <a data-fslightbox="mygalley" class="border mx-1 rounded-2" target="_blank" data-type="image" href="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big2.webp" class="item-thumb">
-              <img width="60" height="60" class="rounded-2" src="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big2.webp" />
-            </a>
-            <a data-fslightbox="mygalley" class="border mx-1 rounded-2" target="_blank" data-type="image" href="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big3.webp" class="item-thumb">
-              <img width="60" height="60" class="rounded-2" src="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big3.webp" />
-            </a>
-            <a data-fslightbox="mygalley" class="border mx-1 rounded-2" target="_blank" data-type="image" href="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big4.webp" class="item-thumb">
-              <img width="60" height="60" class="rounded-2" src="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big4.webp" />
-            </a>
-            <a data-fslightbox="mygalley" class="border mx-1 rounded-2" target="_blank" data-type="image" href="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big.webp" class="item-thumb">
-              <img width="60" height="60" class="rounded-2" src="https://mdbcdn.b-cdn.net/img/bootstrap-ecommerce/items/detail1/big.webp" />
-            </a>
+            {% for single_image in product_gallery %}
+              <a data-fslightbox="mygalley" class="border mx-1 rounded-2 gallery-thumbnail" target="_blank" data-type="image" href="{{ single_image.image.url }}">
+                <img width="60" height="60" class="rounded-2" src="{{ single_image.image.url }}" data-full-url="{{ single_image.image.url }}" />
+              </a>
+            {% endfor %}
           </div>
           <!-- thumbs-wrap.// -->
           <!-- gallery-wrap .end// -->
@@ -49,80 +44,75 @@
         <main class="col-lg-6">
           <div class="ps-lg-3">
             <h4 class="title text-dark">
-             {{product.product_name}}
+             {{ product.product_name }}
             </h4>
             {% if product.is_active %}
-            <span class="text-success ms-2">In stock ({{product.stock}})</span>
+              <span class="text-success ms-2">In stock ({{ product.stock }})</span>
             {% else %}
-            <span class="text-danger ms-2">Out of stock</span>
+              <span class="text-danger ms-2">Out of stock</span>
             {% endif %}
-
-                </div>
+          </div>
   
-            <div class="mb-3">
-                
-                {% if product.sale_price %}
-                  <span class="text-dark h5">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sale_price }}</span>
-                {% else %}
-                  <span class="text-dark h5">Price: ₹ {{ product.regular_price }}</span>
-                {% endif %}
-            </div>
+          <div class="mb-3">
+            {% if product.sale_price %}
+              <span class="text-dark h5">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sale_price }}</span>
+            {% else %}
+              <span class="text-dark h5">Price: ₹ {{ product.regular_price }}</span>
+            {% endif %}
+          </div>
   
-            <p>
-                {{ product.description|truncatewords:33 }}
-            </p>
+          <p>{{ product.description|truncatewords:33 }}</p>
   
-            <div class="row">
-              <dt class="col-3">Category:</dt>
-              <dd class="col-9">{{product.category.category_name}}</dd>
+          <div class="row">
+            <dt class="col-3">Category:</dt>
+            <dd class="col-9">{{ product.category.category_name }}</dd>
   
-              <dt class="col-3">SubCategory:</dt>
-              <dd class="col-9">{{product.subcategory.category_name}}</dd>
+            <dt class="col-3">SubCategory:</dt>
+            <dd class="col-9">{{ product.subcategory.category_name }}</dd>
+          </div>
   
-            </div>
+          <hr />
   
-            <hr />
-  
-           <!-- Quantity Input Section -->
+          <!-- Quantity Input Section -->
           <div class="row mb-4">
             {% if check_cart %}
-            <div class="col-md-4 col-6 mb-3">
-              <label class="mb-2 d-block">Quantity</label>
-              <div class="input-group mb-3" style="width: 170px;">
-                <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="{{chkCart_count}}" aria-label="Product quantity" aria-describedby="quantity-controls" disabled />
+              <div class="col-md-4 col-6 mb-3">
+                <label class="mb-2 d-block">Quantity</label>
+                <div class="input-group mb-3" style="width: 170px;">
+                  <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="{{ chkCart_count }}" aria-label="Product quantity" aria-describedby="quantity-controls" disabled />
+                </div>
               </div>
-            </div>
             {% else %}
-            <div class="col-md-4 col-6 mb-3">
-              <label class="mb-2 d-block">Quantity</label>
-              <div class="input-group mb-3" style="width: 170px;">
-                <button class="btn btn-white border border-secondary px-3" type="button" id="decrease-quantity" data-mdb-ripple-color="dark">
-                  <i class="fa fa-minus"></i>
-                </button>
-                <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
-                <button class="btn btn-white border border-secondary px-3" type="button" id="increase-quantity" data-mdb-ripple-color="dark">
-                  <i class="fa fa-plus"></i>
-                </button>
+              <div class="col-md-4 col-6 mb-3">
+                <label class="mb-2 d-block">Quantity</label>
+                <div class="input-group mb-3" style="width: 170px;">
+                  <button class="btn btn-white border border-secondary px-3" type="button" id="decrease-quantity" data-mdb-ripple-color="dark">
+                    <i class="fa fa-minus"></i>
+                  </button>
+                  <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
+                  <button class="btn btn-white border border-secondary px-3" type="button" id="increase-quantity" data-mdb-ripple-color="dark">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                </div>
               </div>
-            </div>
             {% endif %}
           </div>
 
           <!-- Add to Cart Button -->
           {% if check_cart %}
-          <a href="{% url 'cart' %}" class="btn btn-success icon-hover px-5 py-3 font-weight-bold">
-            <i class="me-1 fa fa-eye fa-lg"></i> View Cart
-          </a>
+            <a href="{% url 'cart' %}" class="btn btn-success icon-hover px-5 py-3 font-weight-bold">
+              <i class="me-1 fa fa-eye fa-lg"></i> View Cart
+            </a>
           {% else %}
-          <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"> 
-            <i class="me-1 fa fa-shopping-basket"></i> Add to cart 
-          </a>
-          {% endif %}          
-          </div>
+            <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
+              <i class="me-1 fa fa-shopping-basket"></i> Add to cart
+            </a>
+          {% endif %}
         </main>
       </div>
     </div>
   </section>
+  
   <!-- content -->
   <section class="bg-light border-top py-4">
     <div class="container">
@@ -190,6 +180,21 @@
   <!-- JavaScript to handle tab functionality -->
   <script>
 
+// JavaScript for Image Gallery
+document.addEventListener('DOMContentLoaded', function() {
+  const mainImage = document.getElementById('main-image');
+  const mainImageLink = document.getElementById('main-image-link');
+  const thumbnails = document.querySelectorAll('.gallery-thumbnail img');
+
+  thumbnails.forEach(thumbnail => {
+    thumbnail.addEventListener('click', function(event) {
+      event.preventDefault();
+      const newImageUrl = this.getAttribute('data-full-url');
+      mainImage.src = newImageUrl;
+      mainImageLink.href = newImageUrl;
+    });
+  });
+});
 
 // Add Product to Cart
 document.querySelectorAll('.add_to_cart').forEach(button => {

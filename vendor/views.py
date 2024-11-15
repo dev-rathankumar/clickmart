@@ -6,7 +6,7 @@ from django.db import IntegrityError
 
 from menu.forms import CategoryForm, FoodItemForm, SubCategoryForm, ProductForm,EditProductForm
 from orders.models import Order, OrderedFood
-from menu.models import Product
+from menu.models import Product,ProductGallery
 import vendor
 from .forms import VendorForm, OpeningHourForm
 from accounts.forms import UserProfileForm
@@ -299,6 +299,7 @@ def view_Product(request, pk=None):
     product = get_object_or_404(Product, id=pk)
     chkCart = Cart.objects.filter(user=request.user, product=product)
     chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    product_gallery = ProductGallery.objects.filter(product=pk)
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
         category=product.category,
@@ -310,6 +311,7 @@ def view_Product(request, pk=None):
         'similar_products': similar_products,
         'check_cart':chkCart,
         'chkCart_count':chkCart_count,
+        'product_gallery':product_gallery
     }
     
     return render(request, 'vendor/product_view.html', context)
