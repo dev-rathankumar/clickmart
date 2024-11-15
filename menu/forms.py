@@ -57,13 +57,13 @@ class ProductForm(forms.ModelForm):
         else:
             self.fields['subcategory'].queryset = Category.objects.none()
 
-    def clean_image(self):
-        image = self.cleaned_data.get('image')
-        if image:
-            img = Image.open(image)
-            if img.width != 480 or img.height != 480:
-                raise ValidationError("Image must be 480x480 pixels.")
-        return image
+    # def clean_image(self):
+    #     image = self.cleaned_data.get('image')
+    #     if image:
+    #         img = Image.open(image)
+    #         if img.width != 480 or img.height != 480:
+    #             raise ValidationError("Image must be 480x480 pixels.")
+    #     return image
     
 class EditProductForm(forms.ModelForm):
     class Meta:
