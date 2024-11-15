@@ -10,7 +10,10 @@ urlpatterns = [
     path('products/subcategory/<int:subcategory_id>/', views.All_products, name='filter_by_subcategory'),
     
     path('<slug:vendor_slug>/', views.vendor_detail, name='vendor_detail'),
+    path('<slug:vendor_slug>/category/<int:category_id>/', views.vendor_detail, name='vendor_detail_filter_by_category'),
+    path('<slug:vendor_slug>/subcategory/<int:subcategory_id>/', views.vendor_detail, name='vendor_detail_filter_by_subcategory'),
 
+    path('add_product_cart/<int:product_id>/',views.add_product_to_cart, name="add_product_to_cart"),
     # ADD TO CART
     path('add_to_cart/<int:food_id>/', views.add_to_cart, name='add_to_cart'),
     # DECREASE CART

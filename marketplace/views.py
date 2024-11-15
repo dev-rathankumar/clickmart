@@ -18,7 +18,10 @@ from django.contrib.gis.db.models.functions import Distance
 from datetime import date, datetime
 from orders.forms import OrderForm
 from django.conf import settings
-
+import json
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.contrib import messages
 
 def marketplace(request):
     vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
@@ -29,21 +32,39 @@ def marketplace(request):
     }
     return render(request, 'marketplace/listings.html', context)
 
-def vendor_detail(request, vendor_slug):
+def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
+    categories = Category.objects.filter(is_active=True, parent=None, vendor=vendor).prefetch_related('subcategories')
 
-    categories = Category.objects.filter(vendor=vendor, is_active=True, parent=None).prefetch_related(
-        Prefetch(
-            'subcategories',  # related_name for subcategories
-            queryset=Category.objects.filter(is_active=True).prefetch_related(
-                Prefetch(
-                    'subcategory_products',  # related_name for products in subcategory
-                    queryset=Product.objects.filter(is_available=True)
-                )
-            )
-        )
-    )
-    print(categories)
+    if subcategory_id:
+        # Filter by subcategory
+        selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True, vendor=vendor)
+        print("selecterd category", selected_subcategory)
+        products = Product.objects.filter(subcategory=selected_subcategory, is_available=True, is_active=True, vendor=vendor)
+        print(products)
+
+    elif category_id:
+        # Filter by category
+        selected_category = get_object_or_404(Category, id=category_id, is_active=True, vendor=vendor)
+        subcategories = selected_category.subcategories.all()
+        products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True, vendor=vendor)
+    else:
+        # Show all products if no filter is selected
+        products = Product.objects.filter(is_available=True, is_active=True,vendor=vendor)
+    print(products)
+
+    # categories = Category.objects.filter(vendor=vendor, is_active=True, parent=None).prefetch_related(
+    #     Prefetch(
+    #         'subcategories',  # related_name for subcategories
+    #         queryset=Category.objects.filter(is_active=True).prefetch_related(
+    #             Prefetch(
+    #                 'subcategory_products',  # related_name for products in subcategory
+    #                 queryset=Product.objects.filter(is_available=True)
+    #             )
+    #         )
+    #     )
+    # )
+    
 
     opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
     
@@ -62,6 +83,7 @@ def vendor_detail(request, vendor_slug):
         'cart_items': cart_items,
         'opening_hours': opening_hours,
         'current_opening_hours': current_opening_hours,
+        'products':products
     }
     return render(request, 'marketplace/vendor_detail.html', context)
 
@@ -80,9 +102,9 @@ def add_to_cart(request, food_id):
                     return JsonResponse({'status': 'Success', 'message': 'Increased the cart quantity', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
                 except:
                     chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
-                    return JsonResponse({'status': 'Success', 'message': 'Added the food to the cart', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
+                    return JsonResponse({'status': 'Success', 'message': 'Added the product to the cart', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
             except:
-                return JsonResponse({'status': 'Failed', 'message': 'This food does not exist!'})
+                return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
         else:
             return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
         
@@ -102,8 +124,12 @@ def decrease_cart(request, food_id):
                     if chkCart.quantity > 1:
                         # decrease the cart quantity
                         chkCart.quantity -= 1
+                        product.stock += 1 
+                        product.save()
                         chkCart.save()
                     else:
+                        product.stock += 1 
+                        product.save()
                         chkCart.delete()
                         chkCart.quantity = 0
                     return JsonResponse({'status': 'Success', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
@@ -134,6 +160,9 @@ def delete_cart(request, cart_id):
                 # Check if the cart item exists
                 cart_item = Cart.objects.get(user=request.user, id=cart_id)
                 if cart_item:
+                    product = Product.objects.get(id=cart_item.product.id)
+                    product.stock +=cart_item.quantity
+                    product.save()
                     cart_item.delete()
                     return JsonResponse({'status': 'Success', 'message': 'Cart item has been deleted!', 'cart_counter': get_cart_counter(request), 'cart_amount': get_cart_amounts(request)})
             except:
@@ -233,3 +262,36 @@ def All_products(request, category_id=None, subcategory_id=None):
         'products': products,
     }
     return render(request, 'marketplace/products.html', context)
+
+def add_product_to_cart(request, product_id):
+    if request.method == 'POST':
+        # Get the product object
+        product = Product.objects.get(id=product_id)
+        
+        # Try to parse JSON data from the request body
+        try:
+            data = json.loads(request.body)
+            print('data', data)
+            quantity = int(data.get('quantity'))
+        except (json.JSONDecodeError, ValueError) as e:
+            return JsonResponse({'success': False, 'message': 'Invalid data.'})
+        
+        cart_item, created = Cart.objects.get_or_create(user=request.user, product=product, quantity=quantity)
+
+        if created:
+            product.stock = product.stock - quantity
+            product.save()
+            messages.success(request, f"{product.product_name} has been added to your cart.")
+            message = f"{product.product_name} has been added to your cart."
+        else:
+            cart_item.quantity += quantity  # Update the quantity if the product already exists in the cart
+            cart_item.save()
+            message = f"The quantity of {product.product_name} has been updated in your cart."
+
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'redirect_url': f'/vendor/view-product/{product.id}/'  # Redirect to the cart page or any other page
+        })
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})

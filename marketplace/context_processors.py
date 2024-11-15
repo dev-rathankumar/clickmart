@@ -1,5 +1,5 @@
 from .models import Cart, Tax
-from menu.models import Product
+from menu.models import Product,Category
 
 
 def get_cart_counter(request):
@@ -26,7 +26,11 @@ def get_cart_amounts(request):
         cart_items = Cart.objects.filter(user=request.user)
         for item in cart_items:
             product = Product.objects.get(pk=item.product.id)
-            subtotal += (product.price * item.quantity) # subtotal = subtotal + (product.price * item.quantity)
+            if product.sale_price is not None:
+                subtotal += (product.sale_price * item.quantity)
+            else:
+                 # subtotal = subtotal + (product.price * item.quantity)
+                subtotal += (product.regular_price * item.quantity)
 
         get_tax = Tax.objects.filter(is_active=True)
         for i in get_tax:
@@ -38,3 +42,9 @@ def get_cart_amounts(request):
         tax = sum(x for key in tax_dict.values() for x in key.values())
         grand_total = subtotal + tax
     return dict(subtotal=subtotal, tax=tax, grand_total=grand_total, tax_dict=tax_dict)
+
+
+
+def categories_processor(request):
+    categories = Category.objects.filter(parent__isnull=True, is_active=True).prefetch_related('subcategories')
+    return {'categories': categories}
