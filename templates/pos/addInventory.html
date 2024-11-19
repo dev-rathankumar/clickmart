@@ -1,7 +1,7 @@
 {% extends 'pos/base.html' %}
 
 {% block title %}
-Add Inventory | Online Retail POS
+Add Inventory | Clickmall Retail POS
 {% endblock %}
 
 {% block nav-item %}
@@ -22,7 +22,7 @@ Add Inventory | Online Retail POS
         </div>
         <div class="row col-lg-12">
             {% if notFound %}
-            <div class="h3 text-center text-success mt-5 pt-5 pl-5">{{notFound}} - Barcode Not Found...<br><br>Please Ask Supervisor to add this Product </div>
+            <div class="h3 text-center text-success mt-5 pt-5 pl-5">{{notFound}} - Barcode Not Found...<br><br>Please add this product with the Barcode</div>
             {% endif%}
         </div>
         <div class="row">

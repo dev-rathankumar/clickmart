@@ -62,6 +62,9 @@ INSTALLED_APPS = [
     'import_export',
     'rangefilter',
     'django_admin_logs',
+
+    # Unified
+    'unified',
 ]
 
 MIDDLEWARE = [

@@ -41,7 +41,7 @@ class TransactionAdmin(ImportExportModelAdmin):
         return False
 
     def has_delete_permission(self, request, *args):
-        return False
+        return True # Set False to disable deletion
 
     def has_import_permission(self,request, *args):
         return False
@@ -87,7 +87,7 @@ class ProductTransactionAdmin(ImportExportModelAdmin):
         return False
 
     def has_delete_permission(self, request, *args):
-        return False
+        return True # Set False to disable deletion
 
     def has_import_permission(self,request, *args):
         return False

@@ -1,6 +1,7 @@
 # Create your views here.
 from django.shortcuts import redirect
-from inventory.models import product as Product
+# from inventory.models import product as Product
+from unified.models import Product
 from django.contrib.auth.decorators import login_required
 from .models import Cart
 

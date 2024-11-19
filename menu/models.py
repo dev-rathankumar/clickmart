@@ -42,7 +42,6 @@ class FoodItem(models.Model):
         return self.food_title
 
 class Product(models.Model):
-
     vendor          = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     product_name    = models.CharField(max_length=200)
     slug            = models.SlugField(max_length=300, unique=True, blank=True)
@@ -54,7 +53,7 @@ class Product(models.Model):
     stock           = models.IntegerField(blank=True, null = True)
     is_available    = models.BooleanField(default=True)
     category        = models.ForeignKey(Category, on_delete=models.CASCADE)
-    subcategory = models.ForeignKey(Category, related_name='subcategory_products', on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Category, related_name='menu_subcategory_products', on_delete=models.CASCADE)
     is_popular      = models.BooleanField(default=False, blank=True)
     is_active       = models.BooleanField(default=False)
     created_date    = models.DateTimeField(auto_now_add=True)

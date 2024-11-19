@@ -30,7 +30,7 @@ class Cart(object):
                 return
         else:
             self.cart[product.barcode] = {'barcode' : product.barcode,
-                                        'name': product.name,
+                                        'name': product.product_name,
                                         'price': str(product.sales_price),
                                         'quantity' : quantity, 
                                         }

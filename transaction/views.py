@@ -161,7 +161,7 @@ def endTransaction(request,type,value):
                 return_transaction = addTransaction(request.user,"DEBIT/CREDIT",total,cart,total)
         elif type=="cash": # Cash Transaction
             value = round(float(value),2)
-            if value>= total: 
+            if value>= total:
                 return_transaction = addTransaction(request.user,"CASH",total,cart,value)
         if return_transaction:
             Cart(request).clear()
@@ -178,17 +178,17 @@ def addTransaction(user,payment_type,total,cart,value):
     cart_df.index = cart_df.index + 1
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
-    cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: "T" if x>0 else "-T" if x<0 else "")
+    # cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: "T" if x>0 else "-T" if x<0 else "")
+    # To print the actual tax amount - but it exceeds the receipt
+    cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: f"{x:.2f}" if x != 0 else "")
     cart_df["deposit"] = cart_df["deposit_value"].astype(float).apply(lambda x: "" if x==0.00 else x )
-    
     # Building Receipt
     cart_string =  "\n".join(list(cart_df.apply(
                             lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT)+ "\n"+
-                                            f" {row['barcode']:<13}{row['quantity']:>3}{row['price']:>7}{row['deposit']:>6}{row['tax']:>2}".rjust(settings.RECEIPT_CHAR_COUNT),axis=1)))
-    cart_string = "NAME | BARCODE QTY PRICE DP TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
+                                            f" {row['barcode']:<13}{row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),axis=1)))
+    cart_string = "NAME | BARCODE QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
     
     cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
-    
     total_string = f"Sub-Total: {round(total-tax_total,2)}  Tax-Total: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'TOTAL SALE':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{str(payment_type):>10}: INR {round(value,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
@@ -196,14 +196,12 @@ def addTransaction(user,payment_type,total,cart,value):
 
     receipt = settings.RECEIPT_HEADER+ "\n\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+"\n\n" + settings.RECEIPT_FOOTER
     # receipt = settings.RECEIPT_HEADER+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" + settings.RECEIPT_FOOTER
-    
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
     
     ## IF CASH DRAWER Connected uncomment below
     # if printer.printer and settings.CASH_DRAWER: 
     #     try: printer.printer.cashdraw(2)
     #     except: pass
-
     #Saving Transaction into Database
     return transaction.objects.create( transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,

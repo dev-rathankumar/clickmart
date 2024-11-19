@@ -1,7 +1,9 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import product as Product
-from .models import product
+# from .models import product as Product
+# from .models import product
+from unified.models import Product as product
+from unified.models import Product
 from django import forms
 from django.forms import TextInput
 from cart.models import Cart

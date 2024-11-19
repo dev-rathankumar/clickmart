@@ -2,7 +2,7 @@
 {% load mathfilters %}
 
 {% block title %}
-Register | Online Retail POS
+Register | Clickmall Retail POS
 {% endblock %}
 
 {% block nav-item %}
@@ -67,9 +67,9 @@ Register | Online Retail POS
                             <!-- <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Name</th> -->
                             <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Qty</th>
                             <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Price</th>
-                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">L-Total<br>Tax</th>
-                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">L-Total<br>Deposit</th>
-                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Line<br>Total</th>
+                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Tax</th>
+                            <!-- <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">L-Total<br>Deposit</th> -->
+                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Total</th>
                         </tr>
                         {% for key, value in cart.items %}
                         <tr>
@@ -78,7 +78,7 @@ Register | Online Retail POS
                             <td>{{value.quantity}}</td>
                             <td>{{value.price}}</td>
                             <td>{{value.tax_value}}</td>
-                            <td>{{value.deposit_value}}</td>
+                            <!-- <td>{{value.deposit_value}}</td> -->
                             <td>{{value.line_total}}</td>
                         </tr>
                         {% endfor %}

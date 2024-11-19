@@ -1,7 +1,7 @@
 {% extends 'pos/base.html' %}
 
 {% block title %}
-Product Information | Online Retail POS
+Product Information | Clickmall Retail POS
 {% endblock %}
 
 {% block nav-item %}
@@ -33,7 +33,7 @@ Product Information | Online Retail POS
         </div>
         <div class="card-body " style="width:100%;">
             <div class="row h1 text-danger  " style="justify-content:end;padding-right: 10%;">
-                Price: {{ obj.get_fields.2.1 }}
+                Sale Price: {{ obj.get_fields.4.1 }}
             </div>
             <div class="table-responsive mt-4" style="width:100%;">
                 <table class="table table-bordered table-hover h5 text-gray-900 " style="width:100%;">

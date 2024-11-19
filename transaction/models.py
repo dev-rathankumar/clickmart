@@ -2,7 +2,9 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import F
-from inventory.models import product, PERCENTAGE_VALIDATOR
+# from inventory.models import product, PERCENTAGE_VALIDATOR
+from unified.models import Product as product
+from inventory.models import PERCENTAGE_VALIDATOR
 import pytz
 timezone = pytz.timezone("US/Eastern")
 
@@ -31,7 +33,7 @@ class transaction(models.Model):
             try: item = product.objects.get(barcode = product_item['barcode'])
             except: item = product.objects.get(barcode = product_item['barcode'].split("_")[0])
             productTransaction.objects.create(transaction = self, transaction_id_num = self.transaction_id, transaction_date_time = self.transaction_dt,
-                barcode = product_item['barcode'], name = product_item['name'], department = item.department.department_name, sales_price= product_item['price'],
+                barcode = product_item['barcode'], name = product_item['name'], department = item.category.category_name, sales_price= product_item['price'],
                 qty = product_item['quantity'], cost_price = item.cost_price, tax_category = item.tax_category.tax_category,tax_percentage= item.tax_category.tax_percentage ,
                 tax_amount = product_item['tax_value'], deposit_category = item.deposit_category.deposit_category,deposit = item.deposit_category.deposit_value ,
                 deposit_amount = product_item['deposit_value'], payment_type= self.payment_type )

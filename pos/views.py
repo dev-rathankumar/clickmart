@@ -5,7 +5,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django import forms
 from cart.models import Cart, displayed_items
-from inventory.models import product
+# from inventory.models import product
+from unified.models import Product as product
 from transaction.models import productTransaction, transaction
 from transaction.views import DateSelector
 from plotly import express as px
@@ -136,6 +137,9 @@ def report_regular(request,start_date,end_date):
     for i, val in df.groupby('payment_type')[['total_pre_sales','tax_amount','deposit_amount','total_sales']].apply(lambda x : x.sum()).iterrows():
          date_group.loc[("TOTAL","TOTAL",i)] = val
 
+    # Drop the 'Total Deposit' column
+    date_group.drop(columns=['deposit_amount'], inplace=True)
+
     date_group = date_group.sort_index()
     date_group.fillna("",inplace=True)
     date_group.rename(columns = { 'qty':'Quantity','total_pre_sales':'Total Pre_Sales','tax_amount':'Total Tax',
@@ -160,7 +164,7 @@ def dashboard_products(request):
         for i, df in df.groupby('department'):
             context['products_group'][i] = df.groupby(["barcode","name"])[["qty"]].sum().reset_index().sort_values(by=["qty"],ascending=False).iloc[:number].to_dict('records')
 
-        context['low_inventory_products'] = product.objects.all().order_by('qty').values('barcode','name','qty')[:50]
+        context['low_inventory_products'] = product.objects.all().order_by('qty').values('barcode','product_name','qty')[:50]
         context['number'] = number
     except Exception as e:
         return redirect("/pos/register/")
@@ -184,8 +188,12 @@ def dashboard_department(request):
         df['total_pre_sales'] = df['qty'] * df['sales_price']
         sales_by_payment = df.groupby('payment_type')['total_sales'].sum()
 
-        tableValues = [['Total QTY', 'Total Sales b4 Tax & Deposit', 'Total Tax', 'Total Deposit']+[f"Sales by {i}" for i in sales_by_payment.index.to_list()],
-                            [df['qty'].sum(), df['total_pre_sales'].sum(), df['tax_amount'].sum(), df['deposit_amount'].sum() ]+sales_by_payment.to_list()]
+        # tableValues = [['Total QTY', 'Total Sales Before Tax', 'Total Tax', 'Total Deposit']+[f"Sales by {i}" for i in sales_by_payment.index.to_list()],
+        #                     [df['qty'].sum(), df['total_pre_sales'].sum(), df['tax_amount'].sum(), df['deposit_amount'].sum() ]+sales_by_payment.to_list()]
+        # Removed Deposit
+        tableValues = [['Total QTY', 'Total Sales Before Tax', 'Total Tax']+[f"Sales by {i}" for i in sales_by_payment.index.to_list()],
+                            [df['qty'].sum(), df['total_pre_sales'].sum(), df['tax_amount'].sum() ]+sales_by_payment.to_list()]
+        
         tableValues = [("TOTAL SALES",round(df['total_sales'].sum(),2))]+ list(zip(tableValues[0],tableValues[1]))
         table_fig = ff.create_table(tableValues, height_constant= 25,)
         table_fig.update_layout(margin = dict(b=10,t=0,l=0,r=0),height=275 ,)
@@ -203,8 +211,8 @@ def dashboard_department(request):
         sales_by_department = sales_by_department.reset_index()
 
         bar_fig = px.bar(sales_by_department, x="department",  y="total_sales", color="payment_type",text_auto=True, hover_name="total_sales",
-                hover_data={'qty':True,'total_pre_sales':True,'tax_amount':True,'deposit_amount':True,'total_sales':False,},
-                labels={'qty':"Quantity",'payment_type':"Payment Type",'department':"Department",'total_sales':"Total Sales","total_pre_sales":"Total Sales b4 Tax & Deposit",
+                hover_data={'qty':True,'total_pre_sales':True,'tax_amount':True,'deposit_amount':False,'total_sales':True,},
+                labels={'qty':"Quantity",'payment_type':"Payment Type",'department':"Department",'total_sales':"Total Sales","total_pre_sales":"Total Sales Before Tax",
                         'tax_amount':"Total Tax Amount",'deposit_amount':"Total Deposit Amount"},
                 color_discrete_map={  'CASH': "darkgreen",'EBT': "royalblue",'DEBIT/CREDIT':"darkslategray"})
         bar_fig.update_yaxes(title=f"Total Sales ({start_date:%Y/%m/%d} - {end_date:%Y/%m/%d})")
@@ -247,10 +255,11 @@ def dashboard_sales(request):
         context["add_info"]['Last 7 Days Avg Sales'] = df_date[df_date.index>today_date-timedelta(7)].sum()/7
         context['30_Days_Avg_Sales'] = df_date[df_date.index>today_date-timedelta(30)].mean()
         context['30_Days_Total_Sales'] = df_date[df_date.index>today_date-timedelta(30)].sum()
-        context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum()[-1]
-        context["add_info"]['Last Week Total Sales'] = df_date.resample('W').sum()[-2]
-        context["add_info"]['MTD Total Sales'] = df_date.resample('M').sum()[-1]
-        context["add_info"]['YTD Total Sales'] = df_date.resample('Y').sum()[-1]
+        # context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum()[-1]
+        context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum().iloc[-1]
+        context["add_info"]['Last Week Total Sales'] = df_date.resample('W').sum().iloc[-2]
+        context["add_info"]['MTD Total Sales'] = df_date.resample('ME').sum().iloc[-1]
+        context["add_info"]['YTD Total Sales'] = df_date.resample('YE').sum().iloc[-1]
 
         # print(df_date.resample('W').sum())
         fig = px.bar(x= df_date.index,  y=df_date,text_auto=True,barmode='group',template="plotly_white" ,labels={"x":"Date","y":"Total Sales"})
