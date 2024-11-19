@@ -99,7 +99,7 @@ def recallTransaction(request, recallTransNo = None):
         del request.session["Cart_Sessions"][recallTransNo]
         request.session.modified = True
     elif "Cart_Sessions" in request.session.keys() and len(request.session["Cart_Sessions"]):
-        return render(request, "recallTransaction.html", context={"obj_rt": request.session["Cart_Sessions"].keys()})
+        return render(request, "pos/recallTransaction.html", context={"obj_rt": request.session["Cart_Sessions"].keys()})
     return redirect("register")
 
 
@@ -110,23 +110,23 @@ def endTransactionReceipt(request,transNo):
             change = float(request.GET["value"]) - float(request.GET["total"])
             change = f"""<table class="table text-white h3 p-0 m-0"> 
                             <tr> 
-                                <td class="text-left pl-5"> Total : </td> 
-                                <td class="text-right pr-5"> {request.GET["total"]} $</td> 
+                                <td class="text-left pl-5"> Total : </td>
+                                <td class="text-right pr-5"> {request.GET["total"]} INR</td> 
                             </tr> 
                             <tr> 
                                 <td class="text-left pl-5"> Cash : </td> 
-                                <td class="text-right pr-5"> {request.GET["value"]} $</td> 
+                                <td class="text-right pr-5"> {request.GET["value"]} INR</td> 
                             </tr> 
                             <tr class="h1 badge-danger" >  
                                 <td style="padding-top:15px"> Change : </td> 
-                                <td style="padding-top:15px"> {change*(-1):.2f} $</td> 
+                                <td style="padding-top:15px"> {change*(-1):.2f} INR</td> 
                             </tr> 
                         </table>"""
         elif request.GET["type"]=="card":
             change = f"""<table class="table text-white h3 p-0 m-0"> 
                             <tr> 
                                 <td class="text-left pl-5"> Total : </td> 
-                                <td class="text-right pr-5"> {request.GET["total"]} $</td> 
+                                <td class="text-right pr-5"> {request.GET["total"]} INR</td> 
                             </tr> 
                             <tr> 
                                 <td class="text-left pl-5"> Card : </td> 
@@ -165,7 +165,7 @@ def endTransaction(request,type,value):
                 return_transaction = addTransaction(request.user,"CASH",total,cart,value)
         if return_transaction:
             Cart(request).clear()
-            return redirect(f"/endTransaction/{return_transaction.transaction_id}/?type={type}&value={value}&total={total}")
+            return redirect(f"/pos/endTransaction/{return_transaction.transaction_id}/?type={type}&value={value}&total={total}")
         return redirect("register")
     except Exception as e:
         print(e,type,value,request.user)
@@ -191,8 +191,8 @@ def addTransaction(user,payment_type,total,cart,value):
     
     total_string = f"Sub-Total: {round(total-tax_total,2)}  Tax-Total: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'TOTAL SALE':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
-    total_string = total_string + "\n" + f"{str(payment_type):>10}: $ {round(value,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
-    total_string = total_string + "\n" + f"{'CHANGE':>10}: $ {round(value-total,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
+    total_string = total_string + "\n" + f"{str(payment_type):>10}: INR {round(value,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
+    total_string = total_string + "\n" + f"{'CHANGE':>10}: INR {round(value-total,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
 
     receipt = settings.RECEIPT_HEADER+ "\n\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+"\n\n" + settings.RECEIPT_FOOTER
     # receipt = settings.RECEIPT_HEADER+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" + settings.RECEIPT_FOOTER

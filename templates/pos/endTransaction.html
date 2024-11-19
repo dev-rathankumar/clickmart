@@ -1,7 +1,7 @@
 {% extends 'pos/base.html' %}
 
 {% block title %}
-Ending Transaction | Online Retail POS
+Ending Transaction | Clickmall Retail POS
 {% endblock %}
 
 {% block navbar %}
@@ -12,10 +12,10 @@ Ending Transaction | Online Retail POS
 <div class="container h5 badge-success text-uppercase text-center p-4  m-0" >
     Transaction Successfully Saved!!</div>
 <div class="row container  text-uppercase text-center text-danger mt-5 p-0 pl-4">
-    This is a online register and is not connected to a Cash-Drawer or a Card-Machine,
+    This is a online register and is not connected to Card-Machine,
              Please make sure that you are charging the customer for this transaction. 
              POS System has stored this transaction for record keeping.
-             <br>&nbsp;<br>Thank You - Online Retail POS System
+             <br>&nbsp;<br>Thank You - Clickmall POS System
 </div>
 <div class="row container p-0 ">
     <div class="col-lg-8" style="justify-content: center;text-align:center">
@@ -33,7 +33,7 @@ Ending Transaction | Online Retail POS
             <div class="card-body " id="receipt" style="padding:5%;">
                 <pre>{{ receipt|linebreaks }}</pre>
                 <div class="container rounded" style="justify-content: center;">
-                    <a href="/transaction_receipt{{request.path|cut:'/endTransaction'}}">
+                    <a href="/pos/transaction_receipt{{request.path|cut:'/pos/endTransaction'}}">
                         <button class="btn-lg btn-secondary " style="width: 100%;">
                             View Receipt 
                         </button>
