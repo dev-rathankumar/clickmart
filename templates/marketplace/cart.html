@@ -35,8 +35,8 @@
                                                     </div>
                                                     <div class="price-holder">
                                                         
-                                                        {% if item.product.sale_price %}
-                                                            <span class="bold">₹ {{ item.product.sale_price }}</span>
+                                                        {% if item.product.sales_price %}
+                                                            <span class="bold">₹ {{ item.product.sales_price }}</span>
                                                             {% else %}
                                                             <span class="bold">₹ {{ item.product.regular_price }}</span>
                                                         {% endif %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.template.defaultfilters import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
@@ -58,15 +59,30 @@ class department(models.Model):
 
 
 class tax(models.Model):
-    tax_category    = models.CharField(max_length=32,unique=True,null=False,blank=False)
+    tax_category    = models.CharField(max_length=32,null=False,blank=False)
     tax_desc        = models.TextField(blank=True)
-    tax_percentage  = models.DecimalField(max_digits=6, decimal_places=3, validators=PERCENTAGE_VALIDATOR,null=False,blank=False)
+    tax_percentage  = models.DecimalField(max_digits=6, decimal_places=2, validators=PERCENTAGE_VALIDATOR,null=False,blank=False)
 
+    def clean(self):
+        # Custom validation logic to prevent duplicate category + percentage combinations
+        if tax.objects.filter(
+            tax_category=self.tax_category, tax_percentage=self.tax_percentage
+        ).exclude(pk=self.pk).exists():
+            raise ValidationError(
+                f"The combination of {self.tax_category} with {self.tax_percentage}% already exists."
+            )
+        
     def __str__(self):
-        return self.tax_category
+        return f"{self.tax_category} {self.tax_percentage}%"
     
     class Meta:
         verbose_name_plural = "Tax Information"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tax_category", "tax_percentage"],
+                name="unique_tax_category_percentage",
+            )
+        ]
 
 
 class deposit(models.Model):

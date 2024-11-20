@@ -11,6 +11,7 @@ class Payment(models.Model):
     PAYMENT_METHOD = (
         ('PayPal', 'PayPal'),
         ('RazorPay', 'RazorPay'), # Only for Indian Students.
+        ('COD', 'COD'), # Only for Indian Students.
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=100)

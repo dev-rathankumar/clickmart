@@ -1,11 +1,37 @@
 from django.db import models
-from menu.models import Category
+# from menu.models import Category
 from vendor.models import Vendor
 from django.template.defaultfilters import slugify
 from inventory.models import tax as TaxCategory
 from inventory.models import deposit as DepositCategory
 
 
+class Category(models.Model):
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories'
+    )
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+    category_name = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(max_length=250, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'category'
+        verbose_name_plural = 'categories'
+
+    def clean(self):
+        self.category_name = self.category_name.capitalize()
+    
+    def __str__(self):
+        return self.category_name
+    
+    def get_subcategory_count(self):
+        return self.subcategories.count()
+    
+    
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='products')
     product_name = models.CharField(max_length=200)
@@ -26,7 +52,7 @@ class Product(models.Model):
     barcode = models.CharField(unique=True, max_length=16, blank=False, null=False)
     qty = models.IntegerField(default=0, null=False)
     tax_category     = models.ForeignKey(TaxCategory, on_delete=models.RESTRICT, null=False,blank=False, related_name='products')
-    deposit_category = models.ForeignKey(DepositCategory, on_delete=models.RESTRICT, null=False,blank=False, related_name='products')
+    deposit_category = models.ForeignKey(DepositCategory, on_delete=models.RESTRICT, null=True,blank=True, related_name='products')
     
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
@@ -49,7 +75,7 @@ class Product(models.Model):
             ("Stock", self.qty),
             ("Department Category", self.category.category_name),
             ("Tax Category", self.tax_category.tax_category),
-            ("Deposit Category", self.deposit_category.deposit_category),
+            # ("Deposit Category", self.deposit_category.deposit_category),
         ]
 
     def get_fields_2(self):
@@ -65,3 +91,15 @@ class Product(models.Model):
             # ("Deposit Category", self.deposit_category.deposit_category),
             # ("Deposit Value", self.deposit_category.deposit_value),
         ]
+    
+
+class ProductGallery(models.Model):
+    product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='menu/products', max_length=355)
+
+    def __str__(self):
+        return self.product.product_name
+
+    class Meta:
+        verbose_name = 'productgallery'
+        verbose_name_plural = 'product gallery'

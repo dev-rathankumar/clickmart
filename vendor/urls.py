@@ -26,7 +26,7 @@ urlpatterns = [
     path('manage-products/add-product/', views.add_product, name='add_product'),
     path('manage-products/edit-product/<int:product_id>/', views.edit_product, name='edit_product'),
     path('manage-products/product-delete/<int:product_id>/', views.delete_product, name='delete_product'),
-    path('view-product/<int:pk>/', views.view_Product, name='view_product'),
+    
     # Category CRUD
 
     # FoodItem CRUD

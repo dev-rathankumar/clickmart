@@ -6,7 +6,8 @@ from django.db import IntegrityError
 
 from menu.forms import CategoryForm, FoodItemForm, SubCategoryForm, ProductForm,EditProductForm
 from orders.models import Order, OrderedFood
-from menu.models import Product,ProductGallery
+# from menu.models import Product,ProductGallery
+from unified.models import Product,ProductGallery
 import vendor
 from .forms import VendorForm, OpeningHourForm
 from accounts.forms import UserProfileForm
@@ -20,8 +21,7 @@ from accounts.views import check_role_vendor
 from menu.models import Category, FoodItem
 from django.template.defaultfilters import slugify
 
-from marketplace.models import Cart
-from django.db.models import Sum
+
 
 def get_vendor(request):
     vendor = Vendor.objects.get(user=request.user)
@@ -294,27 +294,11 @@ def add_product(request):
         'categories': categories,
     }
     return render(request, 'vendor/add_product.html', context)
-def view_Product(request, pk=None):
-    # Get the main product
-    product = get_object_or_404(Product, id=pk)
-    chkCart = Cart.objects.filter(user=request.user, product=product)
-    chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
-    product_gallery = ProductGallery.objects.filter(product=pk)
-    # Fetch similar products from the same category, excluding the current product
-    similar_products = Product.objects.filter(
-        category=product.category,
-        is_available=True  # Optional: Only include available products
-    ).exclude(id=product.id)
-    
-    context = {
-        'product': product,
-        'similar_products': similar_products,
-        'check_cart':chkCart,
-        'chkCart_count':chkCart_count,
-        'product_gallery':product_gallery
-    }
-    
-    return render(request, 'vendor/product_view.html', context)
+
+
+
+
+
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def edit_product(request, product_id):

@@ -3,7 +3,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import UserProfile
 from .context_processors import get_cart_counter, get_cart_amounts
-from menu.models import Category, Product
+from unified.models import Category, ProductGallery
+
+from unified.models import Product
 
 from vendor.models import OpeningHour, Vendor
 from django.db.models import Prefetch
@@ -22,6 +24,12 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.contrib import messages
+
+from marketplace.models import Cart
+from django.db.models import Sum
+
+
+
 
 def marketplace(request):
     vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
@@ -87,6 +95,30 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     }
     return render(request, 'marketplace/vendor_detail.html', context)
 
+
+def view_Product(request, product_slug):
+    # Get the main product
+    product = get_object_or_404(Product, slug=product_slug)
+    chkCart = Cart.objects.filter(user=request.user, product=product)
+    chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    product_gallery = ProductGallery.objects.filter(product=product)
+    # Fetch similar products from the same category, excluding the current product
+    similar_products = Product.objects.filter(
+        category=product.category,
+        is_available=True  # Optional: Only include available products
+    ).exclude(id=product.id)
+    
+    context = {
+        'product': product,
+        'similar_products': similar_products,
+        'check_cart':chkCart,
+        'chkCart_count':chkCart_count,
+        'product_gallery':product_gallery
+    }
+    
+    return render(request, 'vendor/product_view.html', context)
+
+
 def add_to_cart(request, food_id):
     if request.user.is_authenticated:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -124,11 +156,11 @@ def decrease_cart(request, food_id):
                     if chkCart.quantity > 1:
                         # decrease the cart quantity
                         chkCart.quantity -= 1
-                        product.stock += 1 
+                        product.qty += 1 
                         product.save()
                         chkCart.save()
                     else:
-                        product.stock += 1 
+                        product.qty += 1 
                         product.save()
                         chkCart.delete()
                         chkCart.quantity = 0
@@ -161,7 +193,7 @@ def delete_cart(request, cart_id):
                 cart_item = Cart.objects.get(user=request.user, id=cart_id)
                 if cart_item:
                     product = Product.objects.get(id=cart_item.product.id)
-                    product.stock +=cart_item.quantity
+                    product.qty +=cart_item.quantity
                     product.save()
                     cart_item.delete()
                     return JsonResponse({'status': 'Success', 'message': 'Cart item has been deleted!', 'cart_counter': get_cart_counter(request), 'cart_amount': get_cart_amounts(request)})
@@ -271,27 +303,28 @@ def add_product_to_cart(request, product_id):
         # Try to parse JSON data from the request body
         try:
             data = json.loads(request.body)
-            print('data', data)
             quantity = int(data.get('quantity'))
         except (json.JSONDecodeError, ValueError) as e:
             return JsonResponse({'success': False, 'message': 'Invalid data.'})
         
-        cart_item, created = Cart.objects.get_or_create(user=request.user, product=product, quantity=quantity)
-
-        if created:
-            product.stock = product.stock - quantity
+        print('data==?', data)
+        try:
+            cart_item = Cart.objects.get(user=request.user, product=product)
+            cart_item.quantity += quantity
+            cart_item.save()
+            message = f"The quantity of {product.product_name} has been updated in your cart."
+        except:
+            cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
+            product.qty = product.qty - quantity
             product.save()
             messages.success(request, f"{product.product_name} has been added to your cart.")
             message = f"{product.product_name} has been added to your cart."
-        else:
-            cart_item.quantity += quantity  # Update the quantity if the product already exists in the cart
-            cart_item.save()
-            message = f"The quantity of {product.product_name} has been updated in your cart."
+        
 
         return JsonResponse({
             'success': True,
             'message': message,
-            'redirect_url': f'/vendor/view-product/{product.id}/'  # Redirect to the cart page or any other page
+            'redirect_url': f'/marketplace/product/{product.slug}/'  # Redirect to the cart page or any other page
         })
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})

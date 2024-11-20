@@ -1,16 +1,10 @@
 from django.contrib import admin
-from .models import Category, FoodItem, Product, ProductGallery
-import admin_thumbnails
+from .models import FoodItem
 
-@admin_thumbnails.thumbnail('image')
-class ProductGalleryInline(admin.TabularInline):
-    model = ProductGallery
-    extra = 1
 
-class CategoryAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('category_name',)}
-    list_display = ('category_name', 'vendor', 'updated_at')
-    search_fields = ('category_name', 'vendor__vendor_name')
+
+
+
 
 
 class FoodItemAdmin(admin.ModelAdmin):
@@ -19,11 +13,8 @@ class FoodItemAdmin(admin.ModelAdmin):
     search_fields = ('food_title', 'category__category_name', 'vendor__vendor_name', 'price')
     list_filter = ('is_available',)
 
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('product_name','is_active', 'vendor', 'is_available', 'stock')
-    inlines = [ProductGalleryInline]
 
-admin.site.register(Category, CategoryAdmin)
+
+# admin.site.register(Category, CategoryAdmin)
 admin.site.register(FoodItem, FoodItemAdmin)
-admin.site.register(Product, ProductAdmin)
-admin.site.register(ProductGallery)
+# admin.site.register(Product, ProductAdmin)

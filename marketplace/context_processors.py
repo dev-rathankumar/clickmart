@@ -26,8 +26,8 @@ def get_cart_amounts(request):
         cart_items = Cart.objects.filter(user=request.user)
         for item in cart_items:
             product = Product.objects.get(pk=item.product.id)
-            if product.sale_price is not None:
-                subtotal += (product.sale_price * item.quantity)
+            if product.sales_price is not None:
+                subtotal += (product.sales_price * item.quantity)
             else:
                  # subtotal = subtotal + (product.price * item.quantity)
                 subtotal += (product.regular_price * item.quantity)

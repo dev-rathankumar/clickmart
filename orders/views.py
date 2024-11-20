@@ -46,16 +46,16 @@ def place_order(request):
         v_id = product.vendor.id
         if v_id in k:
             subtotal = k[v_id]
-            if product.sale_price is not None:
-                subtotal += (product.sale_price * i.quantity)
+            if product.sales_price is not None:
+                subtotal += (product.sales_price * i.quantity)
             else:
                 subtotal += (product.regular_price * i.quantity)
 
             k[v_id] = subtotal
             items_count+=i.quantity
         else:
-            if product.sale_price is not None:
-                subtotal += (product.sale_price * i.quantity)
+            if product.sales_price is not None:
+                subtotal += (product.sales_price * i.quantity)
             else:
                 subtotal += (product.regular_price * i.quantity)
             k[v_id] = subtotal
@@ -165,12 +165,12 @@ def payments(request):
             ordered_food.user = request.user
             ordered_food.product = item.product
             ordered_food.quantity = item.quantity
-            if item.product.sale_price is not None:
-                ordered_food.price = item.product.sale_price
+            if item.product.sales_price is not None:
+                ordered_food.price = item.product.sales_price
             else:
                 ordered_food.price = item.product.regular_price
-            if item.product.sale_price is not None:
-                ordered_food.amount = item.product.sale_price * item.quantity # total amount
+            if item.product.sales_price is not None:
+                ordered_food.amount = item.product.sales_price * item.quantity # total amount
             else:
                 ordered_food.amount = item.product.regular_price * item.quantity # total amount
 

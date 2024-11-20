@@ -54,8 +54,8 @@
           </div>
   
           <div class="mb-3">
-            {% if product.sale_price %}
-              <span class="text-dark h5">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sale_price }}</span>
+            {% if product.sales_price %}
+              <span class="text-dark h5">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
             {% else %}
               <span class="text-dark h5">Price: ₹ {{ product.regular_price }}</span>
             {% endif %}
@@ -74,40 +74,42 @@
           <hr />
   
           <!-- Quantity Input Section -->
-          <div class="row mb-4">
-            {% if check_cart %}
-              <div class="col-md-4 col-6 mb-3">
+          <div class="row ">
+              <div class="col-md-4 col-6">
                 <label class="mb-2 d-block">Quantity</label>
-                <div class="input-group mb-3" style="width: 170px;">
-                  <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="{{ chkCart_count }}" aria-label="Product quantity" aria-describedby="quantity-controls" disabled />
-                </div>
-              </div>
-            {% else %}
-              <div class="col-md-4 col-6 mb-3">
-                <label class="mb-2 d-block">Quantity</label>
-                <div class="input-group mb-3" style="width: 170px;">
+                <div class="input-group" style="width: 170px;">
                   <button class="btn btn-white border border-secondary px-3" type="button" id="decrease-quantity" data-mdb-ripple-color="dark">
                     <i class="fa fa-minus"></i>
                   </button>
                   <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
+                  <!-- <input type="text" id="quantity-input" class="form-control text-center border border-secondary text-dark" value="{{ chkCart_count }}" aria-label="Product quantity" aria-describedby="quantity-controls" disabled /> -->
                   <button class="btn btn-white border border-secondary px-3" type="button" id="increase-quantity" data-mdb-ripple-color="dark">
                     <i class="fa fa-plus"></i>
                   </button>
                 </div>
               </div>
-            {% endif %}
           </div>
+          {% if check_cart %}
+            <p class="text-success" style="font-weight: 600;">
+              {{ chkCart_count }} items added to the cart.
+            </p>
+            {% endif %}
 
           <!-- Add to Cart Button -->
           {% if check_cart %}
+          <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
+            <i class="me-1 fa fa-shopping-basket"></i> Add to cart
+          </a>
             <a href="{% url 'cart' %}" class="btn btn-success icon-hover px-5 py-3 font-weight-bold">
               <i class="me-1 fa fa-eye fa-lg"></i> View Cart
             </a>
           {% else %}
-            <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
+            <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart mt-3" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
               <i class="me-1 fa fa-shopping-basket"></i> Add to cart
             </a>
           {% endif %}
+
+          
         </main>
       </div>
     </div>
@@ -133,7 +135,7 @@
             <!-- Pills content -->
             <div class="tab-content">
               <div class="tab-pane show active" id="description-content">
-                <p>{{ product.description }}</p>
+                <p>{{ product.product_desc }}</p>
               </div>
               <div class="tab-pane" id="full-description-content" style="display: none;">
                 <p>{{ product.full_specification }}</p>
@@ -157,8 +159,8 @@
                       </a>
                       <div class="info">
                         <a href="#" class="nav-link mb-1">{{ similar_product.product_name }}</a>
-                        {% if similar_product.sale_price %}
-                          <strong class="text-dark">Sale Price: ₹{{ similar_product.sale_price }}</strong>
+                        {% if similar_product.sales_price %}
+                          <strong class="text-dark">Sale Price: ₹{{ similar_product.sales_price }}</strong>
                         {% else %}
                           <strong class="text-dark">Regular Price: ₹{{ similar_product.regular_price }}</strong>
                         {% endif %}
@@ -285,7 +287,7 @@ function getCookie(name) {
       const decreaseButton = document.getElementById('decrease-quantity');
       const increaseButton = document.getElementById('increase-quantity');
       const quantityInput = document.getElementById('quantity-input');
-      const maxStock = {{ product.stock|default:0 }};  // Max available stock, passed from the backend
+      const maxStock = {{ product.qty|default:0 }};  // Max available stock, passed from the backend
     
       decreaseButton.addEventListener('click', function() {
         let currentQuantity = parseInt(quantityInput.value);

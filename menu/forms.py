@@ -1,7 +1,8 @@
 from django import forms
 
 from accounts.validators import allow_only_images_validator
-from .models import Category,FoodItem,Product
+from .models import FoodItem
+from unified.models import Category, Product
 
 
 class CategoryForm(forms.ModelForm):
@@ -36,9 +37,9 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'product_name', 'description', 'full_specification', 'regular_price',
-            'sale_price', 'image', 'stock', 'is_available', 'category',
-            'subcategory', 'is_popular', 'is_active'
+            'product_name', 'product_desc', 'full_specification', 'cost_price', 'regular_price',
+            'sales_price', 'image', 'category',
+            'subcategory', 'barcode', 'qty', 'tax_category'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -69,9 +70,9 @@ class EditProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'product_name', 'category', 'subcategory', 'description','full_specification',
-            'full_specification', 'regular_price', 'sale_price', 'image',
-            'stock', 'is_available', 'is_popular', 'is_active'
+            'product_name', 'product_desc', 'full_specification', 'cost_price', 'regular_price',
+            'sales_price', 'image', 'is_available', 'category',
+            'subcategory', 'barcode', 'qty', 'tax_category'
         ]
 
     def __init__(self, *args, **kwargs):
