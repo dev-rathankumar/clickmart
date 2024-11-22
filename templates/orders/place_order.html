@@ -9,7 +9,7 @@
         <div class="container">
             <div class="row">
                 
-                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                <div class="col-lg-7 col-md-8 col-sm-8 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger"></i>Review Your Billing Address</a></li>
@@ -45,7 +45,7 @@
                 </div>
 
                 <!-- Your order section -->
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <div class="col-lg-5 col-md-4 col-sm-4 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a></li>
@@ -65,12 +65,14 @@
                                                     <td><b>{{ item.product }}</b></td>
                                                     <td>{{ item.quantity }}</td>
                                                     
-                                                    {% if item.product.sale_price %}
-                                                        <td>${{ item.product.sale_price }}</td>
+                                                    {% if item.product.sales_price %}
+                                                        <td>₹{{ item.product.sales_price }}</td>
                                                     {% else %}
-                                                        <td>${{ item.product.regular_price }}</td>
+                                                        <td>₹{{ item.product.regular_price }}</td>
                                                     {% endif %}
-                                                        
+                                                        <td>
+                                                       {{item.product.tax_category}}
+                                                        </td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -85,7 +87,8 @@
                                                 </span>
                                             </li>
 
-                                            {% for key, value in tax_dict.items %}
+                                            {% for single_tax_dict in tax_dict %}
+                                            {% for key, value in single_tax_dict.items %}
                                                 {% for i, j in value.items %}
                                                     <li style="list-style-type: none;">
                                                         {{ key }} <small>({{ i }}%)</small>
@@ -95,6 +98,7 @@
                                                         </span>
                                                     </li>
                                                 {% endfor %}
+                                            {% endfor %}
                                             {% endfor %}
 
 
@@ -116,7 +120,8 @@
                                                 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
                                             </div>
                                             {% elif order.payment_method == 'COD' %}
-                                            <button type="submit" class="btn btn-danger w-100 p-2 mt-3">Place Order</button>
+                                            <button id="placeOrderBtn" type="submit" class="btn btn-danger w-100 p-2 mt-3" onclick="placeOrder()">Place Order</button>
+                                            <div id="pay-loading" class="my-4"style="display:none;"></div>
                                             {% endif %}
                                         </ul>
                                     </div>
@@ -180,7 +185,7 @@
                 // Replace the above to show a success message within this page, e.g.
                 const element = document.getElementById('rzp_payment_button');
                 element.innerHTML = '';
-                element.innerHTML = '<h4 class="text-center"><i class="fa fa-spinner fa-spin"></i> Please wait...</h4>';
+                element.innerHTML = '<h4 class="text-center"><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> Please wait...</h4>';
 
                 var transaction_id = response.razorpay_payment_id
                 var payment_method = 'RazorPay'
@@ -371,10 +376,79 @@ async onApprove(data, actions) {
     }
 
 
+{% elif order.payment_method == 'COD' %}
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        var grand_total = "{{ grand_total }}";
+        var url = "{% url 'payments' %}";
+        var order_number = "{{ order.order_number }}";
+        var items_count = "{{ items_count }}";
+        const csrftoken = getCookie('csrftoken');
+        var order_complete = "{% url 'order_complete' %}";
 
 
+        // Function to generate a random transaction ID
+        function generateTransactionID() {
+            return 'TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
 
+        // Place Order function that gets called on button click
+        function placeOrder() {
+            const transaction_id = generateTransactionID();
+            const payment_method = 'COD';
+            const status = 'Success'; // Set the initial status of the order.
 
+            console.log('Transaction ID:', transaction_id);
+            sendTransaction(transaction_id, payment_method, status);
+
+            const element = document.getElementById('pay-loading');
+            const place_order_btn = document.getElementById('placeOrderBtn');
+            
+            // Clear the inner HTML content
+            element.innerHTML = '';
+            place_order_btn.innerHTML = '';
+            
+            // Set display styles
+            element.style.display = 'block';  // Make the element visible
+            place_order_btn.style.display = 'none';  // Hide the paystack button
+            
+            // Add the loading spinner and message
+            element.innerHTML = '<h4 class="text-center"><i class="fa fa-spinner"></i> Please wait ....</h4>';
+        }
+
+        // Function to send the transaction details via AJAX
+        function sendTransaction(transaction_id, payment_method, status) {
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {
+                    'order_number': order_number,
+                    'transaction_id': transaction_id,
+                    'payment_method': payment_method,
+                    'status': status,
+                    'csrfmiddlewaretoken': csrftoken
+                },
+                success: function(response) {
+                    console.log('Response:', response);
+                    window.location.href = order_complete +'?order_no='+response.order_number+'&trans_id='+response.transaction_id
+                }
+            });
+        }
 
 {% endif %}
 

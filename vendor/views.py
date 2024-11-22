@@ -274,8 +274,9 @@ def get_subcategories(request, category_id):
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def add_product(request):
+    vendor_id = request.user.user.id
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
+        form = ProductForm(request.POST, request.FILES,vendor_id=vendor_id)
         if form.is_valid():
             product = form.save(commit=False)
             product.vendor = get_vendor(request)
@@ -285,10 +286,10 @@ def add_product(request):
             messages.success(request, 'Product added successfully!')
             return redirect('vendor_products_list')
     else:
-        form = ProductForm()
+        form = ProductForm(vendor_id=vendor_id)
 
     # Pass categories to the template for the dropdown
-    categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
+    categories = Category.objects.filter(parent__isnull=True, vendor_id = vendor_id)  # Top-level categories
     context = {
         'form': form,
         'categories': categories,
@@ -302,6 +303,7 @@ def add_product(request):
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def edit_product(request, product_id):
+    vendor_id = request.user.user.id
     product = get_object_or_404(Product, id=product_id, vendor=get_vendor(request))
     if request.method == 'POST':
         form = EditProductForm(request.POST, request.FILES, instance=product)
@@ -312,7 +314,7 @@ def edit_product(request, product_id):
             messages.success(request, 'Product updated successfully!')
             return redirect('vendor_products_list')
     else:
-        form = EditProductForm(instance=product)
+        form = EditProductForm(instance=product,vendor_id = vendor_id)
 
     categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
     context = {

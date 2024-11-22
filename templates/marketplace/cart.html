@@ -94,7 +94,8 @@
                                                 </span>
                                             </li>
 
-                                            {% for key, value in tax_dict.items %}
+                                            {% for single_tax_dict in tax_dict %}
+                                            {% for key, value in single_tax_dict.items %}
                                                 {% for i, j in value.items %}
                                                     <li style="list-style-type: none;">
                                                         {{ key }} <small>({{ i }}%)</small>
@@ -104,6 +105,7 @@
                                                         </span>
                                                     </li>
                                                 {% endfor %}
+                                            {% endfor %}
                                             {% endfor %}
 
 

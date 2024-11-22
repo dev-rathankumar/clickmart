@@ -48,8 +48,8 @@
                             </td>
                             <td>{{ item.quantity }} QTY</td>
                             
-                            {% if item.product.sale_price %}
-                                <td>₹{{ item.product.sale_price }}</td>
+                            {% if item.product.sales_price %}
+                                <td>₹{{ item.product.sales_price }}</td>
                             {% else %}
                                 <td>₹{{ item.product.regular_price }}</td>
                             {% endif %}
@@ -61,9 +61,16 @@
 
                 <div class="row mt-5">
                     <div class="d-flex justify-content-center col-md-6">
+                        {% if order.payment_method != 'COD' %}
                         <img src="{% static 'images/paid.png' %}" width="200">
+                        {% endif %}
                     </div>
+                    {% if order.payment_method == 'COD' %}
+                    <div class="col-md-12">
+                    {% else %}
                     <div class="col-md-6">
+                    {% endif %}
+
                         <ul>
                             <li style="list-style-type: none;">
                                 Subtotal
@@ -72,8 +79,8 @@
                                     <span id="subtotal">{{ subtotal }}</span>
                                 </span>
                             </li>
-
-                            {% for key, value in tax_data.items %}
+                            {% for single_tax_dict in tax_data %}
+                            {% for key, value in single_tax_dict.items %}
                                 {% for i, j in value.items %}
                                     <li style="list-style-type: none;">
                                         {{ key }} <small>({{ i }}%)</small>
@@ -83,6 +90,7 @@
                                         </span>
                                     </li>
                                 {% endfor %}
+                            {% endfor %}
                             {% endfor %}
 
 

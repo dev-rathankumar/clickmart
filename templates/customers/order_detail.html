@@ -64,8 +64,8 @@
                                                             <a class="text-muted" href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}">{{ item.product.vendor.vendor_name }}</a>
                                                         </td>
                                                         <td>{{ item.quantity }} QTY</td>
-                                                    {% if item.product.sale_price %}
-                                                        <td>₹{{ item.product.sale_price }}</td>
+                                                    {% if item.product.sales_price %}
+                                                        <td>₹{{ item.product.sales_price }}</td>
                                                     {% else %}
                                                         <td>₹{{ item.product.regular_price }}</td>
                                                     {% endif %}

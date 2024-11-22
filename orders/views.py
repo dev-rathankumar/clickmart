@@ -14,7 +14,7 @@ import razorpay
 from foodOnline_main.settings import RZP_KEY_ID, RZP_KEY_SECRET,PAYPAL_CLIENT_ID,PAYPAL_CLIENT_SECRET,PAYPAL_BASE_URL
 from django.contrib.sites.shortcuts import get_current_site
 from django.views.decorators.csrf import csrf_exempt 
-
+from inventory.models import tax
 import base64
 import requests
 
@@ -36,40 +36,44 @@ def place_order(request):
             vendors_ids.append(i.product.vendor.id)
     
     # {"vendor_id":{"subtotal":{"tax_type": {"tax_percentage": "tax_amount"}}}}
-    get_tax = Tax.objects.filter(is_active=True)
     subtotal = 0
-    total_data = {}
+    total_data = []
     k = {}
     items_count= 0
     for i in cart_items:
+        product_total = 0
         product = Product.objects.get(pk=i.product.id, vendor_id__in=vendors_ids)
         v_id = product.vendor.id
         if v_id in k:
             subtotal = k[v_id]
             if product.sales_price is not None:
+                product_total += (product.sales_price * i.quantity)
                 subtotal += (product.sales_price * i.quantity)
             else:
+                product_total += (product.regular_price * i.quantity)
                 subtotal += (product.regular_price * i.quantity)
 
             k[v_id] = subtotal
             items_count+=i.quantity
         else:
             if product.sales_price is not None:
+                product_total += (product.sales_price * i.quantity)
                 subtotal += (product.sales_price * i.quantity)
             else:
+                product_total += (product.regular_price * i.quantity)
                 subtotal += (product.regular_price * i.quantity)
             k[v_id] = subtotal
             items_count+=i.quantity
-    
-        # Calculate the tax_data
         tax_dict = {}
-        for i in get_tax:
-            tax_type = i.tax_type
-            tax_percentage = i.tax_percentage
-            tax_amount = round((tax_percentage * subtotal)/100, 2)
-            tax_dict.update({tax_type: {str(tax_percentage) : str(tax_amount)}})
+        tax_instance = tax.objects.get(id=product.tax_category.id) 
+        tax_amount = round((tax_instance.tax_percentage * product_total)/100, 2)
+        tax_category = tax_instance.tax_category
+        tax_percentage = tax_instance.tax_percentage
+
+        tax_dict.update({tax_category: {str(tax_percentage) : tax_amount}})
         # Construct total data
-        total_data.update({product.vendor.id: {str(subtotal): str(tax_dict)}})
+        total_data.append({product.vendor.id: {str(product_total): str(tax_dict)}})
+        
     
 
         
@@ -105,7 +109,7 @@ def place_order(request):
 
             # RazorPay Payment
             DATA = {
-                "amount": float(order.total) * 100,
+                "amount": int(order.total) * 100,
                 "currency": "INR",
                 "receipt": "receipt #"+order.order_number,
                 "notes": {
@@ -207,7 +211,9 @@ def payments(request):
 
                 ordered_food_to_vendor = OrderedFood.objects.filter(order=order, product__vendor=i.product.vendor)
                 print(ordered_food_to_vendor)
-
+                tatal = order_total_by_vendor(order, i.product.vendor.id)['tax_dict'],
+                print("tatal lll ", tatal)
+        
         
                 context = {
                     'order': order,
@@ -351,4 +357,3 @@ def generate_paypal_access_token():
     else:
         print(f"Failed to generate Access Token: {response.status_code} - {response.text}")
         return None
-
