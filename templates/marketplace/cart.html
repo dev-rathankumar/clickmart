@@ -8,7 +8,7 @@
         <div class="container">
             <div class="row">
                 
-                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger"></i>Cart Items</a></li>
@@ -94,19 +94,27 @@
                                                 </span>
                                             </li>
 
-                                            {% for single_tax_dict in tax_dict %}
-                                            {% for key, value in single_tax_dict.items %}
-                                                {% for i, j in value.items %}
+                                        {% for single_tax_dict in tax_dict %}
+                                            {% for key, value in single_tax_dict.tax_info.items %}
+                                                {% if value %}  
                                                     <li style="list-style-type: none;">
-                                                        {{ key }} <small>({{ i }}%)</small>
+                                                        {{ single_tax_dict.tax_category }} 
+                                                        <small>({{ key }}%)</small>
+                                                        {% for item in cart_items %}
+                                                        
+                                                        {% if item.product.id == single_tax_dict.product_id %}
+                                                        <small>{{item.product}}</small>
+                                                        {% endif %}
+                                                        {% endfor %}
+
                                                         <span class="price float-right">
                                                             <span class="currency">₹</span>
-                                                            <span id="tax-{{ key }}">{{ j }}</span>
+                                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
                                                         </span>
                                                     </li>
-                                                {% endfor %}
+                                                {% endif %}
                                             {% endfor %}
-                                            {% endfor %}
+                                        {% endfor %}
 
 
                                             <li style="list-style-type: none; font-weight: 600;">

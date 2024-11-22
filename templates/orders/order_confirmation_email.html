@@ -30,7 +30,7 @@
   <table role="presentation" width="100%">
     <tr>
     <td  align="center" style="color: white;">
-     <img alt="Logo" src="https://rathank.com/foodonline/logo/logo.png" width="400px" align="middle">
+     <img alt="Logo" src="logo/clickmall-logo.svg" width="400px" align="middle">
       </td>
   </table>
 
@@ -84,29 +84,44 @@
   <!-- Order amounts -->
   <table bgcolor="#EAF0F6" width="100%" role="presentation" border="0" cellpadding="0" cellspacing="10px" style="padding: 30px 30px 60px 60px;">
     <tbody>
-        <tr>Subtotal: ₹{{ customer_subtotal }}</tr>
+      <tr>
+        {% for single_tax_dict in tax_data %}
+        {% for key, value in single_tax_dict.tax_info.items %}
+            {% if value %}  
+                <td>
+                  {{ single_tax_dict.tax_category }} 
+                  <small>({{ key }}%)</small>
+                    {% for item in cart_items %}
+                    
+                    {% if item.product.id == single_tax_dict.product_id %}
+                    <small>{{item.product}}</small>
+                    {% endif %}
+                    {% endfor %}
 
-      {% for single_tax_dict in tax_data %}
-        {% for key, value in single_tax_dict.items %}
-            {% for i, j in value.items %}
-                <li style="list-style-type: none;">
-                    {{ key }} <small>({{ i }}%)</small>
                     <span class="price float-right">
-                        <span class="currency">₹</span>
-                        <span id="tax-{{ key }}">{{ j }}</span>
-                    </span>
-                </li>
-            {% endfor %}
+                      <span class="currency">₹</span>
+                        <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
+                      </span>
+                    </td>
+            {% endif %}
         {% endfor %}
-        {% endfor %}
+    {% endfor %}
 
+  </tr>
 
-        <tr>Grand total: ₹{{ order.total }}</tr>
+  <tr>
+   <td>
+     Subtotal: ₹{{ customer_subtotal }}
+   </td>
+   <td>
+     Grand total: ₹{{ order.total }}
+   </td>
+  </tr>
     </tbody>
   </table>
 
   <table role="presentation" bgcolor="#C33332" width="100%">
-      <tr>
+    <tr>
         <td align="center" style="padding: 15px 15px; color: #fff;">
           <p>© {% now "Y" %} FoodOnline Marketplace, All Rights Reserved.</p>
           <a href="http://{{domain}}" style="color:#fff;">Visit Website</a>      

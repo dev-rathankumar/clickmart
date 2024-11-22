@@ -23,7 +23,7 @@
                                 <div class="justify-content-center row">
                                     <div class="col-md-12">
                                         <div class="bg-white p-1">
-                                            <img src="{% static 'logo/foodOnlineLogo.png' %}" alt="foodOnline Logo" width="300">
+                                            <img src="{% static 'logo/clickmall-logo.svg' %}" alt="foodOnline Logo" width="300">
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <h4 class="mt-2 mb-3">Thank you for your order.</h4>
@@ -93,23 +93,30 @@
                                                                 <span id="subtotal">{{ subtotal }}</span>
                                                             </span>
                                                         </li>
-                            
+                                                
                                                         {% for single_tax_dict in tax_data %}
                                                         {% for key, value in single_tax_dict.items %}
-                                                            {% for i, j in value.items %}
-                                                                <li style="list-style-type: none;">
-                                                                    {{ key }} <small>({{ i }}%)</small>
-                                                                    <span class="price float-right">
-                                                                        <span class="currency">₹</span>
-                                                                        <span id="tax-{{ key }}">{{ j }}</span>
-                                                                    </span>
-                                                                </li>
+                                                            {% for tax_rate, tax_amount in value.items %}
+                                                                {% if tax_amount != 0.00 %}
+                                                                    <li style="list-style-type: none;">
+                                                                        {{ key }} <small>({{ tax_rate }}%)</small>
+                                                                        
+                                                                        {% for item in cart_items %}
+                                                                            {% if item.product.id == single_tax_dict.product_id %}
+                                                                                <small>{{ item.product }}</small>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                        
+                                                                        <span class="price float-right">
+                                                                            <span class="currency">₹</span>
+                                                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ tax_amount }}</span>
+                                                                        </span>
+                                                                    </li>
+                                                                {% endif %}
                                                             {% endfor %}
                                                         {% endfor %}
-                                                        {% endfor %}
-                                                       
-            
-                            
+                                                    {% endfor %}
+                                                                                
                             
                                                         <li style="list-style-type: none; font-weight: 600;">
                                                             TOTAL

@@ -6,7 +6,7 @@
     <div class="justify-content-center row">
         <div class="col-md-8">
             <div class="bg-white p-3">
-                <img src="{% static 'logo/foodOnlineLogo.png' %}" alt="foodOnline Logo" width="300">
+                <img src="{% static 'logo/clickmall-logo.svg' %}" alt="foodOnline Logo" width="300">
                 <div class="row">
                     <div class="col-md-6">
                         <h4 class="mt-2 mb-3">Thank you for your order.</h4>
@@ -53,6 +53,7 @@
                             {% else %}
                                 <td>₹{{ item.product.regular_price }}</td>
                             {% endif %}
+                            <td>{{item.product.tax_category}}</td>
                                 
                         </tr>
                         {% endfor %}
@@ -79,19 +80,29 @@
                                     <span id="subtotal">{{ subtotal }}</span>
                                 </span>
                             </li>
+                            
                             {% for single_tax_dict in tax_data %}
-                            {% for key, value in single_tax_dict.items %}
-                                {% for i, j in value.items %}
+                            {% for key, value in single_tax_dict.tax_info.items %}
+                                {% if value %}  
                                     <li style="list-style-type: none;">
-                                        {{ key }} <small>({{ i }}%)</small>
+                                        {{ single_tax_dict.tax_category }} 
+                                        <small>({{ key }}%)</small>
+                                        {% for item in cart_items %}
+                                        
+                                        {% if item.product.id == single_tax_dict.product_id %}
+                                        <small>{{item.product}}</small>
+                                        {% endif %}
+                                        {% endfor %}
+
                                         <span class="price float-right">
                                             <span class="currency">₹</span>
-                                            <span id="tax-{{ key }}">{{ j }}</span>
+                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
                                         </span>
                                     </li>
-                                {% endfor %}
+                                {% endif %}
                             {% endfor %}
-                            {% endfor %}
+                        {% endfor %}
+
 
 
                             <li style="list-style-type: none; font-weight: 600;">

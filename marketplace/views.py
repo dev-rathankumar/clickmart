@@ -99,7 +99,7 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 def view_Product(request, product_slug):
     # Get the main product
     product = get_object_or_404(Product, slug=product_slug)
-    chkCart = Cart.objects.filter(user=request.user, product=product)
+    chkCart = Cart.objects.filter(product=product)
     chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     product_gallery = ProductGallery.objects.filter(product=product)
     # Fetch similar products from the same category, excluding the current product
@@ -296,35 +296,40 @@ def All_products(request, category_id=None, subcategory_id=None):
     return render(request, 'marketplace/products.html', context)
 
 def add_product_to_cart(request, product_id):
-    if request.method == 'POST':
-        # Get the product object
-        product = Product.objects.get(id=product_id)
-        
-        # Try to parse JSON data from the request body
-        try:
-            data = json.loads(request.body)
-            quantity = int(data.get('quantity'))
-        except (json.JSONDecodeError, ValueError) as e:
-            return JsonResponse({'success': False, 'message': 'Invalid data.'})
-        
-        print('data==?', data)
-        try:
-            cart_item = Cart.objects.get(user=request.user, product=product)
-            cart_item.quantity += quantity
-            cart_item.save()
-            message = f"The quantity of {product.product_name} has been updated in your cart."
-        except:
-            cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
-            product.qty = product.qty - quantity
-            product.save()
-            messages.success(request, f"{product.product_name} has been added to your cart.")
-            message = f"{product.product_name} has been added to your cart."
-        
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            # Get the product object
+            product = Product.objects.get(id=product_id)
+            
+            # Try to parse JSON data from the request body
+            try:
+                data = json.loads(request.body)
+                quantity = int(data.get('quantity'))
+            except (json.JSONDecodeError, ValueError) as e:
+                return JsonResponse({'success': False, 'message': 'Invalid data.'})
+            
+            print('data==?', data)
+            try:
+                cart_item = Cart.objects.get(user=request.user, product=product)
+                cart_item.quantity += quantity
+                cart_item.save()
+                message = f"The quantity of {product.product_name} has been updated in your cart."
+            except:
+                cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
+                product.qty = product.qty - quantity
+                product.save()
+                messages.success(request, f"{product.product_name} has been added to your cart.")
+                message = f"{product.product_name} has been added to your cart."
+            
 
-        return JsonResponse({
-            'success': True,
-            'message': message,
-            'redirect_url': f'/marketplace/product/{product.slug}/'  # Redirect to the cart page or any other page
-        })
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'redirect_url': f'/marketplace/product/{product.slug}/'  # Redirect to the cart page or any other page
+            })
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+           
+    else:
+        return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+
