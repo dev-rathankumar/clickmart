@@ -58,8 +58,8 @@
                         <img src="{{ product.image.url }}" class="card-img-top w-50 m-auto" alt="product_image">
                         <div class="card-body text-start">
                             <h6 class="card-title">{{ product.product_name }}</h6>
-                            {% if product.sale_price %}
-                                <p class="card-text">Product sale price: ₹ {{ product.sale_price }}</p>
+                            {% if product.sales_price %}
+                                <p class="card-text">Product sale price: ₹ {{ product.sales_price }}</p>
                             {% else %}
                                 <p class="card-text">Product regular price: ₹ {{ product.regular_price }}</p>
                             {% endif %}

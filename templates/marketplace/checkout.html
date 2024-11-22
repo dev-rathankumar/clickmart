@@ -107,14 +107,17 @@
                                                     </div>
                                                     <div class="price-holder">
                                                         
-                                                        {% if item.product.sale_price %}
-                                                        <span class="currency">₹{{ item.product.sale_price }}</span>
+                                                        {% if item.product.sales_price %}
+                                                        <span class="currency">₹{{ item.product.sales_price }}</span>
                                                         {% else %}
                                                         <span class="currency">₹{{ item.product.regular_price }}</span>
-                                                        {% endif %}
-                                                            
+                                                        {% endif %}   
                                                     </div>
-                                                </li>
+                                                    
+                                                    <div>
+                                                        <span class="text-dark float-right">{{item.product.tax_category}}</span>
+                                                    </div>  
+                                            </li>
                                                 {% endfor %}
                                             
                                         </ul>
@@ -132,8 +135,8 @@
                                                     <span id="subtotal">{{ subtotal }}</span>
                                                 </span>
                                             </li>
-
-                                            {% for key, value in tax_dict.items %}
+                                            {% for single_tax_dict in tax_dict %}
+                                            {% for key, value in single_tax_dict.items %}
                                                 {% for i, j in value.items %}
                                                     <li style="list-style-type: none;">
                                                         {{ key }} <small>({{ i }}%)</small>
@@ -143,6 +146,7 @@
                                                         </span>
                                                     </li>
                                                 {% endfor %}
+                                            {% endfor %}
                                             {% endfor %}
 
 

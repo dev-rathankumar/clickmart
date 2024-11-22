@@ -43,10 +43,12 @@ class ProductForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
+        
+        vendor_id = kwargs.pop('vendor_id', None)
         super(ProductForm, self).__init__(*args, **kwargs)
         
         # Only show main categories (parent categories without any parent)
-        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True)
+        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True, vendor_id=vendor_id)
 
         # If a category is selected, filter the subcategories
         if 'category' in self.data:
@@ -76,10 +78,12 @@ class EditProductForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
+        vendor_id = kwargs.pop('vendor_id', None)
         super(EditProductForm, self).__init__(*args, **kwargs)
 
         # Only show main categories (categories without a parent)
-        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True)
+        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True, vendor_id=vendor_id)
+
 
         # If editing an existing product, set subcategory choices based on selected category
         if 'category' in self.data:
