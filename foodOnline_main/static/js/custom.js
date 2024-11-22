@@ -207,22 +207,32 @@ $(document).ready(function(){
     }
 
 
-    // apply cart amounts
-    function applyCartAmounts(subtotal, tax_dict, grand_total){
-        if(window.location.pathname == '/cart/'){
-            $('#subtotal').html(subtotal)
-            $('#total').html(grand_total)
-
-            console.log(tax_dict)
-            for(key1 in tax_dict){
-                console.log(tax_dict[key1])
-                for(key2 in tax_dict[key1]){
-                    // console.log(tax_dict[key1][key2])
-                    $('#tax-'+key1).html(tax_dict[key1][key2])
+    function applyCartAmounts(subtotal, tax_dict, grand_total) {
+        if (window.location.pathname == '/cart/') {
+            // Update the subtotal and grand total in the cart
+            $('#subtotal').html(subtotal);
+            $('#total').html(grand_total);
+    
+            console.log(tax_dict);
+    
+            // Iterate over the tax_dict array
+            for (let i = 0; i < tax_dict.length; i++) {
+                let single_tax = tax_dict[i];
+                let productId = single_tax.product_id;
+                let taxCategory = single_tax.tax_category;
+                let taxInfo = single_tax.tax_info;
+    
+                // Iterate through tax_info to get each tax percentage and amount
+                for (let percentage in taxInfo) {
+                    let amount = taxInfo[percentage];
+                    
+                    // Update the corresponding HTML element with product-specific tax
+                    $('#tax-' + productId).html(amount);
                 }
             }
         }
     }
+    
 
     // ADD OPENING HOUR
     $('.add_hour').on('click', function(e){
