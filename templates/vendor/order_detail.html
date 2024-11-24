@@ -37,6 +37,26 @@
                                             </div>
                                             
                                             <h6>Hello {{ order.name }}, </h6><span>Review your order details below.</span>
+                                            <div class="float-right">
+                                                <form id="change-order-status" method="POST">
+                                                    {% csrf_token %}
+                                                    <select name="order_status" id="order_status" onchange="changeOrderStatus(this)"
+                                                    {% if order.status == 'Paid' %} class="bg-success text-light" 
+                                                    {% elif order.status == 'Processing' %} class="bg-warning text-light" 
+                                                    {% elif order.status == 'Completed' %} class="bg-success text-light" 
+                                                    {% elif order.status == 'Cancelled' %} class="bg-danger text-light"
+                                                    {% elif order.status == 'Refunded' %} class="bg-danger text-light" 
+                                                    {% endif %}
+                                                    >
+                                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                                        <option value="Paid" {% if order.status == 'Paid' %}selected{% endif %}>Paid</option>
+                                                        <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                        <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                                        <option value="Refunded" {% if order.status == 'Refunded' %}selected{% endif %}>Refunded</option>
+                                                    </select>
+                                                    <input type="hidden" name="order_number" value="{{ order.order_number }}">
+                                                </form>
+                                            </div>
                                             <hr>
                             
                                             <div class="d-flex justify-content-between">
@@ -152,6 +172,53 @@
     </div>
 </div>
 <!-- Main Section End -->
+
+<script>
+function changeOrderStatus(selectElement) {
+    var form = document.getElementById('change-order-status');
+    var formData = new FormData(form);
+
+    var selectedValue = formData.get('order_status'); 
+    var orderNumber = formData.get('order_number'); 
+
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Confirm before sending the AJAX request
+    var confirmAction = confirm("Are you sure you want to change the order status to " + selectedValue + "?");
+
+    if (confirmAction) {
+        $.ajax({
+            url: '{% url "order_status" %}',  // Django URL name for your view
+            type: 'POST',
+            data: formData, 
+            processData: false, 
+            contentType: false, 
+            headers: {
+                'X-CSRFToken': csrfToken 
+            },
+            success: function(response) {
+                var orderStatusSelect = document.getElementById('order_status');
+                orderStatusSelect.classList.remove('bg-success', 'text-light', 'bg-warning', 'bg-danger');
+                if (response.status === 'Paid' || response.status === 'Completed') {
+                    orderStatusSelect.classList.add('bg-success', 'text-light');
+                } else if(response.status === 'Processing'){
+                    orderStatusSelect.classList.add('bg-warning', 'text-light');
+                }else if(response.status === 'Cancelled' || response.status === 'Refunded'){
+                    orderStatusSelect.classList.add('bg-danger', 'text-light');
+                }
+                
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred while updating the order status.');
+            }
+        });
+    } else {
+        // If user cancels, reset the select box to its previous value
+        selectElement.value = '';  // Reset or set to the original value if needed
+    }
+}
+
+</script>
 
 
 {% endblock %}

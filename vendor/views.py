@@ -545,3 +545,17 @@ def my_orders(request):
         'orders': orders,
     }
     return render(request, 'vendor/my_orders.html', context)
+
+
+def order_status(request):
+    if request.method == "POST":
+        status = request.POST.get('order_status')
+        order_number = request.POST.get('order_number')
+        try:
+            order = Order.objects.get(order_number=order_number)
+            order.status = status
+            order.save()
+            return JsonResponse({'message': 'Status updated successfully.', 'status': order.status})
+        except Order.DoesNotExist:
+            return JsonResponse({'error': 'Order not found.'})
+    return JsonResponse({'error': 'Invalid request'})

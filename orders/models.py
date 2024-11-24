@@ -40,10 +40,11 @@ class Payment(models.Model):
 
 class Order(models.Model):
     STATUS = (
-        ('New', 'New'),
-        ('Accepted', 'Accepted'),
+        ('Processing', 'Processing'),
+        ('Paid', 'Paid'),
         ('Completed', 'Completed'),
         ('Cancelled', 'Cancelled'),
+        ('Refunded', 'Refunded'),
     )
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -64,7 +65,7 @@ class Order(models.Model):
     total_data = models.JSONField(blank=True, null=True)
     total_tax = models.FloatField()
     payment_method = models.CharField(max_length=25)
-    status = models.CharField(max_length=15, choices=STATUS, default='New')
+    status = models.CharField(max_length=15, choices=STATUS, default='Processing')
     is_ordered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -117,7 +118,6 @@ class Order(models.Model):
         for total_data in total_data_list:
             # Get vendor-specific data from the dictionary
             data = total_data.get(str(vendor.id))
-            print("data ==>", data)
             if not data:
                 continue  # Skip if no data for this vendor
 
@@ -168,11 +168,9 @@ class Order(models.Model):
                     for tax_name, tax_info in tax_entry.items():
                         for rate, amount in tax_info.items():
                             tax += float(decimal_to_float(amount))
-                            print("tax building ==> ", tax) 
 
         # Compile the final context
         grand_total = float(subtotal) + float(tax)
-        print("Tax ===> ", tax)
 
         context = {
             'subtotal': subtotal,
