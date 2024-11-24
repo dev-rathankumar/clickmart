@@ -14,3 +14,7 @@ class OpeningHourForm(forms.ModelForm):
     class Meta:
         model = OpeningHour
         fields = ['day', 'from_hour', 'to_hour', 'is_closed']
+
+
+class CategoryImportForm(forms.Form):
+    category_file = forms.FileField()

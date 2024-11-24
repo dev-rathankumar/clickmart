@@ -179,8 +179,8 @@
             "key": "{{ RZP_KEY_ID }}", // Enter the Key ID generated from the Dashboard
             "amount": "{{ rzp_amount }}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
             "currency": "INR",
-            "name": "FoodOnline",
-            "description": "FoodOnline - Multi Vendor Restaurant Marketplace",
+            "name": "Clickmall",
+            "description": "Clickmall - Multi Vendor Ecommerce Marketplace",
             "image": "{% static 'logo/foodOnlineLogo.png' %}",
             "order_id": "{{ rzp_order_id }}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
             "handler": function (response){
@@ -433,7 +433,7 @@ async onApprove(data, actions) {
             place_order_btn.style.display = 'none';  // Hide the paystack button
             
             // Add the loading spinner and message
-            element.innerHTML = '<h4 class="text-center"><i class="fa fa-spinner"></i> Please wait ....</h4>';
+            element.innerHTML = '<h4 class="text-center"><i class="fa fa-spinner fa-spin"></i> Please wait...</h4>';
         }
 
         // Function to send the transaction details via AJAX

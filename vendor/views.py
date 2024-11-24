@@ -9,7 +9,7 @@ from orders.models import Order, OrderedFood
 # from menu.models import Product,ProductGallery
 from unified.models import Product,ProductGallery
 import vendor
-from .forms import VendorForm, OpeningHourForm
+from .forms import VendorForm, OpeningHourForm, CategoryImportForm
 from accounts.forms import UserProfileForm
 
 from accounts.models import UserProfile
@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.views import check_role_vendor
 from menu.models import Category, FoodItem
 from django.template.defaultfilters import slugify
+import csv
 
 
 
@@ -68,6 +69,84 @@ def category_builder(request):
         'categories': categories,
     }
     return render(request, 'vendor/menu_builder.html', context)
+
+
+def import_categories(request):
+    if request.method == 'POST' and request.FILES['category_file']:
+        csv_file = request.FILES['category_file']
+        # Only allow CSV file
+        if not csv_file.name.endswith('.csv'):
+            return HttpResponse("Please upload a CSV file.")
+        
+        # Decode the file and read it
+        decoded_file = csv_file.read().decode('utf-8').splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        categories_to_create = []
+        for row in reader:
+            try:
+                category_name = row['category_name']
+                parent_category_name = row['parent_category']
+                user = request.user
+                vendor = Vendor.objects.get(user=user, is_approved=True)
+                vendor_name = vendor.vendor_name
+                category_description = row['category_description']
+
+                # Check if category already exists for the vendor
+                existing_category = Category.objects.filter(
+                    category_name=category_name,
+                    vendor=vendor
+                ).exists()
+
+                if existing_category:
+                    messages.error(request, f"Category '{category_name}' already exists. Please check your data. ")
+                    return redirect('import_categories')
+                
+                parent_category = None
+                if parent_category_name:
+                    try:
+                        parent_category = Category.objects.get(category_name=parent_category_name)
+                    except Category.DoesNotExist:
+                        parent_category = Category.objects.create(
+                            category_name=parent_category_name,
+                            slug=slugify(parent_category_name),
+                            is_active=True,  # Assuming new categories are active by default
+                            vendor=vendor,  # You can adjust this depending on your business logic
+                        )
+                        print(f"Parent category '{parent_category_name}' not found. This category will be treated as a top-level category.")
+                
+                # Handle Vendor (look it up by name)
+                try:
+                    vendor = Vendor.objects.get(vendor_name=vendor_name)
+                except Vendor.DoesNotExist:
+                    return HttpResponse(f"Vendor '{vendor_name}' not found.")
+                
+                # Handle Slug (generate if not present)
+                slug = slugify(category_name)
+
+                # Create category object
+                category = Category(
+                    category_name=category_name,
+                    slug=slug,
+                    description=category_description,
+                    parent=parent_category,  # Parent will be None if no parent category
+                    vendor=vendor,
+                )
+                categories_to_create.append(category)
+                
+            except KeyError:
+                return HttpResponse("CSV format is incorrect. Missing required fields.")
+            except Exception as e:
+                return HttpResponse(f"Error processing row: {e}")
+            
+        # Bulk insert the categories
+        if categories_to_create:
+            Category.objects.bulk_create(categories_to_create)        
+        messages.success(request, "Categories imported successfully!")
+        return redirect('import_categories')
+    else:
+        form = CategoryImportForm()
+    return render(request, 'vendor/import_categories.html', {'form': form})
 
 
 @login_required(login_url='login')

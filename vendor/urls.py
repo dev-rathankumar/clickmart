@@ -9,6 +9,7 @@ urlpatterns = [
 
     # Categories 
     path('manage-categories/categories-builder/', views.category_builder, name='category_builder'),
+    path('manage-categories/categories-builder/import/', views.import_categories, name='import_categories'),
     path('manage-categories/category/<int:pk>/', views.fooditems_by_category, name='fooditems_by_category'),
     path('manage-categories/category/edit/<int:pk>/', views.edit_category, name='edit_category'),
     path('manage-categories/category/delete/<int:pk>/', views.delete_category, name='delete_category'),
