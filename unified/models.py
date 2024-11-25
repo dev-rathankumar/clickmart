@@ -61,6 +61,14 @@ class Product(models.Model):
         return self.product_name
 
     def save(self, *args, **kwargs):
+        # Automatically set the deposit_category to "Clickmall" if not set
+        if not self.deposit_category:
+            self.deposit_category = DepositCategory.objects.filter(deposit_category="Clickmall").first()
+        
+        # Automatically set sales_price to regular_price if not set
+        if not self.sales_price:
+            self.sales_price = self.regular_price
+
         if not self.slug:
             self.slug = slugify(self.product_name)
         super().save(*args, **kwargs)
