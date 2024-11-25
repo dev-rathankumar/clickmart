@@ -18,3 +18,6 @@ class OpeningHourForm(forms.ModelForm):
 
 class CategoryImportForm(forms.Form):
     category_file = forms.FileField()
+
+class ProductImportForm(forms.Form):
+    products_file = forms.FileField()

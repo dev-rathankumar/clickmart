@@ -9,7 +9,7 @@ from orders.models import Order, OrderedFood
 # from menu.models import Product,ProductGallery
 from unified.models import Product,ProductGallery
 import vendor
-from .forms import VendorForm, OpeningHourForm, CategoryImportForm
+from .forms import VendorForm, OpeningHourForm, CategoryImportForm, ProductImportForm
 from accounts.forms import UserProfileForm
 
 from accounts.models import UserProfile
@@ -21,6 +21,7 @@ from accounts.views import check_role_vendor
 from menu.models import Category, FoodItem
 from django.template.defaultfilters import slugify
 import csv
+from inventory.models import tax as Tax
 
 
 
@@ -147,6 +148,124 @@ def import_categories(request):
     else:
         form = CategoryImportForm()
     return render(request, 'vendor/import_categories.html', {'form': form})
+
+
+def import_products(request):
+    if request.method == "POST" and request.FILES.get("products_file"):
+        csv_file = request.FILES["products_file"]
+        # Validate file type
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, "Please upload a valid CSV file.")
+            return render(request, 'vendor/import_products.html')
+        
+        # Decode and read the file
+        decoded_file = csv_file.read().decode('utf-8').splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        products_to_create = []
+        for row in reader:
+            try:
+                # Extract fields from CSV
+                barcode = row['barcode']
+                product_name = row['product_name'].strip()
+                product_desc = row['product_desc'].strip()
+                full_specification = row['full_specification'].strip()
+                cost_price = row['wholesale_price']
+                regular_price = row['regular_price']
+                sales_price = row['sales_price']
+                image = row['image']
+                category_name = row['category'].strip().replace(" ", "")
+                subcategory_name = row.get('subcategory', "").strip().replace(" ", "")
+                tax_category_name = row['tax_category'].strip().replace(" ", "")
+                tax_percentage = row['tax_percentage'].strip().replace(" ", "")
+                qty = row['stock']
+
+                user = request.user
+                vendor = Vendor.objects.get(user=user, is_approved=True)
+
+                # Check if product with the same barcode already exists
+                if Product.objects.filter(barcode=barcode).exists():
+                    print(f"Product with barcode '{barcode}' already exists. Skipping product '{product_name}'.")
+                    continue  # Skip this product if barcode exists
+
+                # Handle ForeignKey relationships
+                try:
+                    category = Category.objects.get(category_name=category_name, vendor=vendor)
+                except Category.DoesNotExist:
+                    category = Category.objects.create(
+                        category_name=category_name,
+                        slug=slugify(category_name),
+                        vendor=vendor,
+                        description="",
+                    )
+                    print(f"Category '{category_name}' created.")
+
+                subcategory = None
+                if subcategory_name:
+                    try:
+                        subcategory = Category.objects.get(category_name=subcategory_name, vendor=vendor)
+                    except Category.DoesNotExist:
+                        # If subcategory doesn't exist, create a new one and link to the parent category
+                        subcategory = Category.objects.create(
+                            category_name=subcategory_name,
+                            slug=slugify(subcategory_name),
+                            parent=category,  # Setting the main category as parent
+                            vendor=vendor,
+                            description="",
+                        )
+                        print(f"Subcategory '{subcategory_name}' created under parent category '{category_name}'.")
+
+                try:
+                    tax_instance = Tax.objects.filter(tax_category=tax_category_name, tax_percentage=tax_percentage).first()
+                    if not tax_instance:
+                        tax_instance = Tax.objects.create(
+                        tax_category=tax_category_name,
+                        tax_percentage=tax_percentage,
+                        tax_desc=''
+                        )
+                        print(f"Tax category '{tax_category_name}' with {tax_percentage}% created.")
+                except Tax.DoesNotExist:
+                    messages.error(request, f"Tax category '{tax_category_name}' not found. Skipping product '{product_name}'.")
+                    continue
+
+                # Create product instance
+                product = Product(
+                    barcode=barcode,
+                    vendor=vendor,
+                    product_name=product_name,
+                    slug=slugify(product_name),
+                    product_desc=product_desc,
+                    full_specification=full_specification,
+                    cost_price=cost_price,
+                    regular_price=regular_price,
+                    sales_price=sales_price,
+                    image=image,
+                    category=category,
+                    subcategory=subcategory,
+                    qty=qty,
+                    tax_category=tax_instance,
+                )
+                products_to_create.append(product)
+            except KeyError as e:
+                messages.error(request, f"Missing field '{e}' in the CSV file. Please check your data.")
+                continue
+            except Exception as e:
+                print(str(e))
+                messages.error(request, f"Error processing product '{row.get('product_name', 'Unknown')}': {e}")
+                continue
+        
+        # Bulk create products
+        if products_to_create:
+            Product.objects.bulk_create(products_to_create)
+            print('Products imported successfully')
+            messages.success(request, f"Successfully imported {len(products_to_create)} products.")
+        else:
+            messages.error(request, "No products were imported due to errors.")
+
+        return redirect('import_products')
+    form = ProductImportForm()
+    return render(request, 'vendor/import_products.html', {'form': form})
+
 
 
 @login_required(login_url='login')
@@ -539,8 +658,7 @@ def order_detail(request, order_number):
 
 def my_orders(request):
     vendor = Vendor.objects.get(user=request.user)
-    orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('created_at')
-
+    orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-updated_at')
     context = {
         'orders': orders,
     }

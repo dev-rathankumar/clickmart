@@ -45,7 +45,9 @@
 	<script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 	<script>
 		$(document).ready( function () {
-			$('#myOrdersTable').DataTable();
+			$('#myOrdersTable').DataTable({
+				"order": [[4, "desc"]] // Sort by the 5th column (index 4: "Date") in descending order
+			});
 		} );
 	</script>
 

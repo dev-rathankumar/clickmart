@@ -14,7 +14,7 @@ class UnifieldProductResource(resources.ModelResource):
     class Meta:
         model = UnifieldProduct
         fields = ("barcode", "vendor", "product_name", "regular_price", "sales_price", 
-                  "qty", "cost_price", "category", "category__category_name", 
+                  "qty", "cost_price", "image", "category", "category__category_name", 
                   "tax_category", "tax_category__tax_category", "tax_category__tax_percentage",
                   "product_desc")
         export_order = fields

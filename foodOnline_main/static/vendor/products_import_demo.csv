@@ -1,0 +1,4 @@
+barcode,product_name,product_desc,full_specification,wholesale_price,regular_price,sales_price,stock,image,category,subcategory,tax_category,tax_percentage
+1001,Kurkure,Kurkure,Kurkure,8,10,10,100,store/products/uploads/kurkure.jpg,Snacks,Junk,NA,0
+1002,Amul Cheese,Amul Cheese,Amul Cheese,20,25,25,100,store/products/uploads/cheese.jpg,Dairy,Cheese,GST,18
+1003,Sprite Can,Sprite Can,Sprite Can,32,40,38,100,store/products/uploads/sprite.jpg,Cold Drinks,Beverages,GST,18

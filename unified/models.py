@@ -41,7 +41,7 @@ class Product(models.Model):
     cost_price = models.DecimalField(max_digits=7, decimal_places=2, default=0, null=False)
     regular_price = models.DecimalField(max_digits=10, decimal_places=2)
     sales_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    image = models.ImageField(upload_to='store/products/%Y/%m/%d')
+    image = models.ImageField(upload_to='store/products/uploads')
     is_available = models.BooleanField(default=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     subcategory = models.ForeignKey(Category, related_name='subcategory_products', on_delete=models.CASCADE, blank=True, null=True)

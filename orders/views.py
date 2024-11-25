@@ -198,7 +198,9 @@ def payments(request):
             'customer_subtotal': customer_subtotal,
             'tax_data': tax_data,
         }
+        print('sending notification email')
         send_notification(mail_subject, mail_template, context)
+        print('email sent')
         
 
         # SEND ORDER RECEIVED EMAIL TO THE VENDOR

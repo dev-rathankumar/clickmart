@@ -18,19 +18,19 @@
                 <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
                     <div class="user-dashboard loader-holder">
                         <div class="user-holder">
-                            <h5 class="text-uppercase">Import Categories</h5>
+                            <h5 class="text-uppercase">Import Bulk Products</h5>
 							<hr>
                             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
                             <br><br>
-                            <h6>Import Bulk Categories</h6>
-                            <form action="{% url 'import_categories' %}" method="POST" enctype="multipart/form-data">
+                            <h6>Import Bulk Products</h6>
+                            <form action="{% url 'import_products' %}" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="form-fields-set">
                                     <div class="row">
                                         <div class="col-lg-12 col-md-12 col-sm-12">
                                             <div class="field-holder">
                                                 <label >Upload CSV File *</label>
-                                                {{form.category_file}}
+                                                {{form.products_file}}
                                             </div>
                                         </div>
                                     </div>
@@ -50,11 +50,21 @@
                             <div class="mt-5">
                                 <p style="text-decoration: underline;"><b>Follow the steps below to prepare your CSV file:</b></p>
                             <ul>
-                                <li class="mb-0"><strong>category_name</strong> - Name of the category.</li>
-                                <li class="mb-0"><strong>parent_category</strong> - Name of the parent category (if applicable). Leave empty for top-level categories.</li>
-                                <li class="mb-0"><strong>category_description</strong> - Short description of the category. (Optional)</li>
+                                <li class="mb-0"><strong>barcode</strong> - Unique barcode for each product</li>
+                                <li class="mb-0"><strong>product_name</strong> - Name of the product</li>
+                                <li class="mb-0"><strong>product_desc</strong> - Short description about the product</li>
+                                <li class="mb-0"><strong>full_specification</strong> - Full specification about the product (Optional)</li>
+                                <li class="mb-0"><strong>wholesale_price</strong> - Wholesale price of the product</li>
+                                <li class="mb-0"><strong>regular_price</strong> - MRP of the product</li>
+                                <li class="mb-0"><strong>sales_price</strong> - Sale price of the product (Optional)</li>
+                                <li class="mb-0"><strong>stock</strong> - No. of products in stock</li>
+                                <li class="mb-0"><strong>image</strong> - Image of the product</li>
+                                <li class="mb-0"><strong>category</strong> - Category name</li>
+                                <li class="mb-0"><strong>subcategory</strong> - Subcategory name</li>
+                                <li class="mb-0"><strong>tax_category</strong> - Tax category name</li>
+                                <li class="mb-0"><strong>tax_percentage</strong> - Tax percentage</li>
                             </ul>
-                            <a href="{% static 'vendor/sample_category_import.csv' %}" download="sample_category_import.csv" class="btn btn-primary mt-3"><i class="fa fa-download"></i> Download Sample CSV</a>
+                            <a href="{% static 'vendor/products_import_demo.csv' %}" download="sample_category_import.csv" class="btn btn-primary mt-3"><i class="fa fa-download"></i> Download Sample CSV</a>
                             </div>
 
                             <!-- render form -->
