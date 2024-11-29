@@ -1,7 +1,7 @@
 import json
 from django.db import models
 from accounts.models import User
-from menu.models import Product
+from unified.models import Product
 from vendor.models import Vendor
 import re
 from decimal import Decimal

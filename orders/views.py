@@ -169,6 +169,10 @@ def payments(request):
             ordered_food.user = request.user
             ordered_food.product = item.product
             ordered_food.quantity = item.quantity
+            # DECREASE THE PRODUCT QUANTITY
+            product = Product.objects.get(pk=item.product.id)
+            product.qty -= item.quantity
+            product.save()
             if item.product.sales_price is not None:
                 ordered_food.price = item.product.sales_price
             else:
@@ -228,7 +232,8 @@ def payments(request):
                 send_notification(mail_subject, mail_template, context)
 
         # CLEAR THE CART IF THE PAYMENT IS SUCCESS
-        cart_items.delete() 
+        cart_items.delete()
+
 
         # RETURN BACK TO AJAX WITH THE STATUS SUCCESS OR FAILURE
         response = {

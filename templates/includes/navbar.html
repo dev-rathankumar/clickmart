@@ -10,9 +10,9 @@
     display: none;
     position: fixed;
     background-color: #f9f9f9;
-    min-width: 160px;
+    min-width: 175px;
     border: 1px solid #ccc;
-    margin: 11px 0px 0px 48px;
+    margin: 11px 0px 0px 40px;
     z-index: 1;
 }
 .dropdown-content a {
@@ -50,23 +50,24 @@
                         <div class="logo py-0">
                             <figure class="mb-0">
                                 <a href="/" class="light-logo">
-                                    <img src="{% static 'logo/clickmall-logo.svg' %}" alt="FoodOnline" width="250">
+                                    <img src="{% static 'logo/clickmall-logo.svg' %}" alt="Clickmall" width="250">
                                 </a>
                             </figure>
                         </div>
-                        <div class="dropdown">
+                        <!-- <div class="dropdown">
                             <button onclick="toggleDropdown()" class='btn btn-outline-danger btn-category text-uppercase'>Categories</button>
                             <div id="categoryDropdown" class="dropdown-content">
+                                <a href="{% url 'all_products' %}">All Products</a>
                                 {% for category in categories %}
-                                    <a href="javascript:void(0)" onclick="toggleSubcategories({{ category.id }})">{{ category.category_name }}</a>
+                                    <a href="javascript:void(0)" onclick="toggleSubcategories({{ category.id }})">{{ category.category_name }} {% if category.subcategories.exists %}<i class="fa fa-angle-down float-right"></i>{% endif %}</a>
                                     <div id="subcategory-{{ category.id }}" class="subcategory" style="display: none;">
                                         {% for subcategory in category.subcategories.all %}
-                                            <a href="#">{{ subcategory.category_name }}</a>
+                                            <a href="{% url 'filter_by_subcategory' subcategory.id %}">{{ subcategory.category_name }}</a>
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
                             </div>
-                        </div>
+                        </div> -->
                         <div class="main-location ml-4">
                             <ul>
                                 <li class="location-has-children choose-location">
@@ -110,7 +111,23 @@
     <script>
  // Toggle dropdown display when clicking the button
 function toggleDropdown() {
-    document.getElementById("categoryDropdown").classList.toggle("show");
+    const dropdown = document.getElementById("categoryDropdown");
+    dropdown.classList.toggle("show");
+
+    if (dropdown.classList.contains("show")) {
+        // Add scroll event listener only when the dropdown is open
+        window.addEventListener("scroll", closeDropdownOnScroll);
+    }
+}
+
+// Close the dropdown
+function closeDropdownOnScroll() {
+    const dropdown = document.getElementById("categoryDropdown");
+    if (dropdown.classList.contains("show")) {
+        dropdown.classList.remove("show");
+        // Remove the scroll event listener to prevent unnecessary calls
+        window.removeEventListener("scroll", closeDropdownOnScroll);
+    }
 }
 
 // Toggle subcategory display for each category and prevent dropdown from closing

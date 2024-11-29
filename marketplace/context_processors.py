@@ -64,5 +64,5 @@ def get_cart_amounts(request):
     return dict(subtotal=subtotal, tax=tax_value, grand_total=grand_total, tax_dict=tax_dict)
 
 def categories_processor(request):
-    categories = Category.objects.filter(parent__isnull=True, is_active=True).prefetch_related('subcategories')
+    categories = Category.objects.filter(parent__isnull=True, is_active=True).prefetch_related('subcategories').distinct()
     return {'categories': categories}

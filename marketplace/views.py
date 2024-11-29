@@ -99,7 +99,7 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 def view_Product(request, product_slug):
     # Get the main product
     product = get_object_or_404(Product, slug=product_slug)
-    chkCart = Cart.objects.filter(product=product)
+    chkCart = Cart.objects.filter(product=product, user=request.user)
     chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     product_gallery = ProductGallery.objects.filter(product=product)
     # Fetch similar products from the same category, excluding the current product
@@ -125,21 +125,58 @@ def add_to_cart(request, food_id):
             # Check if the food item exists
             try:
                 product = Product.objects.get(id=food_id)
+
                 # Check if the user has already added that food to the cart
                 try:
                     chkCart = Cart.objects.get(user=request.user, product=product)
+                    
+                    # Calculate the new quantity after increment
+                    new_quantity = chkCart.quantity + 1
+                    
+                    # Check if the new quantity exceeds available stock
+                    if new_quantity > product.qty:
+                        return JsonResponse({
+                            'status': 'Failed',
+                            'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
+                            'cart_counter': get_cart_counter(request),
+                            'qty': chkCart.quantity,
+                            'cart_amount': get_cart_amounts(request)
+                        })
+
                     # Increase the cart quantity
-                    chkCart.quantity += 1
+                    chkCart.quantity = new_quantity
                     chkCart.save()
-                    return JsonResponse({'status': 'Success', 'message': 'Increased the cart quantity', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
-                except:
+                    return JsonResponse({
+                        'status': 'Success',
+                        'message': 'Increased the cart quantity',
+                        'cart_counter': get_cart_counter(request),
+                        'qty': chkCart.quantity,
+                        'cart_amount': get_cart_amounts(request)
+                    })
+                except Cart.DoesNotExist:
+                    # Check if stock is available for at least one unit
+                    if product.qty < 1:
+                        return JsonResponse({
+                            'status': 'Failed',
+                            'message': f'{product.product_name} is out of stock.',
+                            'cart_counter': get_cart_counter(request),
+                            'qty': 0,
+                            'cart_amount': get_cart_amounts(request)
+                        })
+
+                    # Add the product to the cart with a quantity of 1
                     chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
-                    return JsonResponse({'status': 'Success', 'message': 'Added the product to the cart', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
-            except:
+                    return JsonResponse({
+                        'status': 'Success',
+                        'message': 'Added the product to the cart',
+                        'cart_counter': get_cart_counter(request),
+                        'qty': chkCart.quantity,
+                        'cart_amount': get_cart_amounts(request)
+                    })
+            except Product.DoesNotExist:
                 return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
         else:
             return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
-        
     else:
         return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
 
@@ -156,12 +193,12 @@ def decrease_cart(request, food_id):
                     if chkCart.quantity > 1:
                         # decrease the cart quantity
                         chkCart.quantity -= 1
-                        product.qty += 1 
-                        product.save()
+                        # product.qty += 1 
+                        # product.save()
                         chkCart.save()
                     else:
-                        product.qty += 1 
-                        product.save()
+                        # product.qty += 1 
+                        # product.save()
                         chkCart.delete()
                         chkCart.quantity = 0
                     return JsonResponse({'status': 'Success', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
@@ -193,8 +230,8 @@ def delete_cart(request, cart_id):
                 cart_item = Cart.objects.get(user=request.user, id=cart_id)
                 if cart_item:
                     product = Product.objects.get(id=cart_item.product.id)
-                    product.qty +=cart_item.quantity
-                    product.save()
+                    # product.qty +=cart_item.quantity
+                    # product.save()
                     cart_item.delete()
                     return JsonResponse({'status': 'Success', 'message': 'Cart item has been deleted!', 'cart_counter': get_cart_counter(request), 'cart_amount': get_cart_amounts(request)})
             except:
@@ -299,7 +336,10 @@ def add_product_to_cart(request, product_id):
     if request.user.is_authenticated:
         if request.method == 'POST':
             # Get the product object
-            product = Product.objects.get(id=product_id)
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Product not found.'})
             
             # Try to parse JSON data from the request body
             try:
@@ -308,7 +348,25 @@ def add_product_to_cart(request, product_id):
             except (json.JSONDecodeError, ValueError) as e:
                 return JsonResponse({'success': False, 'message': 'Invalid data.'})
             
-            print('data==?', data)
+            # Check if the product is already in the cart
+            try:
+                cart_item = Cart.objects.get(user=request.user, product=product)
+                existing_quantity = cart_item.quantity
+            except Cart.DoesNotExist:
+                existing_quantity = 0
+
+            # Calculate the total quantity after adding the new quantity
+            total_quantity = existing_quantity + quantity
+
+            # Check if requested quantity exceeds available stock
+            if total_quantity > product.qty:
+                return JsonResponse({
+                    'success': False,
+                    'message': (
+                        f"Only {product.qty} units of {product.product_name} are available. "
+                    )
+                })
+            
             try:
                 cart_item = Cart.objects.get(user=request.user, product=product)
                 cart_item.quantity += quantity
@@ -316,8 +374,8 @@ def add_product_to_cart(request, product_id):
                 message = f"The quantity of {product.product_name} has been updated in your cart."
             except:
                 cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
-                product.qty = product.qty - quantity
-                product.save()
+                # product.qty = product.qty - quantity
+                # product.save()
                 messages.success(request, f"{product.product_name} has been added to your cart.")
                 message = f"{product.product_name} has been added to your cart."
             

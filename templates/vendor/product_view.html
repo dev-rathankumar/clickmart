@@ -47,7 +47,7 @@
              {{ product.product_name }}
             </h4>
             {% if product.is_active %}
-              <span class="text-success ms-2">In stock ({{ product.stock }})</span>
+              <span class="ms-2">{% if not product.qty <= 0 %}<span class="text-success">In stock ({{ product.qty }})</span>{% endif %}</span>
             {% else %}
               <span class="text-danger ms-2">Out of stock</span>
             {% endif %}
@@ -74,6 +74,9 @@
           <hr />
   
           <!-- Quantity Input Section -->
+          {% if product.qty <= 0 %}
+          <h4 class="text-danger">Out of Stock</h4>
+          {% else %}
           <div class="row ">
               <div class="col-md-4 col-6">
                 <label class="mb-2 d-block">Quantity</label>
@@ -100,13 +103,14 @@
           <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
             <i class="me-1 fa fa-shopping-basket"></i> Add to cart
           </a>
-            <a href="{% url 'cart' %}" class="btn btn-success icon-hover px-5 py-3 font-weight-bold">
+            <a href="{% url 'cart' %}" class="btn btn-success px-5 py-3">
               <i class="me-1 fa fa-eye fa-lg"></i> View Cart
             </a>
           {% else %}
             <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart mt-3" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
               <i class="me-1 fa fa-shopping-basket"></i> Add to cart
             </a>
+          {% endif %}
           {% endif %}
 
           
@@ -150,19 +154,19 @@
           <div class="px-0 shadow-0">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Similar items</h5>
+                <h5 class="card-title">Similar Products</h5>
                 {% if similar_products %}
                   {% for similar_product in similar_products %}
                     <div class="d-flex mb-3">
                       <a href="#" class="me-3">
                         <img src="{{ similar_product.image.url }}" style="min-width: 96px; height: 96px;" class="img-md img-thumbnail" />
                       </a>
-                      <div class="info">
-                        <a href="#" class="nav-link mb-1">{{ similar_product.product_name }}</a>
+                      <div class="ml-3">
+                        <a href="{% url 'view_product' similar_product.slug %}" class="mb-1">{{ similar_product.product_name }}</a>
                         {% if similar_product.sales_price %}
-                          <strong class="text-dark">Sale Price: ₹{{ similar_product.sales_price }}</strong>
+                          <p><strong class="text-dark">Price: ₹{{ similar_product.sales_price }}</strong></p>
                         {% else %}
-                          <strong class="text-dark">Regular Price: ₹{{ similar_product.regular_price }}</strong>
+                          <p><strong class="text-dark">Price: ₹{{ similar_product.regular_price }}</strong></p>
                         {% endif %}
                       </div>
                     </div>
