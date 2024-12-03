@@ -7,7 +7,7 @@ Welcome | Clickmall Retail POS
 {% endblock %}
 
 {% block nav-item %}
-<div class="mb-0 font-weight-bold  h5 text-gray-900 text-uppercase p-3 ">Online retail Pos system - {{ store_name }} </div>
+<div class="mb-0 font-weight-bold  h5 text-gray-900 text-uppercase p-3 ">Online retail Pos system - Clickmall </div>
 {% endblock %}
 
 {% block sidebar %}
@@ -42,14 +42,14 @@ Welcome | Clickmall Retail POS
                 {% csrf_token %}
                 <div class="form-group mb-3">
                     <input type="username" autocomplete="off" name="username" class="form-control form-control-user"
-                        id="username" placeholder="Please Enter Username...">
+                        id="username" placeholder="Enter your email address">
                 </div>
                 <div class="form-group mb-5">
                     <input type="password" autocomplete="off" name="password" class="form-control form-control-user"
-                        id="password" placeholder="Enter Your Password...">
+                        id="password" placeholder="Enter your password">
                 </div>
                 <hr>
-                <button type="Submit" class="btn btn-primary btn-user btn-block"> Login </button>
+                <button type="Submit" class="btn btn-accent btn-user btn-block text-light"> Login </button>
             </form>
         </div>
     </div>

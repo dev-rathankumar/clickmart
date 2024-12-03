@@ -15,6 +15,8 @@ import plotly.figure_factory as ff
 from datetime import datetime, timedelta
 import pandas as pd
 import pytz, os, shutil
+
+from vendor.models import Vendor
 timezone = pytz.timezone("US/Eastern")
 
 
@@ -114,7 +116,8 @@ def report_regular(request,start_date,end_date):
     # timezone.localize(datetime.combine(datetime.strptime(start_date,"%Y-%m-%d").date(), datetime.min.time()))
     start_date = datetime.strptime(start_date,"%Y-%m-%d").date()
     end_date = datetime.strptime(end_date,"%Y-%m-%d").date()
-    df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (start_date,end_date)).order_by('-transaction_date_time').values())
+    vendor = Vendor.objects.get(user=request.user)
+    df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (start_date,end_date), transaction__vendor=vendor).order_by('-transaction_date_time').values())
     if not df.shape[0]:
         return redirect("/")
 
@@ -159,12 +162,13 @@ def dashboard_products(request):
         context = {}
         today_date=datetime.now().date()
         last_30_date = datetime.now().date() - timedelta(30)
-        df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (last_30_date,today_date)).order_by('-transaction_date_time').values())
+        vendor = Vendor.objects.get(user=request.user)
+        df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (last_30_date,today_date), transaction__vendor=vendor).order_by('-transaction_date_time').values())
         context['products_group'] = {}
         for i, df in df.groupby('department'):
             context['products_group'][i] = df.groupby(["barcode","name"])[["qty"]].sum().reset_index().sort_values(by=["qty"],ascending=False).iloc[:number].to_dict('records')
 
-        context['low_inventory_products'] = product.objects.all().order_by('qty').values('barcode','product_name','qty')[:50]
+        context['low_inventory_products'] = product.objects.filter(vendor=vendor).order_by('qty').values('barcode','product_name','qty')[:50]
         context['number'] = number
     except Exception as e:
         return redirect("/pos/register/")
@@ -182,7 +186,8 @@ def dashboard_department(request):
         if form.is_valid():
             end_date= form.cleaned_data['end_date']
             start_date= form.cleaned_data['start_date']
-    df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (start_date,end_date)).order_by('-transaction_date_time').values())
+    vendor = Vendor.objects.get(user=request.user)
+    df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (start_date,end_date), transaction__vendor=vendor).order_by('-transaction_date_time').values())
     if df.shape[0]:
         df['total_sales'] = (df['qty'] * df['sales_price']) + df['tax_amount'] + df['deposit_amount']
         df['total_pre_sales'] = df['qty'] * df['sales_price']
@@ -240,7 +245,8 @@ def dashboard_sales(request):
     context = {}
     today_date =  datetime.combine(datetime.now().date(), datetime.min.time())
     try:
-        df = pd.DataFrame(transaction.objects.filter(transaction_dt__date__gte = datetime(today_date.year, 1,1)).values())
+        vendor = Vendor.objects.get(user=request.user)
+        df = pd.DataFrame(transaction.objects.filter(transaction_dt__date__gte = datetime(today_date.year, 1,1), vendor=vendor).values())
         df['transaction_dt'] = df['transaction_dt'].apply(lambda x: x.astimezone(timezone) )
         df['date'] = df['transaction_dt'].dt.date
         df_date = df.groupby('date')['total_sale'].sum()

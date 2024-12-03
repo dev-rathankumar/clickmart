@@ -6,11 +6,13 @@ from django.db.models import F
 from unified.models import Product as product
 from inventory.models import PERCENTAGE_VALIDATOR
 import pytz
+from vendor.models import Vendor
 timezone = pytz.timezone("US/Eastern")
 
 
 # Create your models here.transaction_dt
 class transaction(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
     date_time       = models.DateTimeField(auto_now_add=True)
     transaction_dt  = models.DateTimeField(editable=False, null=False, blank=False,)
     user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, null=False, blank=False,editable=False,)
@@ -30,7 +32,7 @@ class transaction(models.Model):
         self.transaction_dt = timezone.localize(self.transaction_dt)
         super().save(*args, **kwargs)
         for product_item in eval(self.products):
-            try: item = product.objects.get(barcode = product_item['barcode'])
+            try: item = product.objects.get(barcode = product_item['barcode'], vendor=self.vendor)
             except: item = product.objects.get(barcode = product_item['barcode'].split("_")[0])
             productTransaction.objects.create(transaction = self, transaction_id_num = self.transaction_id, transaction_date_time = self.transaction_dt,
                 barcode = product_item['barcode'], name = product_item['name'], department = item.category.category_name, sales_price= product_item['price'],

@@ -35,7 +35,7 @@ class Category(models.Model):
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='products')
     product_name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=300, unique=True, blank=True)
+    slug = models.SlugField(max_length=300, blank=True)
     product_desc = models.TextField(blank=True, null=True)
     full_specification = models.TextField(blank=True, default='')
     cost_price = models.DecimalField(max_digits=7, decimal_places=2, default=0, null=False)
@@ -49,13 +49,19 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     
     # Fields from inventory.product model
-    barcode = models.CharField(unique=True, max_length=16, blank=False, null=False)
+    barcode = models.CharField(max_length=25, blank=False, null=False)
     qty = models.IntegerField(default=0, null=False)
     tax_category     = models.ForeignKey(TaxCategory, on_delete=models.RESTRICT, null=False,blank=False, related_name='products')
     deposit_category = models.ForeignKey(DepositCategory, on_delete=models.RESTRICT, null=True,blank=True, related_name='products')
     
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['vendor', 'barcode'], name='unique_vendor_barcode'),
+            models.UniqueConstraint(fields=['vendor', 'slug'], name='unique_vendor_slug'),
+        ]
 
     def __str__(self):
         return self.product_name
@@ -69,6 +75,7 @@ class Product(models.Model):
         if not self.sales_price:
             self.sales_price = self.regular_price
 
+        # Automatically generate slug if not set
         if not self.slug:
             self.slug = slugify(self.product_name)
         super().save(*args, **kwargs)

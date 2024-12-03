@@ -85,3 +85,6 @@ table > tbody > tr > td{
 table td, table th{
     line-height: 1rem !important;
 }
+.btn-accent{
+    background-color: #B92E3A !important;
+}

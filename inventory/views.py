@@ -9,6 +9,8 @@ from django.forms import TextInput
 from cart.models import Cart
 import decimal
 
+from vendor.models import Vendor
+
 
 class ProductLookup(forms.Form):
     barcode = forms.CharField(widget=TextInput(attrs={' autocomplete':"off",'placeholder': "Please Enter Barcode...",'style':"width:100%;padding: 10px;"}),max_length = 32)
@@ -27,7 +29,8 @@ def product_lookup(request):
         form = ProductLookup(request.POST)
         if form.is_valid():
             try:
-                obj = product.objects.get(barcode=form.cleaned_data['barcode'])
+                vendor = Vendor.objects.get(user=request.user)
+                obj = product.objects.get(barcode=form.cleaned_data['barcode'], vendor=vendor)
             except product.DoesNotExist:
                 obj = None
                 notFound= True
@@ -69,7 +72,8 @@ def inventoryAdd(request):
         form = AddProduct(request.POST)
         if form.is_valid():
             try:
-                obj = product.objects.get(barcode=form.cleaned_data['barcode'])
+                vendor = Vendor.objects.get(user=request.user)
+                obj = product.objects.get(barcode=form.cleaned_data['barcode'], vendor=vendor)
                 # 'product_added':  True if "ProductNotFound" in request.path else False, 
                 context['p_qty'] = obj.qty
                 context['n_qty'] = int(form.cleaned_data['qty'])

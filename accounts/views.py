@@ -102,7 +102,7 @@ def registerVendor(request):
             vendor.save()
 
             # Send verification email
-            mail_subject = 'Please activate your account'
+            mail_subject = 'Please verify your email address'
             email_template = 'accounts/emails/account_verification_email.html'
             send_verification_email(request, user, mail_subject, email_template)
 
@@ -134,7 +134,7 @@ def activate(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, 'Congratulation! Your account is activated.')
+        messages.success(request, 'Congratulation! Your email address has been verified.')
         return redirect('myAccount')
     else:
         messages.error(request, 'Invalid activation link')
@@ -152,6 +152,13 @@ def login(request):
         user = auth.authenticate(email=email, password=password)
 
         if user is not None:
+            # Check if the user is vendor, and is approved
+            if user.role == 1:
+                try:
+                    Vendor.objects.get(user=user, is_approved=True)
+                except:
+                    messages.warning(request, 'Your account is under review. Please wait for the approval.')
+                    return redirect('login')
             auth.login(request, user)
             messages.success(request, 'You are now logged in.')
             return redirect('myAccount')
@@ -170,6 +177,9 @@ def logout(request):
 def myAccount(request):
     user = request.user
     redirectUrl = detectUser(user)
+    if redirectUrl == 'vendorDashboard':
+        vendor = Vendor.objects.get(user=user, is_approved=True)
+
     return redirect(redirectUrl)
 
 

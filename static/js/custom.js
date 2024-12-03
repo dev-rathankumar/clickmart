@@ -173,7 +173,6 @@ $(document).ready(function(){
                     swal(response.message, '', 'error')
                 }else{
                     $('#cart_counter').html(response.cart_counter['cart_count']);
-                    swal(response.status, response.message, "success")
 
                     applyCartAmounts(
                         response.cart_amount['subtotal'],
@@ -194,6 +193,7 @@ $(document).ready(function(){
             if(cartItemQty <= 0){
                 // remove the cart item element
                 document.getElementById("cart-item-"+cart_id).remove()
+                location.reload();
             }
         
     }
@@ -205,6 +205,7 @@ $(document).ready(function(){
             document.getElementById("empty-cart").style.display = "block";
         }
     }
+
 
     function applyCartAmounts(subtotal, tax_dict, grand_total) {
         if (window.location.pathname == '/cart/') {

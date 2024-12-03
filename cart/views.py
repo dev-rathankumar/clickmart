@@ -3,13 +3,16 @@ from django.shortcuts import redirect
 # from inventory.models import product as Product
 from unified.models import Product
 from django.contrib.auth.decorators import login_required
+
+from vendor.models import Vendor
 from .models import Cart
 
 
 @login_required(login_url="/pos/user/login")
 def cart_add(request,id,qty):
     cart = Cart(request)
-    product = Product.objects.filter(barcode=id).first()
+    vendor = Vendor.objects.get(user=request.user)
+    product = Product.objects.filter(barcode=id, vendor=vendor).first()
     if product:
         cart.add(product=product,quantity=int(qty))
         return redirect('register')

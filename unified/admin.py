@@ -77,7 +77,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class UnifieldProductAdmin(ImportExportModelAdmin):
-    list_display = ['vendor', 'product_name', 'sales_price', 'qty']
+    list_display = ['vendor', 'barcode', 'product_name', 'slug', 'sales_price', 'qty']
     resource_class = UnifieldProductResource
 
 
@@ -86,9 +86,9 @@ class ProductGalleryInline(admin.TabularInline):
     model = ProductGallery
     extra = 1
 
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('product_name','is_active', 'vendor', 'is_available', 'qty')
-    inlines = [ProductGalleryInline]
+# class ProductAdmin(admin.ModelAdmin):
+#     list_display = ('product_name','is_active', 'vendor', 'is_available', 'qty')
+#     inlines = [ProductGalleryInline]
 
 
 admin.site.register(Category, CategoryAdmin)

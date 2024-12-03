@@ -3,6 +3,9 @@ from django.http import Http404, HttpResponse
 from django.conf import settings 
 from cart.models import Cart
 import pandas as pd
+
+from unified.models import Product
+from vendor.models import Vendor
 from .models import transaction
 from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
@@ -66,7 +69,8 @@ def transactionView(request, transNo=None):
         if form.is_valid():
             end_date= form.cleaned_data['end_date']
             start_date= form.cleaned_data['start_date']
-    transactions = transaction.objects.filter(transaction_dt__date__range = (start_date,end_date)).order_by('-transaction_dt').values('transaction_dt', 'transaction_id','total_sale','payment_type')
+    vendor = Vendor.objects.get(user=request.user)
+    transactions = transaction.objects.filter(transaction_dt__date__range = (start_date,end_date), vendor=vendor).order_by('-transaction_dt').values('transaction_dt', 'transaction_id','total_sale','payment_type')
     return render(request, 'pos/transactions.html',
         context={'transactions':transactions,
             'form':form,})
@@ -203,7 +207,11 @@ def addTransaction(user,payment_type,total,cart,value):
     #     try: printer.printer.cashdraw(2)
     #     except: pass
     #Saving Transaction into Database
-    return transaction.objects.create( transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
+    vendor = Vendor.objects.get(user=user)
+    return transaction.objects.create(vendor=vendor, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
             payment_type = payment_type, receipt = receipt, products = str(cart_df.to_dict('records')),
         )
+
+
+

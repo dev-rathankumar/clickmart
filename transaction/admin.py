@@ -16,7 +16,7 @@ from rangefilter.filters import DateTimeRangeFilter
 # Register your models here.
 @admin.register(transaction)
 class TransactionAdmin(ImportExportModelAdmin):
-    list_display= ("transaction_dt","transaction_id","total_sale","tax_total","payment_type","products_link","receipt_link",)
+    list_display= ("vendor","transaction_dt","transaction_id","total_sale","tax_total","payment_type","products_link","receipt_link",)
     fields = ["user","transaction_dt","transaction_id", "total_sale","sub_total","tax_total","deposit_total","payment_type","receipt","receipt_link","products_link"]
     list_filter = (("transaction_dt",DateTimeRangeFilter),"transaction_dt","user","payment_type",)
     search_fields = ["transaction_id"] 
