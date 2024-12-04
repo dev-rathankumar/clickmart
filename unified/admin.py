@@ -3,11 +3,12 @@ from django.contrib import admin
 from inventory.models import tax
 from vendor.models import Vendor
 from .models import Product as UnifieldProduct
-from .models import ProductGallery, Category
+from .models import ProductGallery, Category, MediaUpload
 import admin_thumbnails
 from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ExportMixin
 from import_export import resources
+from django.utils.html import format_html
 
 
 class UnifieldProductResource(resources.ModelResource):
@@ -91,7 +92,16 @@ class ProductGalleryInline(admin.TabularInline):
 #     list_display = ('product_name','is_active', 'vendor', 'is_available', 'qty')
 #     inlines = [ProductGalleryInline]
 
+class MediaUploadAdmin(admin.ModelAdmin):
+    list_display = ['vendor', 'image_thumbnail']
+
+    def image_thumbnail(self, obj):
+        return format_html('<img src="{}" width="40" height="30" />', obj.image.url)  # Adjust width and height as needed
+
+    image_thumbnail.short_description = 'Image Thumbnail'  # Optional: change the column title
+
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(UnifieldProduct, UnifieldProductAdmin)
 admin.site.register(ProductGallery)
+admin.site.register(MediaUpload, MediaUploadAdmin)

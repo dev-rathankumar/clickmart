@@ -23,6 +23,14 @@ from django.template.defaultfilters import slugify
 import csv
 from inventory.models import tax as Tax
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from unified.models import MediaUpload
+
+
+
+
 
 
 def get_vendor(request):
@@ -682,3 +690,30 @@ def order_status(request):
         except Order.DoesNotExist:
             return JsonResponse({'error': 'Order not found.'})
     return JsonResponse({'error': 'Invalid request'})
+
+
+def media_library(request):
+    vendor = Vendor.objects.get(user=request.user)
+    images = MediaUpload.objects.filter(vendor=vendor)
+    for image in images:
+        # Build absolute URL for each image
+        image.absolute_url = request.build_absolute_uri(image.image.url)
+
+    if request.method == "POST":
+        selected_images = request.POST.getlist('images')
+        if selected_images:
+            MediaUpload.objects.filter(id__in=selected_images).delete()
+            return redirect('media_library')
+    context = {'images': images}
+    return render(request, 'vendor/media_library.html', context)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FileUploadView(View):
+    def post(self, request, *args, **kwargs):
+        # Get files from request.FILES
+        vendor = Vendor.objects.get(user=request.user)
+        files = request.FILES.getlist('file')  # Dropzone sends files as 'file'
+        for f in files:
+            MediaUpload.objects.create(image=f, vendor=vendor)
+        return JsonResponse({'message': 'Files uploaded successfully!'})

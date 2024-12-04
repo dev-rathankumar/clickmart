@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/alerts.html' %}
+
+<style>
+    .media-gallery-item img {
+            max-width: 100%;
+            border-radius: 4px;
+        }
+        .copy-button:active {
+            background-color: #0056b3;
+        }
+
+        .media-gallery-item {
+            position: relative;
+        }
+
+        .media-gallery-item input[type="checkbox"] {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .copy-button {
+            cursor: pointer;
+        }
+        .media-gallery-item input[type="checkbox"] {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px;  /* Increase the width */
+            height: 20px;  /* Increase the height */
+            cursor: pointer;  /* Change the cursor to pointer */
+        }
+    </style>
+
+<!-- Main Section Start -->
+<div class="main-section">
+    {% include 'includes/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <!-- Load the sidebar here -->
+                    {% include 'includes/v_sidebar.html' %}
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder">
+                        <div class="user-holder">
+                            <h5 class="text-uppercase">Media Library</h5>
+							<hr>
+                            <button type="button" class="btn btn-accent text-light float-right" data-toggle="modal" data-target="#mediaUpload">
+                                <i class="fa fa-upload"></i> Upload Images
+                            </button>
+                            <br><br>
+
+                            <div class="row g-3 media-gallery">
+                                {% if images %}
+                                <button type="button" class="btn btn-outline-secondary mb-3" id="select-all">
+                                    <i class="fa fa-check-square"></i> Select All
+                                </button>
+                                {% endif %}
+                                <form method="post" id="delete-images-form">
+                                    {% csrf_token %}
+                                    {% for image in images %}
+                                    <div class="col-6 col-md-2 col-lg-2 mb-2 pr-1 pl-1">
+                                        <div class="card media-gallery-item shadow-sm">
+                                            <input type="checkbox" name="images"  value="{{ image.id }}" class="image-checkbox">
+                                            <img src="{{ image.absolute_url }}" class="card-img-top" alt="Uploaded Image" />
+                                            <div class="card-body text-center p-1">
+                                                <a class="copy-button" onclick="copyToClipboard(this, '{{ image.absolute_url }}')" style="cursor: pointer;">
+                                                    Copy URL
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% if images %}
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-danger float-right mt-3"><i class="fa fa-trash"></i> Delete Selected Images</button>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center">
+                                        Uploaded images will show here!
+                                    </div>
+                                    {% endif %}
+                                </form>
+                            </div>
+                            
+                            
+
+                            <!-- render form -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+
+<!-- Modal -->
+<div class="modal fade" id="mediaUpload" tabindex="-1" role="dialog" aria-labelledby="mediaUploadTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 70% !important;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Upload Bulk Images</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <form action="{% url 'media_upload' %}" class="dropzone" id="my-dropzone" enctype="multipart/form-data">
+                {% csrf_token %}
+            </form>
+        </div>
+        <div class="modal-footer">
+            <a class="btn btn-secondary" href="{% url 'media_library' %}" >Close</a>
+          <!-- <button type="button"  data-dismiss="modal">Close</button> -->
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+
+
+<script>
+    Dropzone.options.myDropzone = {
+        paramName: 'file', // Name of the file parameter
+        maxFilesize: 2, // Maximum file size in MB
+        acceptedFiles: 'image/*', // Accept images only
+        dictDefaultMessage: "Drag & Drop images here to upload (Max file size: 2MB)",
+        init: function () {
+            this.on('success', function (file, response) {
+                console.log(response.message);
+            });
+            this.on('error', function (file, errorMessage) {
+                console.error(errorMessage);
+                if (file.size > 2 * 1024 * 1024) {  // If file exceeds 2MB
+                        alert("File is too large. Maximum size should be less than 2MB.");
+                    } else if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                        alert("Invalid file type. Only image files are allowed.");
+                    }
+            });
+        },
+    };
+
+    function copyToClipboard(button, text) {
+            // Copy text to clipboard
+            navigator.clipboard.writeText(text).then(
+                function () {
+                    // Change button text to "Copied" on success
+                    const originalText = button.innerHTML;
+                    button.innerHTML = "Copied!";
+                    button.disabled = true;
+
+                    // Revert back to the original text after 3 seconds
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }, 3000);
+                },
+                function (err) {
+                    console.error("Failed to copy text: ", err);
+                }
+            );
+        }
+
+        const deleteForm = document.getElementById('delete-images-form');
+        deleteForm.addEventListener('submit', function(event) {
+            const selectedCheckboxes = document.querySelectorAll('.image-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                event.preventDefault();  // Prevent form submission if no images are selected
+                alert('Please select at least one image to delete.');
+            } else {
+                const confirmDelete = confirm('Are you sure you want to delete the selected images?');
+                if (!confirmDelete) {
+                    event.preventDefault();  // Prevent form submission if user cancels
+                }
+            }
+        });
+
+        document.getElementById('select-all').addEventListener('click', function () {
+        const checkboxes = document.querySelectorAll('.image-checkbox');
+        const isChecked = this.dataset.checked === 'true';
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = !isChecked;
+        });
+
+        // Toggle the button state
+        this.dataset.checked = isChecked ? 'false' : 'true';
+        this.innerHTML = isChecked ? '<i class="fa fa-check-square"></i> Select All' : '<i class="fa fa-square"></i> Deselect All';
+    });
+</script>
+{% endblock %}

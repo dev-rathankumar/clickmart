@@ -120,3 +120,12 @@ class ProductGallery(models.Model):
     class Meta:
         verbose_name = 'productgallery'
         verbose_name_plural = 'product gallery'
+
+
+class MediaUpload(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
+    image = models.ImageField(upload_to='uploaded_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.image.name
