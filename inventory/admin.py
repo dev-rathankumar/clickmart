@@ -19,7 +19,7 @@ class ProductResource(resources.ModelResource):
         export_order = fields
 
 
-@admin.register(product)
+# @admin.register(product)
 class ProductAdmin(ImportExportModelAdmin):
     editable_list = ["sales_price",'qty']
     list_display = ("barcode","name","sales_price","qty","department","tax_category","deposit_category")
@@ -32,7 +32,7 @@ class ProductAdmin(ImportExportModelAdmin):
     resource_class = ProductResource
 
 
-@admin.register(department)
+# @admin.register(department)
 class DepartmentAdmin(ImportExportModelAdmin):
     list_display= ('department_name','department_desc','Products_In_Department')
     
@@ -51,7 +51,7 @@ class TaxAdmin(ImportExportModelAdmin):
     list_display= ('tax_category','tax_percentage','tax_desc')
 
 
-@admin.register(deposit)
+# @admin.register(deposit)
 class DepositAdmin(ImportExportModelAdmin):
     list_display= ('deposit_category','deposit_value','deposit_desc')
     

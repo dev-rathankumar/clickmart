@@ -102,12 +102,56 @@
 																<label class="text-danger">{{ vendor_form.vendor_license.errors }}</label>
 															</div>
 														</div>
+
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>Your First Name *</label>
+																{{user_form.first_name}}
+															</div>
+														</div>
+
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>Your Last Name *</label>
+																{{user_form.last_name}}
+															</div>
+														</div>
+
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>Email Address <i class="fa fa-info-circle" title="Your registered email address cannot be changed."></i></label>
+																<input type="text" value="{{ request.user.email }}" disabled readonly style="cursor: not-allowed;">
+															</div>
+														</div>
+
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>Username <i class="fa fa-info-circle" title="Your username cannot be changed."></i></label>
+																<input type="text" value="{{ request.user.username }}" disabled readonly style="cursor: not-allowed;">
+															</div>
+														</div>
+
 														<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 															<div class="field-holder">
 																<label>Store name *</label>
 																{{vendor_form.vendor_name}}
 															</div>
 														</div>
+
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>GST Number</label>
+																{{vendor_form.gst_number}}
+															</div>
+														</div>
+
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>FSSAI Number</label>
+																{{vendor_form.fssai_number}}
+															</div>
+														</div>
+
                                                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 															<div class="field-holder">
 																<label>Address *</label>
@@ -116,6 +160,12 @@
 															</div>
 														</div>
                                                         
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>Phone Number</label>
+																{{user_form.phone_number}}
+															</div>
+														</div>
 
                                                         <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
 															<div class="field-holder">
@@ -138,28 +188,27 @@
 															</div>
 														</div>
 
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
 															<div class="field-holder">
 																<label>Pin Code *</label>
 																{{profile_form.pin_code}}
 															</div>
 														</div>
 
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Latitude *</label>
-																{{profile_form.latitude}}
+														
+															<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+																<div class="field-holder">
+																	<label>Latitude *</label>
+																	{{profile_form.latitude}}
+																</div>
 															</div>
-														</div>
-
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Longitude *</label>
-																{{profile_form.longitude}}
+	
+															<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+																<div class="field-holder">
+																	<label>Longitude *</label>
+																	{{profile_form.longitude}}
+																</div>
 															</div>
-														</div>
-
-
 														
 													</div>
 												</li>

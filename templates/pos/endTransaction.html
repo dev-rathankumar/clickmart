@@ -31,7 +31,7 @@ Ending Transaction | Clickmall Retail POS
     <div class="col-lg-4" style="text-align:center;padding-top: 2%;">
         <div class="card shadow-sm mt-3 mb-3">
             <div class="card-body " id="receipt" style="padding:5%;">
-                <pre>{{ receipt|linebreaks }}</pre>
+                <pre>{{ receipt | safe }}</pre>
                 <div class="container rounded" style="justify-content: center;">
                     <a href="/pos/transaction_receipt{{request.path|cut:'/pos/endTransaction'}}">
                         <button class="btn-lg btn-secondary " style="width: 100%;">

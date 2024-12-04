@@ -99,8 +99,12 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 def view_Product(request, product_slug):
     # Get the main product
     product = get_object_or_404(Product, slug=product_slug)
-    chkCart = Cart.objects.filter(product=product, user=request.user)
-    chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    if request.user.is_authenticated:
+        chkCart = Cart.objects.filter(product=product, user=request.user)
+        chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    else:
+        chkCart = None
+        chkCart_count = 0
     product_gallery = ProductGallery.objects.filter(product=product)
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(

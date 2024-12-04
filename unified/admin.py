@@ -77,8 +77,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class UnifieldProductAdmin(ImportExportModelAdmin):
-    list_display = ['vendor', 'barcode', 'product_name', 'slug', 'sales_price', 'qty']
+    list_display = ['vendor', 'barcode', 'product_name', 'slug', 'sales_price', 'qty', 'is_popular']
     resource_class = UnifieldProductResource
+    list_editable = ('is_popular',)
 
 
 @admin_thumbnails.thumbnail('image')

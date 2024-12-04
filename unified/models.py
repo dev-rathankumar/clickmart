@@ -4,6 +4,7 @@ from vendor.models import Vendor
 from django.template.defaultfilters import slugify
 from inventory.models import tax as TaxCategory
 from inventory.models import deposit as DepositCategory
+from filer.fields.image import FilerImageField
 
 
 class Category(models.Model):
@@ -13,6 +14,7 @@ class Category(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     category_name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=100, unique=True)
+    category_image = models.ImageField(upload_to='store/categories/uploads', null=True, blank=True)
     description = models.TextField(max_length=250, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)

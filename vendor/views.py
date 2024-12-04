@@ -10,7 +10,7 @@ from orders.models import Order, OrderedFood
 from unified.models import Product,ProductGallery
 import vendor
 from .forms import VendorForm, OpeningHourForm, CategoryImportForm, ProductImportForm
-from accounts.forms import UserProfileForm
+from accounts.forms import UserInfoForm, UserProfileForm
 
 from accounts.models import UserProfile
 from .models import OpeningHour, Vendor
@@ -39,23 +39,28 @@ def vprofile(request):
     if request.method == 'POST':
         profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
         vendor_form = VendorForm(request.POST, request.FILES, instance=vendor)
-        if profile_form.is_valid() and vendor_form.is_valid():
+        user_form = UserInfoForm(request.POST, instance=request.user)
+        if profile_form.is_valid() and vendor_form.is_valid() and user_form.is_valid():
             profile_form.save()
             vendor_form.save()
+            user_form.save()
             messages.success(request, 'Settings updated.')
             return redirect('vprofile')
         else:
             print(profile_form.errors)
             print(vendor_form.errors)
+            print(user_form.errors)
     else:
         profile_form = UserProfileForm(instance = profile)
         vendor_form = VendorForm(instance=vendor)
+        user_form = UserInfoForm(instance=request.user)
 
     context = {
         'profile_form': profile_form,
         'vendor_form': vendor_form,
         'profile': profile,
         'vendor': vendor,
+        'user_form': user_form,
     }
     return render(request, 'vendor/vprofile.html', context)
 

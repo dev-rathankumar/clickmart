@@ -176,8 +176,14 @@ def endTransaction(request,type,value):
         return redirect("register")
 
 
+def wrap_text(text, max_length):
+    """Wrap the text to fit within the specified maximum length."""
+    return [text[i:i+max_length] for i in range(0, len(text), max_length)]
+
+
 def addTransaction(user,payment_type,total,cart,value):
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+    vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
     cart_df.index = cart_df.index + 1
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
@@ -187,27 +193,48 @@ def addTransaction(user,payment_type,total,cart,value):
     cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: f"{x:.2f}" if x != 0 else "")
     cart_df["deposit"] = cart_df["deposit_value"].astype(float).apply(lambda x: "" if x==0.00 else x )
     # Building Receipt
+
+    current_datetime = datetime.now()
+    date_string = current_datetime.strftime("%d-%m-%Y")
+    time_string = current_datetime.strftime("%H:%M:%S")
+    info_string = f"{'-' * settings.RECEIPT_CHAR_COUNT}\n"
+    info_string += f"Name: Walk-In Customer\nDate: {date_string}\nTime: {time_string}\nBill: {transaction_id}"
+    info_string += f"\n{'-' * settings.RECEIPT_CHAR_COUNT}"
+    
     cart_string =  "\n".join(list(cart_df.apply(
                             lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT)+ "\n"+
                                             f" {row['barcode']:<13}{row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),axis=1)))
-    cart_string = "NAME | BARCODE QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
+    cart_string = "PRODUCT | BARCODE QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
     
-    cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
-    total_string = f"Sub-Total: {round(total-tax_total,2)}  Tax-Total: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
-    total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'TOTAL SALE':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
+    # cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
+    total_string = f"Sub-Total: {round(total-tax_total,2)}  Total Tax: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
+    total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'GROSS AMOUNT':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{str(payment_type):>10}: INR {round(value,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{'CHANGE':>10}: INR {round(value-total,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
+    total_string = total_string + "\n\n" + f"{'<b>NET PAYABLE</b>':>10}: <b>INR {round(total,2)}</b>".rjust(settings.RECEIPT_CHAR_COUNT)
+    
+    sales_invoice_header = "<u>Sales Invoice</u>"
+    receipt_header_store_name = f"<b>{vendor.vendor_name.upper()}</b>"
+    wrapped_address = "\n".join(wrap_text(vendor.user_profile.address, settings.RECEIPT_CHAR_COUNT))
+    phone_number_display = f"Ph: {vendor.user.phone_number}" if vendor.user.phone_number else ""
+    gst_number = f"GSTN. {vendor.gst_number}" if vendor.gst_number else ""
+    fssai_number = f"Fssai No.: {vendor.fssai_number}" if vendor.fssai_number else ""
+    terms_and_conditions = '<div style="font-size:12px;">* Subject to Patna jurisdictions only</div>'
+    terms_and_conditions += '<div style="font-size:12px;">* Rates are inclusive of all taxes</div>'
+    terms_and_conditions += '<div style="font-size:12px;">* Exchange within 48 hours</div>'
 
-    receipt = settings.RECEIPT_HEADER+ "\n\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+"\n\n" + settings.RECEIPT_FOOTER
+    free_home_delivery = "<div style='font-size:18px;font-weight:600;'>FREE HOME DELIVERY</div>"
+    for_signature = f"<div style='font-size:14px;font-weight:300;'>FOR - {vendor.vendor_name.upper()}</div>"
+
+    # wrapped_terms = "\n".join(wrap_text(terms_and_conditions, settings.RECEIPT_CHAR_COUNT))
+    receipt = sales_invoice_header + "\n" +receipt_header_store_name+ "\n" +wrapped_address+ "\n" + phone_number_display + "\n" + gst_number + "\n" + fssai_number + "\n\n" + info_string + "\n\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"
     # receipt = settings.RECEIPT_HEADER+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" + settings.RECEIPT_FOOTER
+    receipt += "\n\n" + terms_and_conditions
+    receipt += free_home_delivery
+    receipt +=  for_signature
+    receipt += "\n\n" + settings.RECEIPT_FOOTER
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
     
-    ## IF CASH DRAWER Connected uncomment below
-    # if printer.printer and settings.CASH_DRAWER: 
-    #     try: printer.printer.cashdraw(2)
-    #     except: pass
-    #Saving Transaction into Database
-    vendor = Vendor.objects.get(user=user)
     return transaction.objects.create(vendor=vendor, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
             payment_type = payment_type, receipt = receipt, products = str(cart_df.to_dict('records')),

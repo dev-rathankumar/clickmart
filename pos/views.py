@@ -17,7 +17,7 @@ import pandas as pd
 import pytz, os, shutil
 
 from vendor.models import Vendor
-timezone = pytz.timezone("US/Eastern")
+timezone = pytz.timezone("Asia/Kolkata")
 
 
 class EnterBarcode(forms.Form):

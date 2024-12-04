@@ -24,6 +24,7 @@ from inventory import views as inventory_views
 
 
 urlpatterns = [
+    path("ckeditor5/", include('django_ckeditor_5.urls')),
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('', include('accounts.urls')),

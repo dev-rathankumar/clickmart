@@ -16,5 +16,5 @@ class FoodItemAdmin(admin.ModelAdmin):
 
 
 # admin.site.register(Category, CategoryAdmin)
-admin.site.register(FoodItem, FoodItemAdmin)
+# admin.site.register(FoodItem, FoodItemAdmin)
 # admin.site.register(Product, ProductAdmin)

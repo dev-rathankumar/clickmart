@@ -11,4 +11,4 @@ class TaxAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Cart, CartAdmin)
-admin.site.register(Tax, TaxAdmin)
+# admin.site.register(Tax, TaxAdmin)

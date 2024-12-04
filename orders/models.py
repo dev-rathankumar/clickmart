@@ -194,5 +194,9 @@ class OrderedFood(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "Ordered Product"
+        verbose_name_plural = "Ordered Products"
+
     def __str__(self):
         return self.product.product_name

@@ -7,23 +7,27 @@ from unified.models import Product as product
 from inventory.models import PERCENTAGE_VALIDATOR
 import pytz
 from vendor.models import Vendor
-timezone = pytz.timezone("US/Eastern")
+from django_ckeditor_5.fields import CKEditor5Field
+
+
+timezone = pytz.timezone("Asia/Kolkata")
 
 
 # Create your models here.transaction_dt
 class transaction(models.Model):
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True)
-    date_time       = models.DateTimeField(auto_now_add=True)
-    transaction_dt  = models.DateTimeField(editable=False, null=False, blank=False,)
-    user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, null=False, blank=False,editable=False,)
-    transaction_id  = models.CharField(unique=True, max_length=50, editable=False,null=False)
-    total_sale      = models.DecimalField(max_digits=7,decimal_places=2,null=False,editable=False)
-    sub_total       = models.DecimalField(max_digits=7,decimal_places=2,null=False,editable=False)
-    tax_total       = models.DecimalField(max_digits=7,decimal_places=2,null=True,editable=False)
-    deposit_total   = models.DecimalField(max_digits=7,decimal_places=2,null=True,editable=False)
-    payment_type    = models.CharField(choices=[('CASH','CASH'),('DEBIT/CREDIT','DEBIT/CREDIT'),('EBT','EBT')],max_length=32, null=False,editable=False)
-    receipt         = models.TextField(blank=False,null=False,editable=False)
-    products        = models.TextField(blank=False,null=False,editable=False)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    date_time       = models.DateTimeField(auto_now_add=True, editable=False)
+    transaction_dt  = models.DateTimeField(null=False, blank=False,editable=False)
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, null=False, blank=False, editable=False)
+    transaction_id  = models.CharField(unique=True, max_length=50, null=False, editable=False)
+    total_sale      = models.DecimalField(max_digits=7,decimal_places=2,null=False, editable=False)
+    sub_total       = models.DecimalField(max_digits=7,decimal_places=2,null=False, editable=False)
+    tax_total       = models.DecimalField(max_digits=7,decimal_places=2,null=True, editable=False)
+    deposit_total   = models.DecimalField(max_digits=7,decimal_places=2,null=True, editable=False)
+    payment_type    = models.CharField(choices=[('CASH','CASH'),('DEBIT/CREDIT','DEBIT/CREDIT'),('EBT','EBT')],max_length=32, null=False, editable=False)
+    # receipt         = models.TextField(blank=False,null=False,editable=False)
+    receipt         = CKEditor5Field(config_name='extends')
+    products        = models.TextField(blank=False,null=False, editable=False)
 
     def __str__(self) -> str:
         return self.transaction_id
