@@ -33,6 +33,7 @@
                                                     <p class="mb-0">{{ order.address }}</p>
                                                     <p class="mb-0">{{ order.phone }}</p>
                                                     <p class="mb-0">{{ order.email }}</p>
+                                                    <p class="mb-0" style="font-weight: 600;">Order Status: {{ order.status }}</p>
                                                 </div>
                                             </div>
                                             
@@ -75,9 +76,23 @@
                                             </table>
                             
                                             <div class="row mt-5">
+                                                {% if order.status == 'Processing' %}
+                                                <div class="d-flex justify-content-center col-md-6">
+                                                    <img src="{% static 'images/payment-pending.png' %}" width="200">
+                                                </div>
+                                                {% elif order.status == 'Paid' or order.status == 'Completed' %}
                                                 <div class="d-flex justify-content-center col-md-6">
                                                     <img src="{% static 'images/paid.png' %}" width="200">
                                                 </div>
+                                                {% elif order.status == 'Cancelled' %}
+                                                <div class="d-flex justify-content-center col-md-6">
+                                                    <img src="{% static 'images/order-cancelled.png' %}" width="200">
+                                                </div>
+                                                {% elif order.status == 'Refunded' %}
+                                                <div class="d-flex justify-content-center col-md-6">
+                                                    <img src="{% static 'images/refunded.png' %}" width="200">
+                                                </div>
+                                                {% endif %}
                                                 <div class="col-md-6">
                                                     <ul>
                                                         <li style="list-style-type: none;">

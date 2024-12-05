@@ -64,14 +64,12 @@
                     <div class="d-flex justify-content-center col-md-6">
                         {% if order.payment_method != 'COD' %}
                         <img src="{% static 'images/paid.png' %}" width="200">
+                        {% elif order.payment_method == 'COD' %}
+                        <img src="{% static 'images/cod.svg' %}" width="200">
                         {% endif %}
                     </div>
-                    {% if order.payment_method == 'COD' %}
-                    <div class="col-md-12">
-                    {% else %}
+                    
                     <div class="col-md-6">
-                    {% endif %}
-
                         <ul>
                             <li style="list-style-type: none;">
                                 Subtotal

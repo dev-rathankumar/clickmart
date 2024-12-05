@@ -201,10 +201,13 @@ function changeOrderStatus(selectElement) {
                 orderStatusSelect.classList.remove('bg-success', 'text-light', 'bg-warning', 'bg-danger');
                 if (response.status === 'Paid' || response.status === 'Completed') {
                     orderStatusSelect.classList.add('bg-success', 'text-light');
+                    swal(response.message, '', 'success')
                 } else if(response.status === 'Processing'){
                     orderStatusSelect.classList.add('bg-warning', 'text-light');
+                    swal(response.message, '', 'success')
                 }else if(response.status === 'Cancelled' || response.status === 'Refunded'){
                     orderStatusSelect.classList.add('bg-danger', 'text-light');
+                    swal(response.message, '', 'success')
                 }
                 
             },

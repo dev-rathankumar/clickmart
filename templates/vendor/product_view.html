@@ -226,9 +226,7 @@ document.querySelectorAll('.add_to_cart').forEach(button => {
       .then(data => {
           if (data.success) {// Display a success message
               window.location.href = data.redirect_url;  // Redirect to the cart or another page
-          } else {
-              alert(data.message);  // Display an error message
-          }
+          } 
       });
   });
 });
