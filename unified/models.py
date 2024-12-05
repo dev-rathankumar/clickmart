@@ -4,7 +4,6 @@ from vendor.models import Vendor
 from django.template.defaultfilters import slugify
 from inventory.models import tax as TaxCategory
 from inventory.models import deposit as DepositCategory
-from filer.fields.image import FilerImageField
 
 
 class Category(models.Model):
@@ -13,7 +12,7 @@ class Category(models.Model):
     )
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     category_name = models.CharField(max_length=50)
-    slug = models.SlugField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100)
     category_image = models.ImageField(upload_to='store/categories/uploads', null=True, blank=True)
     description = models.TextField(max_length=250, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -23,6 +22,10 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'category'
         verbose_name_plural = 'categories'
+        # Ensure combination of vendor and slug is unique
+        constraints = [
+            models.UniqueConstraint(fields=['vendor', 'slug'], name='unique_vendor_slug_category')
+        ]
 
     def clean(self):
         self.category_name = self.category_name.capitalize()
@@ -111,8 +114,8 @@ class Product(models.Model):
     
 
 class ProductGallery(models.Model):
-    product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='menu/products', max_length=355)
+    product = models.ForeignKey(Product, blank=True, null=True, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='store/products', max_length=355, blank=True, null=True)
 
     def __str__(self):
         return self.product.product_name

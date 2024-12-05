@@ -2,7 +2,8 @@ from django import forms
 
 from accounts.validators import allow_only_images_validator
 from .models import FoodItem
-from unified.models import Category, Product
+from unified.models import Category, Product, ProductGallery
+from django.forms import modelformset_factory
 
 
 class CategoryForm(forms.ModelForm):
@@ -100,8 +101,18 @@ class EditProductForm(forms.ModelForm):
             # Set subcategory choices to none initially
             self.fields['subcategory'].queryset = Category.objects.none()
 
+
 class FoodItemForm(forms.ModelForm):
     image = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info w-100'}), validators=[allow_only_images_validator])
     class Meta:
         model = FoodItem
         fields = ['category', 'food_title', 'description', 'price', 'image', 'is_available']
+
+
+class ProductGalleryForm(forms.ModelForm):
+    class Meta:
+        model = ProductGallery
+        fields = ['image']
+    image = forms.ImageField(required=False)
+
+ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)

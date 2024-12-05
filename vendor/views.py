@@ -3,8 +3,9 @@ from urllib import response
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import IntegrityError
+import requests
 
-from menu.forms import CategoryForm, FoodItemForm, SubCategoryForm, ProductForm,EditProductForm
+from menu.forms import CategoryForm, FoodItemForm, ProductGalleryForm, SubCategoryForm, ProductForm,EditProductForm
 from orders.models import Order, OrderedFood
 # from menu.models import Product,ProductGallery
 from unified.models import Product,ProductGallery
@@ -27,6 +28,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from unified.models import MediaUpload
+
+from django.forms import modelformset_factory
+
+from django.core.files.base import ContentFile
+from urllib.request import urlretrieve
+from io import BytesIO
 
 
 
@@ -175,7 +182,6 @@ def import_products(request):
         decoded_file = csv_file.read().decode('utf-8').splitlines()
         reader = csv.DictReader(decoded_file)
 
-        products_to_create = []
         for row in reader:
             try:
                 # Extract fields from CSV
@@ -187,6 +193,9 @@ def import_products(request):
                 regular_price = row['regular_price']
                 sales_price = row['sales_price']
                 image = row['image']
+                gallery_image_1 = row['gallery_image_1']
+                gallery_image_2 = row['gallery_image_2']
+                gallery_image_3 = row['gallery_image_3']
                 category_name = row['category'].strip().replace(" ", "")
                 subcategory_name = row.get('subcategory', "").strip().replace(" ", "")
                 tax_category_name = row['tax_category'].strip().replace(" ", "")
@@ -199,7 +208,7 @@ def import_products(request):
                 # Check if product with the same barcode already exists
                 if Product.objects.filter(barcode=barcode).exists():
                     print(f"Product with barcode '{barcode}' already exists. Skipping product '{product_name}'.")
-                    continue  # Skip this product if barcode exists
+                    messages.error(request, f"Error processing product '{row.get('product_name', 'Unknown')}': {e}")
 
                 # Handle ForeignKey relationships
                 try:
@@ -211,6 +220,7 @@ def import_products(request):
                         vendor=vendor,
                         description="",
                     )
+                    category.save()
                     print(f"Category '{category_name}' created.")
 
                 subcategory = None
@@ -226,6 +236,7 @@ def import_products(request):
                             vendor=vendor,
                             description="",
                         )
+                        subcategory.save()
                         print(f"Subcategory '{subcategory_name}' created under parent category '{category_name}'.")
 
                 try:
@@ -236,11 +247,15 @@ def import_products(request):
                         tax_percentage=tax_percentage,
                         tax_desc=''
                         )
+                        tax_instance.save()
                         print(f"Tax category '{tax_category_name}' with {tax_percentage}% created.")
                 except Tax.DoesNotExist:
                     messages.error(request, f"Tax category '{tax_category_name}' not found. Skipping product '{product_name}'.")
                     continue
-
+                
+                main_image_filename = image.split('/')[-1]
+                main_img_content = requests.get(image).content
+                main_content_file = ContentFile(main_img_content, name=main_image_filename)
                 # Create product instance
                 product = Product(
                     barcode=barcode,
@@ -252,13 +267,34 @@ def import_products(request):
                     cost_price=cost_price,
                     regular_price=regular_price,
                     sales_price=sales_price,
-                    image=image,
+                    image=main_content_file,
                     category=category,
                     subcategory=subcategory,
                     qty=qty,
                     tax_category=tax_instance,
                 )
-                products_to_create.append(product)
+                product.save()
+
+                # Save gallery images
+                gallery_images = [gallery_image_1, gallery_image_2, gallery_image_3]
+                for idx, gallery_image_url in enumerate(gallery_images):
+                    if gallery_image_url:
+                        try:
+                            # Fetch the image content from the URL
+                            image_filename = gallery_image_url.split('/')[-1]
+                            img_content = requests.get(gallery_image_url).content
+                            content_file = ContentFile(img_content, name=image_filename)
+
+                            # Create ProductGallery instance
+                            product_gallery = ProductGallery(
+                                product=product,
+                                image=content_file
+                            )
+                            product_gallery.save()  # Save the gallery image
+                            messages.success(request, "Products imported successfully!")
+                            print(f"Gallery image {idx + 1} for product '{product.product_name}' saved.")
+                        except Exception as e:
+                            print(f"Error saving gallery image {idx + 1} for product '{product.product_name}': {e}")
             except KeyError as e:
                 messages.error(request, f"Missing field '{e}' in the CSV file. Please check your data.")
                 continue
@@ -266,15 +302,6 @@ def import_products(request):
                 print(str(e))
                 messages.error(request, f"Error processing product '{row.get('product_name', 'Unknown')}': {e}")
                 continue
-        
-        # Bulk create products
-        if products_to_create:
-            Product.objects.bulk_create(products_to_create)
-            print('Products imported successfully')
-            messages.success(request, f"Successfully imported {len(products_to_create)} products.")
-        else:
-            messages.error(request, "No products were imported due to errors.")
-
         return redirect('import_products')
     form = ProductImportForm()
     return render(request, 'vendor/import_products.html', {'form': form})
@@ -471,7 +498,7 @@ def delete_subcategory(request, pk=None):
 #*  ================ Prouduct section =============== 
 def product_list_view(request):
     vendor = get_vendor(request)
-    products = Product.objects.filter(vendor=vendor)
+    products = Product.objects.filter(vendor=vendor).order_by('-modified_date')
     context = {
         'products': products,
     }
@@ -486,24 +513,35 @@ def get_subcategories(request, category_id):
 @user_passes_test(check_role_vendor)
 def add_product(request):
     vendor_id = request.user.user.id
+
+    ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES,vendor_id=vendor_id)
-        if form.is_valid():
+        formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
+        if form.is_valid() and formset.is_valid():
             product = form.save(commit=False)
             product.vendor = get_vendor(request)
             # Generate the slug from the product name
             product.slug = slugify(product.product_name)
             product.save()
+            # Save the images from the formset
+            for form in formset:
+                if form.cleaned_data.get('image'):
+                    gallery = form.save(commit=False)
+                    gallery.product = product
+                    gallery.save()
             messages.success(request, 'Product added successfully!')
             return redirect('vendor_products_list')
     else:
         form = ProductForm(vendor_id=vendor_id)
+        formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
 
     # Pass categories to the template for the dropdown
     categories = Category.objects.filter(parent__isnull=True, vendor_id = vendor_id)  # Top-level categories
     context = {
         'form': form,
         'categories': categories,
+        'formset': formset
     }
     return render(request, 'vendor/add_product.html', context)
 
@@ -514,24 +552,52 @@ def add_product(request):
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def edit_product(request, product_id):
-    vendor_id = request.user.user.id
+    vendor = get_vendor(request)
     product = get_object_or_404(Product, id=product_id, vendor=get_vendor(request))
+    # Create a formset for managing gallery images
+    ProductGalleryFormSet = modelformset_factory(
+        ProductGallery,
+        form=ProductGalleryForm,
+        extra=1,  # Allow one extra form for uploading a new image
+        can_delete=True  # Allow existing images to be deleted
+    )
+    
     if request.method == 'POST':
         form = EditProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
+        formset = ProductGalleryFormSet(
+            request.POST, request.FILES, queryset=ProductGallery.objects.filter(product=product)
+        )
+        if form.is_valid() and formset.is_valid():
             product = form.save(commit=False)
             product.slug = slugify(product.product_name)
             product.save()
+
+            # Process gallery formset
+            for form in formset:
+                if form.cleaned_data.get('DELETE'):
+                    # Delete the image if marked for deletion
+                    form.instance.delete()
+                elif form.cleaned_data.get('image'):
+                    # Save new or updated image
+                    gallery = form.save(commit=False)
+                    gallery.product = product
+                    gallery.save()
             messages.success(request, 'Product updated successfully!')
             return redirect('vendor_products_list')
+        else:
+            print('error')
+            print(form.errors)
+            # print(formset.errors)
     else:
-        form = EditProductForm(instance=product,vendor_id = vendor_id)
+        form = EditProductForm(instance=product,vendor_id = vendor.id)
+        formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
 
     categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
     context = {
         'form': form,
         'categories': categories,
         'product': product,
+        'formset': formset,
     }
     return render(request, 'vendor/edit_product.html', context)
 
@@ -546,6 +612,8 @@ def delete_product(request, product_id=None):
         messages.error(request, 'You are not authorized to delete this product.')
     
     return redirect('vendor_products_list')  # Redirect to the product list page
+
+
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)

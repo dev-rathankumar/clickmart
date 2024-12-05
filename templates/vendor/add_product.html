@@ -76,13 +76,13 @@
                                         </div>
                                         <div class="col-lg-4 col-md-4 col-sm-12">
                                             <div class="field-holder">
-                                                <label >Original Cost</label>
+                                                <label >Wholesale Cost</label>
                                                 {{ form.cost_price }}
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-4 col-sm-12">
                                             <div class="field-holder">
-                                                <label >Price *</label>
+                                                <label >Regular Price *</label>
                                                 {{ form.regular_price }}
                                             </div>
                                         </div>
@@ -104,6 +104,16 @@
                                                 <label >Tax Category</label>
                                                 {{ form.tax_category }}
                                             </div>
+                                        </div>
+
+                                        <div>
+                                            <h3>Upload Gallery Images</h3>
+                                            {{ formset.management_form }}
+                                            {% for form in formset %}
+                                                <div class="mb-3">
+                                                    {{ form.image.label }} {{ form.image }}
+                                                </div>
+                                            {% endfor %}
                                         </div>
                                         
                                         
