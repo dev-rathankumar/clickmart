@@ -218,7 +218,6 @@ def payments(request):
                 ordered_food_to_vendor = OrderedFood.objects.filter(order=order, product__vendor=i.product.vendor)
                 print(ordered_food_to_vendor)
                 tatal = order_total_by_vendor(order, i.product.vendor.id)['tax_dict'],
-                print("tatal lll ", tatal)
         
         
                 context = {
