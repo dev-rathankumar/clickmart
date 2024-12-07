@@ -9,7 +9,7 @@ from django.forms import modelformset_factory
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['category_name', 'description']
+        fields = ['category_name', 'description','category_image']
 
 
 class SubCategoryForm(forms.ModelForm):

@@ -29,7 +29,19 @@ class Category(models.Model):
 
     def clean(self):
         self.category_name = self.category_name.capitalize()
-    
+        
+    def save(self, *args, **kwargs):
+        # Capitalize the category name before saving
+        self.clean()
+
+        # Save the object to generate the ID if not already set
+        super().save(*args, **kwargs)  # Save once to ensure `id` is available
+        # Generate the slug using the combination of category name and ID
+        self.slug = slugify(f"{self.category_name}-{self.id}")
+        
+        # Save again to store the generated slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.category_name
     

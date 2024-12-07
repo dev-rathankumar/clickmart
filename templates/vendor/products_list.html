@@ -43,22 +43,22 @@
                                                     <th scope="col">Actions</th>
                                                   </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody style="padding:5px 5px">
                                                     {% for product in products %}
                                                   <tr>
-                                                    <td>{{ product.barcode }}</td>
-                                                    <td>{{ product.product_name }}</td>
-                                                    <td>{{ product.category.category_name }}</td>
-                                                    <td>{{ product.subcategory.category_name }}</td>
+                                                    <td style="padding:5px 5px">{{ product.barcode }}</td>
+                                                    <td style="padding:5px 5px">{{ product.product_name }}</td>
+                                                    <td style="padding:5px 5px">{{ product.category.category_name }}</td>
+                                                    <td style="padding:5px 5px">{{ product.subcategory.category_name }}</td>
                                                     
                                                     {% if product.sales_price %}
-                                                    <td>₹ {{ product.sales_price }}</td>                                                        
+                                                    <td style="padding:5px 5px">₹ {{ product.sales_price }}</td>                                                        
                                                     {% else %}
-                                                    <td>{{ product.regular_price }}</td>
+                                                    <td style="padding:5px 5px">{{ product.regular_price }}</td>
                                                     {% endif %}
-                                                    <td>{{ product.qty }}</td>
-                                                    <td>{{ product.is_available|yesno:"Yes,No" }}</td>
-                                                    <td>
+                                                    <td style="padding:5px 5px">{{ product.qty }}</td>
+                                                    <td style="padding:5px 5px">{{ product.is_available|yesno:"Yes,No" }}</td>
+                                                    <td style="padding:5px 5px">
                                                         <a href="{% url 'edit_product' product.id %}" style="color: unset;"><i class="fa fa-pencil" aria-hidden="true"></i></a> &nbsp;</a> 
                                                         <a href="{% url 'delete_product' product.id %}" onclick="return confirm('Are you sure you want to delete this Product?')"><i class="fa fa-trash text-danger" aria-hidden="true"></i></a></td>
                                                     </td>
