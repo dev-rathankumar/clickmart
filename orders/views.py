@@ -8,7 +8,7 @@ from .forms import OrderForm
 from .models import Order, OrderedFood, Payment
 import simplejson as json
 from .utils import generate_order_number, order_total_by_vendor
-from accounts.utils import send_notification
+from accounts.utils import send_notification,generate_receipt_pdf
 from django.contrib.auth.decorators import login_required
 import razorpay
 from foodOnline_main.settings import RZP_KEY_ID, RZP_KEY_SECRET,PAYPAL_CLIENT_ID,PAYPAL_CLIENT_SECRET,PAYPAL_BASE_URL
@@ -203,7 +203,8 @@ def payments(request):
             'tax_data': tax_data,
         }
         print('sending notification email')
-        send_notification(mail_subject, mail_template, context)
+        pdf = generate_receipt_pdf(order,ordered_food,tax_data)
+        send_notification(mail_subject, mail_template, context,pdf)
         print('email sent')
         
 
@@ -364,3 +365,17 @@ def generate_paypal_access_token():
     else:
         print(f"Failed to generate Access Token: {response.status_code} - {response.text}")
         return None
+
+
+def generate(request):
+        order = Order.objects.get(user=request.user, order_number=20241207104050149)
+        ordered_food = OrderedFood.objects.filter(order=order)
+        tax_data = json.loads(order.tax_data)
+
+        pdf_file = generate_receipt_pdf(order, ordered_food, tax_data)
+        file_name = f"Invoice_{order.order_number}.pdf"
+        # Create the HTTP response with PDF content
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{file_name}"'  # Use double quotes for file name
+
+        return response

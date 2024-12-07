@@ -563,7 +563,7 @@ def edit_product(request, product_id):
     )
     
     if request.method == 'POST':
-        form = EditProductForm(request.POST, request.FILES, instance=product)
+        form = EditProductForm(request.POST, request.FILES, instance=product,vendor_id = vendor.id)
         formset = ProductGalleryFormSet(
             request.POST, request.FILES, queryset=ProductGallery.objects.filter(product=product)
         )
