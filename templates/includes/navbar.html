@@ -57,6 +57,7 @@
                         <div class="dropdown">
                             <button onclick="toggleDropdown()" class='btn btn-outline-danger btn-category text-uppercase'>Categories</button>
                             <div id="categoryDropdown" class="dropdown-content">
+                                <a href="{% url 'categories' %}">All Categories</a>
                                 <a href="{% url 'all_products' %}">All Products</a>
                                 {% for category in categories %}
                                     <a href="javascript:void(0)" onclick="toggleSubcategories({{ category.id }})">{{ category.category_name }} {% if category.subcategories.exists %}<i class="fa fa-angle-down float-right"></i>{% endif %}</a>

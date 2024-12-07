@@ -115,6 +115,7 @@ def import_categories(request):
                 vendor = Vendor.objects.get(user=user, is_approved=True)
                 vendor_name = vendor.vendor_name
                 category_description = row['category_description']
+                category_image_path = row['category_image']
 
                 # Check if category already exists for the vendor
                 existing_category = Category.objects.filter(
@@ -147,12 +148,19 @@ def import_categories(request):
                 
                 # Handle Slug (generate if not present)
                 slug = slugify(category_name)
+                main_content_file = None
+                  
+                if category_image_path:
+                    main_image_filename = category_image_path.split('/')[-1]
+                    main_img_content = requests.get(category_image_path).content
+                    main_content_file = ContentFile(main_img_content, name=main_image_filename)
 
                 # Create category object
                 category = Category(
                     category_name=category_name,
                     slug=slug,
                     description=category_description,
+                    category_image=main_content_file,
                     parent=parent_category,  # Parent will be None if no parent category
                     vendor=vendor,
                 )
@@ -328,7 +336,7 @@ def fooditems_by_category(request, pk=None):
 @user_passes_test(check_role_vendor)
 def add_category(request):
     if request.method == 'POST':
-        form = CategoryForm(request.POST)
+        form = CategoryForm(request.POST,request.FILES)
         if form.is_valid():
             category_name = form.cleaned_data['category_name']
             category = form.save(commit=False)
@@ -355,7 +363,7 @@ def add_category(request):
 def edit_category(request, pk=None):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
+        form = CategoryForm(request.POST, request.FILES, instance=category)
         if form.is_valid():
             category_name = form.cleaned_data['category_name']
             category = form.save(commit=False)
