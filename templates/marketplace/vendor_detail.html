@@ -110,7 +110,7 @@
                                 {% else %}
                                     <span class="text-dark">Price: ₹ {{ product.regular_price }}</span>
                                 {% endif %}
-                                    <a href="{% url 'view_product' product.slug %}" class="btn btn-danger w-100 m-auto text-center py-2">View Details</a>
+                                    <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="btn btn-danger w-100 m-auto text-center py-2">View Details</a>
                                 </div>
                             </div>
                         </div>

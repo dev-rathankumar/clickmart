@@ -96,9 +96,9 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     return render(request, 'marketplace/vendor_detail.html', context)
 
 
-def view_Product(request, product_slug):
+def view_Product(request, vendor_slug, product_slug):
     # Get the main product
-    product = get_object_or_404(Product, slug=product_slug)
+    product = get_object_or_404(Product, vendor__vendor_slug=vendor_slug, slug=product_slug)
     if request.user.is_authenticated:
         chkCart = Cart.objects.filter(product=product, user=request.user)
         chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
@@ -387,7 +387,7 @@ def add_product_to_cart(request, product_id):
             return JsonResponse({
                 'success': True,
                 'message': message,
-                'redirect_url': f'/marketplace/product/{product.slug}/'  # Redirect to the cart page or any other page
+                'redirect_url': f'/marketplace/product/{product.vendor.vendor_slug}/{product.slug}/'  # Redirect to the cart page or any other page
             })
 
         return JsonResponse({'success': False, 'message': 'Invalid request method.'})
