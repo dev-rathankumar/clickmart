@@ -85,7 +85,7 @@
 				</div>
 				<div class="d-flex flex-row justify-content-center align-items-center flex-wrap" style="gap:20px !important">
 				{% for product in products %}
-						<a href="{% url 'view_product' product.slug %}" class="text-decoration-none">
+						<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="text-decoration-none">
 							<div class="card" style="width: 270px;">
 								<img class="card-img-top w-50 m-auto pt-3" src="{{ product.image.url }}" alt="Card image cap">
 								<div class="card-body">
