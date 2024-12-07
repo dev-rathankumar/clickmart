@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.mail import EmailMessage
 from unicodedata import category
 from urllib import response
 from django.http import HttpResponse, JsonResponse
@@ -34,6 +36,7 @@ from django.forms import modelformset_factory
 from django.core.files.base import ContentFile
 from urllib.request import urlretrieve
 from io import BytesIO
+from accounts.utils import send_notification
 
 
 
@@ -754,6 +757,26 @@ def order_status(request):
             order = Order.objects.get(order_number=order_number)
             order.status = status
             order.save()
+            # Send email
+            mail_subject = f'Your Order #{order_number} is {status}'
+            message = f"""
+            Dear {order.user.first_name},
+            
+            Your order with ID #{order_number} has been marked as {status}.
+            <br>
+            Thank you for shopping with us.
+            
+            <br><br>
+            Regards,
+            Clickmall
+        """
+            recipient = order.user.email
+            from_email = settings.DEFAULT_FROM_EMAIL
+            # Send the email
+            mail = EmailMessage(mail_subject, message, from_email, to=[recipient])
+            mail.content_subtype = "html"
+            mail.send()
+            
             return JsonResponse({'message': 'Status updated successfully.', 'status': order.status})
         except Order.DoesNotExist:
             return JsonResponse({'error': 'Order not found.'})

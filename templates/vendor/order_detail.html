@@ -187,6 +187,16 @@ function changeOrderStatus(selectElement) {
     var confirmAction = confirm("Are you sure you want to change the order status to " + selectedValue + "?");
 
     if (confirmAction) {
+
+        swal({
+        title: 'Please wait...',
+        text: 'Updating the order status.',
+        icon: 'info', // You can use 'info' or skip this
+        buttons: false, // Disable buttons
+        closeOnClickOutside: false, // Prevent outside click
+        closeOnEsc: false // Prevent escape key closing
+    });
+
         $.ajax({
             url: '{% url "order_status" %}',  // Django URL name for your view
             type: 'POST',

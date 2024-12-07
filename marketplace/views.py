@@ -395,3 +395,8 @@ def add_product_to_cart(request, product_id):
     else:
         return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
 
+
+def categories(request):
+    categories = Category.objects.filter(parent__isnull=True, is_active=True).prefetch_related('subcategories').distinct()
+    context = {'categories': categories}
+    return render(request, 'marketplace/categories.html', context)
