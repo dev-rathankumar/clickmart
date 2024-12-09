@@ -55,15 +55,15 @@
                 {% for product in products %}
                 <div class="col-md-3 mb-4">
                     <div class="card">
-                        <div class="card-body text-center">
+                        <div class="card-body text-center" style="padding: 0.5rem;">
                             <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
                                 <img src="{{ product.image.url }}" class="card-img-top mx-auto w-50" alt="product_image">
                             </a>
-                            <h6 class="card-title mt-3">{{ product.product_name }}</h6>
+                            <h6 class="card-title mt-0">{{ product.product_name }}</h6>
                             {% if product.sales_price %}
-                                <p class="card-text">Product sale price: ₹ {{ product.sales_price }}</p>
+                                <p class="card-text mb-0">Price: ₹ {{ product.sales_price }}</p>
                             {% else %}
-                                <p class="card-text">Product regular price: ₹ {{ product.regular_price }}</p>
+                                <p class="card-text mb-0">Price: ₹ {{ product.regular_price }}</p>
                             {% endif %}
                             <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="btn btn-danger w-100 mt-3">View Details</a>
                         </div>
