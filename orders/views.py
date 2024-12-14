@@ -217,10 +217,6 @@ def payments(request):
                 to_emails.append(i.product.vendor.user.email)
 
                 ordered_food_to_vendor = OrderedFood.objects.filter(order=order, product__vendor=i.product.vendor)
-                print(ordered_food_to_vendor)
-                tatal = order_total_by_vendor(order, i.product.vendor.id)['tax_dict'],
-        
-        
                 context = {
                     'order': order,
                     'to_email': i.product.vendor.user.email,

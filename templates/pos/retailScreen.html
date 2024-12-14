@@ -13,15 +13,24 @@ Register | Clickmall Retail POS
 <div class="row" style="width: 100%;padding-right: 0px;">
     <div class="col-lg-6">
         <div class="row mb-0" style="padding-bottom:5px;">
-            <form class="form col-lg-6" action="{{ request.get_full_path }}" method = "POST" style="width:100%;padding-bottom: 10px;padding:10px;padding-top: 15px;">
+            <form class="form col-lg-6" action="{{ request.get_full_path }}" method="POST" style="width:100%; padding: 10px;">
                 {% csrf_token %}
-                <div class="row" style="width:100%;justify-content: center;">
-                {% for field in form %}
-                <ul style="padding-left:25px;width:300px;"><strong style="color:black;width:100%;padding-right: 15px;padding-left: 10px;">{{ field.label }} :</strong> {{ field }}</ul>
-                {% endfor %}
+                <div class="row" style="width:100%; justify-content: center;">
+                    <ul style="padding-left: 25px; width: 300px;">
+                        <strong style="color:black; width: 100%; padding-right: 15px;">Product:</strong>
+                        <!-- Display selected product name -->
+                        <input id="id_search" type="text" class="form-control" autofocus="autofocus", autocomplete="off", placeholder="Search by barcode, name, or description" style="width: 100%;">
+                        <!-- Hidden field for selected product ID -->
+                        <input id="product_id" type="hidden" name="product_id">
+                    </ul>
+                    <ul style="padding-left: 25px; width: 300px;">
+                        <strong style="color:black; width: 100%; padding-right: 15px;">Quantity:</strong>
+                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 100%;">
+                    </ul>
                 </div>
-                <input class="btn btn-primary"  style="width:100%;margin-top: 10px;" id="submit-barcode" type="submit" value="Submit">
-            </form>
+                <div id="product-suggestions" style="margin-top: 10px; overflow: hidden;"></div>
+                <input class="btn btn-primary" style="width:100%; margin-top: 10px;" id="submit-barcode" type="submit" value="Submit">
+            </form>            
             <div class="col-lg-6 card border-left-success shadow-sm h-100 py-2" style="width:100%;margin-top:10px;margin-bottom: 10px;">
                 <div class="card-header py-2">
                     <h6 class="mb-0 font-weight-bold text-uppercase text-success ">Transaction Info</h6>
@@ -56,6 +65,16 @@ Register | Clickmall Retail POS
                 </div>
             </div>
             {% endif %}
+            {% if not_enough_qty %}
+            <div class="loginPopup" id='popup'>
+                <div class="formPopup" id="popupForm" style="display:block">
+                    <div class="formContainer">
+                        <div class="h3 mb-5 text-gray-800"> Sorry, Insufficient Stock for the Requested Quantity. Please add Product Quantity in Inventory </div>
+                        <button type="button" class="btn btn-danger btn-lg btn-block" onclick="closeForm()">Close</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             <div class="card shadow-sm" style="width:100%;height:465px;">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Transaction Details</h6>
@@ -63,7 +82,7 @@ Register | Clickmall Retail POS
                 <div class="card-body" style="overflow: auto ;padding:0">
                     <table class="table" style="text-align:right;">
                         <tr>
-                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)" >Barcode/Name</th>
+                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)" >ID/Barcode/Name</th>
                             <!-- <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Name</th> -->
                             <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Qty</th>
                             <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Price</th>
@@ -73,13 +92,17 @@ Register | Clickmall Retail POS
                         </tr>
                         {% for key, value in cart.items %}
                         <tr>
-                            <th style="text-align:left">{{key}} <br> {{value.name}}</th>
-                            <!-- <td>{{value.name}}</td> -->
-                            <td>{{value.quantity}}</td>
-                            <td>{{value.price}}</td>
-                            <td>{{value.tax_value}}</td>
-                            <!-- <td>{{value.deposit_value}}</td> -->
-                            <td>{{value.line_total}}</td>
+                            <th style="text-align:left">
+                                {% if value.barcode %}
+                                    {{ value.barcode }}<br>{{ value.name }}
+                                {% else %}
+                                    {{ value.name }}
+                                {% endif %}
+                            </th>
+                            <td>{{ value.quantity }}</td>
+                            <td>{{ value.price }}</td>
+                            <td>{{ value.tax_value }}</td>
+                            <td>{{ value.line_total }}</td>
                         </tr>
                         {% endfor %}
                     </table> 
@@ -166,5 +189,65 @@ Register | Clickmall Retail POS
         }
         return false
     }
+
+
+</script>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_search').on('input', function() {
+            let searchQuery = $(this).val();
+            if (searchQuery.length > 0) {
+                $.ajax({
+                    url: "{% url 'fetch_product' %}", // Ensure this matches your URL name
+                    data: { search: searchQuery },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            let suggestions = data.products.map(product => `
+                              <div 
+                                  class="suggestion-item" 
+                                  data-id="${product.id}" 
+                                  data-name="${product.name}" 
+                                  style="display: flex; align-items: center; border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); cursor: pointer;">
+                                <img src="${product.img_url}" alt="${product.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 15px;">
+                                <div>
+                                    <p style="margin: 0; font-weight: bold; font-size: 1.1em; color: #333;">${product.name}</p>
+                                    
+                                    ${product.id == product.barcode ? `<p style="margin: 5px 0; font-size: 0.9em; color: #555;">ID: <span style="color: #000;">${product.barcode}</span></p>` : `<p style="margin: 5px 0; font-size: 0.9em; color: #555;">Barcode: <span style="color: #000;">${product.barcode}</span></p>`}
+                                    <p style="margin: 5px 0; font-size: 0.9em; color: #555;">Price: <span style="color: #000;">Qty: ${product.qty}</span></p>
+                                    <p style="margin: 5px 0; font-size: 0.9em; color: #555;">Price: <span style="color: #000;">₹${product.sales_price || product.regular_price}</span></p>
+                                </div>
+                              </div>
+                            `).join('');
+                            $('#product-suggestions').html(suggestions);
+
+                            // Add click event to suggestions
+                            $('.suggestion-item').on('click', function() {
+                                let productId = $(this).data('id');
+                                let productName = $(this).data('name');
+
+                                // Set product details in input fields
+                                $('#id_search').val(productName);
+                                $('#product_id').val(productId);
+
+                                // Clear suggestions
+                                $('#product-suggestions').html('');
+                            });
+                        } else {
+                            $('#product-suggestions').html('<p style="color:red;">No products found</p>');
+                        }
+                    },
+                    error: function() {
+                        $('#product-suggestions').html('<p style="color:red;">Error fetching product details</p>');
+                    }
+                });
+            } else {
+                $('#product-suggestions').html('');
+            }
+        });
+    });
 </script>
 {% endblock %}

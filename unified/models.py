@@ -55,6 +55,7 @@ class Product(models.Model):
     slug = models.SlugField(max_length=300, blank=True)
     product_desc = models.TextField(blank=True, null=True)
     full_specification = models.TextField(blank=True, default='')
+    hsn_number = models.CharField(max_length=8, blank=True, null=True)
     cost_price = models.DecimalField(max_digits=7, decimal_places=2, default=0, null=False)
     regular_price = models.DecimalField(max_digits=10, decimal_places=2)
     sales_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -66,7 +67,7 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     
     # Fields from inventory.product model
-    barcode = models.CharField(max_length=25, blank=False, null=False)
+    barcode = models.CharField(max_length=25, blank=True, null=True)
     qty = models.IntegerField(default=0, null=False)
     tax_category     = models.ForeignKey(TaxCategory, on_delete=models.RESTRICT, null=False,blank=False, related_name='products')
     deposit_category = models.ForeignKey(DepositCategory, on_delete=models.RESTRICT, null=True,blank=True, related_name='products')
@@ -75,11 +76,13 @@ class Product(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['vendor', 'barcode'], name='unique_vendor_barcode'),
+         constraints = [
+            # Enforce barcode uniqueness for non-'N/A' values
+            models.UniqueConstraint(
+                fields=['vendor', 'barcode'], name='unique_vendor_barcode'),
+            # Enforce slug uniqueness
             models.UniqueConstraint(fields=['vendor', 'slug'], name='unique_vendor_slug'),
         ]
-
     def __str__(self):
         return self.product_name
 
@@ -91,6 +94,9 @@ class Product(models.Model):
         # Automatically set sales_price to regular_price if not set
         if not self.sales_price:
             self.sales_price = self.regular_price
+            
+        if not self.barcode:
+            self.barcode = self.id
 
         # Automatically generate slug if not set
         if not self.slug:

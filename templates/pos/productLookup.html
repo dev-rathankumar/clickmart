@@ -9,16 +9,19 @@ Product Information | Clickmall Retail POS
 {% endblock %}
 
 {% block content %}
-<div class="row" style="width: 100%;padding-right: 0px;">
-        <form class="form" action="{{ request.get_full_path }}" method = "POST" style="width:100%;padding-bottom: 10px;text-align: center;padding:10px;padding-top: 15px;">
+<div class="row align-items-center justify-content-center" style="width: 100%;padding-right: 0px;">
+        <form class="form" action="{{ request.get_full_path }}" method="POST" style="width:100%;padding-bottom: 10px;text-align: center;padding:10px;padding-top: 15px;">
             {% csrf_token %}
             <div class="row" style="justify-content: center;">
-            {% for field in form %}
-            <ul style="padding-left:0;width:54%"> {{ field }} </ul>
-            {% endfor %}
-            </div>
-            <input class="btn btn-lg btn-primary"  style="width:60%;margin-top: 10px;" id="submit-barcode" type="submit" value="Submit">
-        </form>
+                <ul class="col-lg-12">
+                <input id="id_search" type="text" autofocus="autofocus", autocomplete="off", placeholder="Search by barcode, name, or description" style="width: 100%; padding: 10px;">
+                <!-- Hidden field for selected product ID -->
+                <input id="product_id" type="hidden" name="product_id">
+            </ul>
+        </div>
+        <div id="product-suggestions" class="col-6"style="margin-top: 10px; overflow: hidden;"></div>
+        <input class="btn btn-lg btn-primary" style="width:60%;margin-top: 10px; float:left !important;" id="submit-barcode" type="submit" value="Submit">
+    </form>
 </div>
 <div class="row col-lg-12" style="justify-content: center;">
     {% if notFound %}
@@ -29,7 +32,7 @@ Product Information | Clickmall Retail POS
     {% if obj %}
     <div class="card shadow" style="width:80%;margin-top:50px">
         <div class="card-header py-3">
-            <h6 class="m-2 font-weight-bold text-primary h3">Product Information - {{ obj.get_fields.0.1 }}</h6>
+            <h6 class="m-2 font-weight-bold text-primary h3">Product Information - {{ obj.id }}</h6>
         </div>
         <div class="card-body " style="width:100%;">
             <div class="row h1 text-danger  " style="justify-content:end;padding-right: 10%;">
@@ -52,4 +55,62 @@ Product Information | Clickmall Retail POS
     </div>
     {% endif %}
 </div>
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_search').on('input', function() {
+            let searchQuery = $(this).val();
+            if (searchQuery.length > 0) {
+                $.ajax({
+                    url: "{% url 'fetch_product' %}", // Ensure this matches your URL name
+                    data: { search: searchQuery },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            let suggestions = data.products.map(product => `
+                              <div 
+                                  class="suggestion-item" 
+                                  data-id="${product.id}" 
+                                  data-name="${product.name}" 
+                                  style="text-align:start; display: flex; align-items: center; border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); cursor: pointer;">
+                                <img src="${product.img_url}" alt="${product.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 15px;">
+                                <div>
+                                    <p style="margin: 0; font-weight: bold; font-size: 1.1em; color: #333;">${product.name}</p>
+                                    ${product.id == product.barcode ? `<p style="margin: 5px 0; font-size: 0.9em; color: #555;">ID: <span style="color: #000;">${product.barcode}</span></p>` : `<p style="margin: 5px 0; font-size: 0.9em; color: #555;">Barcode: <span style="color: #000;">${product.barcode}</span></p>`}
+                                    <p style="margin: 5px 0; font-size: 0.9em; color: #555;">Price: <span style="color: #000;">Qty: ${product.qty}</span></p>
+                                    <p style="margin: 5px 0; font-size: 0.9em; color: #555;">Price: <span style="color: #000;">₹${product.sales_price || product.regular_price}</span></p>
+                                </div>
+                              </div>
+                            `).join('');
+                            $('#product-suggestions').html(suggestions);
+
+                            // Add click event to suggestions
+                            $('.suggestion-item').on('click', function() {
+                                let productId = $(this).data('id');
+                                let productName = $(this).data('name');
+
+                                // Set product details in input fields
+                                $('#id_search').val(productName);
+                                $('#product_id').val(productId);
+
+                                // Clear suggestions
+                                $('#product-suggestions').html('');
+                            });
+                        } else {
+                            $('#product-suggestions').html('<p style="color:red;">No products found</p>');
+                        }
+                    },
+                    error: function() {
+                        $('#product-suggestions').html('<p style="color:red;">Error fetching product details</p>');
+                    }
+                });
+            } else {
+                $('#product-suggestions').html('');
+            }
+        });
+    });
+</script>
 {% endblock %}

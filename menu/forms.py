@@ -38,7 +38,7 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'product_name', 'product_desc', 'full_specification', 'cost_price', 'regular_price',
+            'product_name', 'product_desc', 'full_specification', 'hsn_number','cost_price', 'regular_price',
             'sales_price', 'image', 'category',
             'subcategory', 'barcode', 'qty', 'tax_category'
         ]
@@ -71,9 +71,9 @@ class ProductForm(forms.ModelForm):
     
 class EditProductForm(forms.ModelForm):
     class Meta:
-        model = Product
+        model = Product 
         fields = [
-            'product_name', 'product_desc', 'full_specification', 'cost_price', 'regular_price',
+            'product_name', 'product_desc', 'full_specification', 'hsn_number', 'cost_price', 'regular_price',
             'sales_price', 'image', 'is_available', 'category',
             'subcategory', 'barcode', 'qty', 'tax_category'
         ]

@@ -200,7 +200,8 @@ def import_products(request):
                 product_name = row['product_name'].strip()
                 product_desc = row['product_desc'].strip()
                 full_specification = row['full_specification'].strip()
-                cost_price = row['wholesale_price']
+                hsn_number = row = ['hsn_code']
+                cost_price = row['purchase_price']
                 regular_price = row['regular_price']
                 sales_price = row['sales_price']
                 image = row['image']
@@ -275,6 +276,7 @@ def import_products(request):
                     slug=slugify(product_name),
                     product_desc=product_desc,
                     full_specification=full_specification,
+                    hsn_number=hsn_number,
                     cost_price=cost_price,
                     regular_price=regular_price,
                     sales_price=sales_price,

@@ -22,21 +22,26 @@ class Cart(object):
     def add(self, product, quantity, action=None):
         """
         Add a product to the cart or update its quantity.
+
         """
-        if product.barcode in self.cart.keys():
-           self.cart[product.barcode]['quantity'] += quantity
-           if self.cart[product.barcode]['quantity'] == 0:
+        for key in self.cart.keys():
+            print("key ==>", type(key))
+        product_id = str(product.id)
+        if product_id in self.cart.keys():
+           self.cart[product_id]['quantity'] += quantity
+           if self.cart[product_id]['quantity'] == 0:
                 self.remove(product)
                 return
         else:
-            self.cart[product.barcode] = {'barcode' : product.barcode,
+            self.cart[product_id] = {'barcode' : product.barcode,
                                         'name': product.product_name,
                                         'price': str(product.sales_price),
                                         'quantity' : quantity, 
                                         }
-        self.cart[product.barcode]['tax_value'] = f"{product.sales_price * self.cart[product.barcode]['quantity']* (product.tax_category.tax_percentage/100):.2f}"
-        self.cart[product.barcode]['deposit_value'] = f"{self.cart[product.barcode]['quantity']* product.deposit_category.deposit_value:.2f}"
-        self.cart[product.barcode]['line_total'] = f"{(product.sales_price * self.cart[product.barcode]['quantity']) + Decimal(self.cart[product.barcode]['tax_value']) + Decimal(self.cart[product.barcode]['deposit_value']):.2f}"
+        self.cart[product_id]['tax_value'] = f"{product.sales_price * self.cart[product_id]['quantity']* (product.tax_category.tax_percentage/100):.2f}"
+        self.cart[product_id]['deposit_value'] = f"{self.cart[product_id]['quantity']* product.deposit_category.deposit_value:.2f}"
+        self.cart[product_id]['line_total'] = f"{(product.sales_price * self.cart[product_id]['quantity']):.2f}"
+        self.cart[product_id]['regular_price'] = f"{(product.regular_price * self.cart[product_id]['quantity']):.2f}"
         self.save()
 
     
@@ -50,14 +55,14 @@ class Cart(object):
         """
         Remove a product from the cart.
         """
-        product_id = product.barcode
+        product_id = product.id
         if product_id in self.cart:
             del self.cart[product_id]
             self.save()
 
     def decrement(self, product):
         for key, value in self.cart.items():
-            if key == str(product.barcode):
+            if key == str(product.id):
 
                 value['quantity'] = value['quantity'] - 1
                 if(value['quantity'] < 1):
@@ -77,12 +82,23 @@ class Cart(object):
     
     def cartTotal(self):
         return round(pd.DataFrame(self.cart).T["line_total"].astype(float).sum(),2)
-
+    def get_items(self):
+        """
+        Get all items in the cart.
+        """
+        items = []
+        for product_id, item_data in self.cart.items():
+            items.append({
+                "product_id": product_id,
+                **item_data  # Merge item data into the dictionary
+            })
+        return items
     def returns(self):
         for key, value in self.cart.items():
             value['quantity'] = value['quantity'] * (-1)
             value['tax_value'] =float(value['tax_value']) if float(value['tax_value'])==0.0 else float(value['tax_value']) * (-1) 
             value['deposit_value'] = float(value['deposit_value']) if float(value['deposit_value']) == 0.0 else float(value['deposit_value']) * (-1) 
+            value['regular_price'] = float(value['regular_price']) * (-1)
             value['line_total'] = float(value['line_total']) * (-1)
         self.save()
 
