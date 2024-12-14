@@ -24,7 +24,7 @@ Products Dashboard | Clickmall Retail POS
                                 <table class="table table-bordered text-gray-800" width="100%" cellspacing="1" >
                                     <thead class="table-dark" >
                                         <tr class="col-lg-12 text-left" >
-                                            <th class="col-lg-4">Barcode</th>
+                                            <th class="col-lg-4">Barcode/ID</th>
                                             <th class="col-lg-6">Name</th>
                                             <th class="col-lg-2">Qty Sold</th>
                                         </tr>
@@ -55,7 +55,7 @@ Products Dashboard | Clickmall Retail POS
                     <table class="table  mb-0 pl-2" width="100%" cellspacing="1" >
                         <thead>
                             <tr class="col-lg-12 text-left badge-dark" >
-                                <th class="col-lg-4">Barcode</th>
+                                <th class="col-lg-4">Barcode/ID</th>
                                 <th class="col-lg-6">Name</th>
                                 <th class="col-lg-2">Inv. Qty</th>
                             </tr>
@@ -67,7 +67,7 @@ Products Dashboard | Clickmall Retail POS
                                 {% for i in low_inventory_products %}
                                 <tr class="col-lg-12">
                                     <td class="col-lg-4" >{{ i.barcode }}</td>
-                                    <td class="col-lg-6" >{{ i.name }}</td>
+                                    <td class="col-lg-6" >{{ i.product_name }}</td>
                                     <td class="col-lg-2" >{{ i.qty }}</td>
                                  </tr>
                                 {% endfor %}

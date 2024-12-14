@@ -28,6 +28,7 @@ from django.contrib import messages
 from marketplace.models import Cart
 from django.db.models import Sum
 
+from django.db import models
 
 
 
@@ -44,54 +45,53 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
     categories = Category.objects.filter(is_active=True, parent=None, vendor=vendor).prefetch_related('subcategories')
 
+    # Handle search query
+    search_query = request.GET.get('search', None)
+
     if subcategory_id:
         # Filter by subcategory
         selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True, vendor=vendor)
-        print("selecterd category", selected_subcategory)
-        products = Product.objects.filter(subcategory=selected_subcategory, is_available=True, is_active=True, vendor=vendor)
-        print(products)
-
+        products = Product.objects.filter(
+            subcategory=selected_subcategory, 
+            is_available=True, 
+            is_active=True, 
+            vendor=vendor
+        )
     elif category_id:
         # Filter by category
         selected_category = get_object_or_404(Category, id=category_id, is_active=True, vendor=vendor)
         subcategories = selected_category.subcategories.all()
-        products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True, vendor=vendor)
+        products = Product.objects.filter(
+            subcategory__in=subcategories, 
+            is_available=True, 
+            is_active=True, 
+            vendor=vendor
+        )
     else:
-        # Show all products if no filter is selected
-        products = Product.objects.filter(is_available=True, is_active=True,vendor=vendor)
-    print(products)
-
-    # categories = Category.objects.filter(vendor=vendor, is_active=True, parent=None).prefetch_related(
-    #     Prefetch(
-    #         'subcategories',  # related_name for subcategories
-    #         queryset=Category.objects.filter(is_active=True).prefetch_related(
-    #             Prefetch(
-    #                 'subcategory_products',  # related_name for products in subcategory
-    #                 queryset=Product.objects.filter(is_available=True)
-    #             )
-    #         )
-    #     )
-    # )
+        # Show all products
+        products = Product.objects.filter(is_available=True, is_active=True, vendor=vendor)
     
+    # Apply search filter
+    if search_query:
+        products = products.filter(
+            models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
+        )
 
     opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
-    
-    # Check current day's opening hours.
     today_date = date.today()
     today = today_date.isoweekday()
-    
     current_opening_hours = OpeningHour.objects.filter(vendor=vendor, day=today)
-    if request.user.is_authenticated:
-        cart_items = Cart.objects.filter(user=request.user)
-    else:
-        cart_items = None
+    
+    cart_items = Cart.objects.filter(user=request.user) if request.user.is_authenticated else None
+    
     context = {
         'vendor': vendor,
         'categories': categories,
         'cart_items': cart_items,
         'opening_hours': opening_hours,
         'current_opening_hours': current_opening_hours,
-        'products':products
+        'products': products,
+        'search_query': search_query  # Pass the search query to template
     }
     return render(request, 'marketplace/vendor_detail.html', context)
 
@@ -337,14 +337,20 @@ def All_products(request, category_id=None, subcategory_id=None):
     return render(request, 'marketplace/products.html', context)
 
 def add_product_to_cart(request, product_id):
+    print(request)
     if request.user.is_authenticated:
         if request.method == 'POST':
             # Get the product object
             try:
                 product = Product.objects.get(id=product_id)
+                vendor = product.vendor
+                existing_products_in_cart = Cart.objects.filter(user=request.user)
+                for single_cart_prodcut in existing_products_in_cart:
+                    if single_cart_prodcut.product.vendor != vendor:
+                        single_cart_prodcut.delete()
             except Product.DoesNotExist:
                 return JsonResponse({'success': False, 'message': 'Product not found.'})
-            
+             
             # Try to parse JSON data from the request body
             try:
                 data = json.loads(request.body)
@@ -364,13 +370,14 @@ def add_product_to_cart(request, product_id):
 
             # Check if requested quantity exceeds available stock
             if total_quantity > product.qty:
+                messages.warning(request, f"Only {product.qty} units of {product.product_name} are available. ")
                 return JsonResponse({
-                    'success': False,
-                    'message': (
-                        f"Only {product.qty} units of {product.product_name} are available. "
-                    )
+                    'success': True,
+                    'status':'stock_out',
+                    'message': f"Only {product.qty} units of {product.product_name} are available. ",
+                    'redirect_url': f'/marketplace/product/{product.vendor.vendor_slug}/{product.slug}/'
                 })
-            
+             
             try:
                 cart_item = Cart.objects.get(user=request.user, product=product)
                 cart_item.quantity += quantity
@@ -389,8 +396,9 @@ def add_product_to_cart(request, product_id):
                 'message': message,
                 'redirect_url': f'/marketplace/product/{product.vendor.vendor_slug}/{product.slug}/'  # Redirect to the cart page or any other page
             })
-
-        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+        
+    
+        return JsonResponse({'success': False, 'status':'invalid_method','message': 'Invalid request method.'})
            
     else:
         return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})

@@ -18,40 +18,84 @@ import pytz, os, shutil
 
 from vendor.models import Vendor
 timezone = pytz.timezone("Asia/Kolkata")
+from django.http import JsonResponse
+@login_required(login_url="/pos/user/login/")
+def fetch_product(request):
+    try:
+        # Get the current vendor associated with the logged-in user
+        vendor = Vendor.objects.get(user=request.user)
+    except Vendor.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Vendor not found'})
 
+    if request.method == "GET":
+        search = request.GET.get('search', '').strip()
+        if search:
+            # Filter products by the current vendor and search query
+            products = product.objects.filter(vendor=vendor).filter(
+                barcode__icontains=search
+            ) | product.objects.filter(vendor=vendor).filter(
+                product_name__icontains=search
+            ) | product.objects.filter(vendor=vendor).filter(
+                product_desc__icontains=search
+            )
+
+            # Serialize the matching products
+            product_list = [
+                {
+                    'id': product.id,
+                    'barcode': product.barcode,
+                    'name': product.product_name,
+                    'qty':product.qty,
+                    'img_url': product.image.url if product.image else '',  # Use the URL of the image
+                    'regular_price': product.regular_price,
+                    'sales_price': product.sales_price,
+                }
+                for product in products
+            ]
+            return JsonResponse({'success': True, 'products': product_list})
+        return JsonResponse({'success': False, 'error': 'No search term provided'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 class EnterBarcode(forms.Form):
-    barcode = forms.CharField(widget=forms.TextInput(attrs={'autofocus':"autofocus",' autocomplete':"off",'style':"width:100%"}),max_length = 32)
+    product = forms.CharField(widget=forms.TextInput(attrs={'autofocus':"autofocus",' autocomplete':"off",'style':"width:100%"}),max_length = 32)
     qty = forms.IntegerField(label="Quantity",widget=forms.TextInput(attrs={'style':"width:100%"}))
-
 
 @login_required(login_url="/pos/user/login/")
 def register(request):
-    form = EnterBarcode(initial={'qty':1})
+    qty = 1
     if request.method == "POST":
-        form = EnterBarcode(request.POST)
-        if form.is_valid():
-            return redirect(f"/pos/cart/add/{form.cleaned_data['barcode']}/{form.cleaned_data['qty']}")
+        product_id = request.POST.get('product_id')
+        qty = request.POST.get('qty', 1)
+
+        if qty:
+            pass
+        else:
+            qty = 1
+
+        if product_id and qty:
+            return redirect(f"/pos/cart/add/{product_id}/{qty}")
+    
     try:
         cart = request.session[settings.CART_SESSION_ID]
-        Total = round(pd.DataFrame(cart).T["line_total"].astype(float).sum(),2)
-        Tax_Total = round(pd.DataFrame(cart).T["tax_value"].astype(float).sum(),2)
+        Total = round(pd.DataFrame(cart).T["line_total"].astype(float).sum(), 2)
+        Tax_Total = round(pd.DataFrame(cart).T["tax_value"].astype(float).sum(), 2)
     except KeyError:
         cart = Cart(request)
         Total = 0
         Tax_Total = 0
+
     context = {
-        'form':form,
-        'no_product':  True if "ProductNotFound" in request.path else False,
-        'cart':cart,
-        'total':Total,
-        'tax_total':Tax_Total,
-        'displayed_items':displayed_items.objects.all(),
+        'no_product': True if "ProductNotFound" in request.path else False,
+        'not_enough_qty': True if "NotEnoughQTY" in request.path else False,
+        'cart': cart,
+        'total': Total,
+        'tax_total': Tax_Total,
+        'displayed_items': displayed_items.objects.all(),
     }
     request.session["Total"] = Total
     request.session["Tax_Total"] = Tax_Total
     request.session.modified = True
-    return render(request,'pos/retailScreen.html', context=context)
+    return render(request, 'pos/retailScreen.html', context=context)
 
 
 @login_required(login_url="/pos/user/login/")
@@ -151,7 +195,7 @@ def report_regular(request,start_date,end_date):
 
     return render(request,"pos/reportsRegular.html", context={
             "table_html":date_group.to_html(classes= "table table-bordered table-hover h6 text-gray-900 border-5"),
-            "start_date":start_date,"end_date":end_date,"store_name":settings.STORE_NAME,
+            "start_date":start_date,"end_date":end_date,"store_name":vendor.vendor_name,
             })
 
 

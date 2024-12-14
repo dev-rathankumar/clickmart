@@ -92,7 +92,11 @@ $(document).ready(function(){
                     })
                 }else if(response.status == 'Failed'){
                     swal(response.message, '', 'error')
-                }else{
+                
+                }else if(response.status == 'stock_out'){
+                    swal(response.message, '', 'error')
+                }
+                else{
                     $('#cart_counter').html(response.cart_counter['cart_count']);
                     $('#qty-'+food_id).html(response.qty);
 

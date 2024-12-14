@@ -24,11 +24,38 @@
                             </div>
                             <div class="text-holder">
                                 <span class="restaurant-title">{{ vendor.vendor_name }} {% if not vendor.is_open %}[Closed]{% endif %}</span>
-                                <div class="text">
+                                <div class="text-white"style="font-size: 12px;line-height: 22px;">
                                     {% if vendor.user_profile.address %}
-                                    <i class="icon-location"></i>
-                                    <p>{{vendor.user_profile.address}}</p>
+                                    <div>
+                                        <span class="text-white">Location: </span>
+                                        <span class="text-white">{{vendor.user_profile.address}}</span>
+                                    </div>
                                     {% endif %}
+                                    {% if vendor.gst_number %}
+                                    <div>                                        
+                                        <span>GST Number: </span>
+                                        <span>{{vendor.gst_number}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.fssai_number %}
+                                    <div>
+                                        <span>FSSAI Number: </span>
+                                        <span>{{vendor.fssai_number}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.user.phone_number %}
+                                    <div>
+                                        <span>Phone Number: </span>
+                                        <span>{{vendor.user.phone_number}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.user.phone_number %}
+                                    <div>
+                                        <span>Delivery radious: </span>
+                                        <span>5KM.</span>
+                                    </div>
+                                    {% endif %}
+
                                 </div>
                             </div>
                         </div>
@@ -62,13 +89,13 @@
     </div>
 
     <div class="page-section">
-        <div class="container" style="margin: 60px !important;">
-            <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-4 col-xs-12 sticky-sidebar">
-                    <div class="filter-wrapper">
+        <div class="container m-xl-5 m-lg-5 m-md-5 m-sm-0 m-xs-0">
+            <div class="row mx-3 mt-5 m-xl-0 m-lg-0 m-md-0">
+                <div class="col-lg-3 col-md-3 col-sm-9 col-xs-9">
+                    <div class="user-account-nav user-account-sidebar">
                         <div class="categories-menu">
-                            <h6><i class="icon-restaurant_menu"></i>Categories</h6>
-                            <ul class="menu-list">
+                            <h6 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i class="icon-restaurant_menu"></i>Categories</h6>
+                            <ul class="menu-list" id="category-ul">
                                 <li class="active"><a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="menu-category-link font-weight-bold">All Products</a></li>
 
                                 {% for category in categories %}
@@ -89,8 +116,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-9 col-md-9 col-sm-8 col-xs-12 ">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 ">
+                    <div class="mb-2">
+                     <!-- Search Form -->
+                        <form method="get" class="d-flex w-75">
+                            <input 
+                                type="text" 
+                                name="search" 
+                                placeholder="Search products..." 
+                                class="form-control"
+                                value="{{ search_query|default:'' }}" 
+                            />
+                            <button type="submit" class="btn btn-danger ml-2">Search</button>
+                        </form>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
                         {% if products %}
                             <h3>Items found: <strong class="text-danger">{{ products|length }}</strong></h3>
                         {% else %}
@@ -122,5 +162,17 @@
     </div>
 </div>
 <!-- Main Section End -->
+<script>
+    function toggleCategories(event) {
+        event.preventDefault(); // Prevent default behavior of the button/link
+        const category = document.getElementById('category-ul');
+        // Toggle the display property between 'none' and 'block'
+        if (category.style.display === 'none' || category.style.display === '') {
+            category.style.display = 'block';
+        } else {
+            category.style.display = 'none';
+        }
+    }
+</script>
 
 {% endblock %}

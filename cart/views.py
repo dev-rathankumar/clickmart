@@ -8,18 +8,62 @@ from vendor.models import Vendor
 from .models import Cart
 
 
+# @login_required(login_url="/pos/user/login")
+# def cart_add(request,id,qty):
+#     print("type qty", qty)
+
+#     cart = Cart(request)
+#     vendor = Vendor.objects.get(user=request.user)
+#     product = Product.objects.filter(id=id, vendor=vendor).first()
+#     print(cart)
+#     for key in cart:
+#         print(key)
+
+#     if product:
+#         if product.qty >= int(qty):
+#             cart.add(product=product,quantity=int(qty))
+#             return redirect('register')
+#         else:
+#             scheme = request.is_secure() and "https" or "http"
+#             return redirect(f"{scheme}://{request.get_host()}/pos/register/NotEnoughQTY/")
+        
+#     else:
+#         scheme = request.is_secure() and "https" or "http"
+#         return redirect(f"{scheme}://{request.get_host()}/pos/register/ProductNotFound/")
+
 @login_required(login_url="/pos/user/login")
-def cart_add(request,id,qty):
-    cart = Cart(request)
+def cart_add(request, id, qty):
+    print("type qty", qty)
+
+    cart = Cart(request)  # Custom Cart instance
     vendor = Vendor.objects.get(user=request.user)
-    product = Product.objects.filter(barcode=id, vendor=vendor).first()
-    if product:
-        cart.add(product=product,quantity=int(qty))
-        return redirect('register')
-    else:
+    product = Product.objects.filter(id=id, vendor=vendor).first()
+    print(cart)
+
+    if not product:
         scheme = request.is_secure() and "https" or "http"
         return redirect(f"{scheme}://{request.get_host()}/pos/register/ProductNotFound/")
 
+    # Check if the product exists in the cart
+    product_in_cart = None
+    for item in cart.get_items():  # Call `get_items()` to get all items
+        if item['product_id'] == str(product.id):  # Compare product ID
+            product_in_cart = item
+            break
+
+    # Calculate the new total quantity
+    new_total_qty = int(qty)
+    if product_in_cart:
+        new_total_qty += product_in_cart['quantity']
+
+    # Check stock availability
+    if new_total_qty > product.qty:
+        scheme = request.is_secure() and "https" or "http"
+        return redirect(f"{scheme}://{request.get_host()}/pos/register/NotEnoughQTY/")
+
+    # Add or update product in the cart
+    cart.add(product=product, quantity=int(qty))
+    return redirect('register')
 
 @login_required(login_url="/pos/user/login")
 def item_clear(request, id):

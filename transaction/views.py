@@ -182,33 +182,42 @@ def wrap_text(text, max_length):
 
 
 def addTransaction(user,payment_type,total,cart,value):
+    print("total", total)
+    print("value", value)
+    print(cart)
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
     cart_df.index = cart_df.index + 1
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
+    regular_price_total = round(cart_df["regular_price"].astype(float).sum(),2) 
+    print("regular price ==>", regular_price_total)
     # cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: "T" if x>0 else "-T" if x<0 else "")
     # To print the actual tax amount - but it exceeds the receipt
     cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: f"{x:.2f}" if x != 0 else "")
     cart_df["deposit"] = cart_df["deposit_value"].astype(float).apply(lambda x: "" if x==0.00 else x )
     # Building Receipt
-
+    
     current_datetime = datetime.now()
     date_string = current_datetime.strftime("%d-%m-%Y")
     time_string = current_datetime.strftime("%H:%M:%S")
     info_string = f"{'-' * settings.RECEIPT_CHAR_COUNT}\n"
     info_string += f"Name: Walk-In Customer\nDate: {date_string}\nTime: {time_string}\nBill: {transaction_id}"
     info_string += f"\n{'-' * settings.RECEIPT_CHAR_COUNT}"
-    
-    cart_string =  "\n".join(list(cart_df.apply(
-                            lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT)+ "\n"+
-                                            f" {row['barcode']:<13}{row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),axis=1)))
-    cart_string = "PRODUCT | BARCODE QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
+    cart_string = "\n".join(
+                                list(cart_df.apply(
+                                    lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT) + "\n" +
+                                                f" {row['barcode'] if row['barcode'] else 'N/A':<13}{row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
+                                    axis=1
+                                ))
+                            )
+    cart_string = "PRODUCT | BARCODE/ID QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
     
     # cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
     total_string = f"Sub-Total: {round(total-tax_total,2)}  Total Tax: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'GROSS AMOUNT':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
+    total_string = total_string + "\n" + f"{'Discount AMOUNT':>10}: {round(regular_price_total-total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{str(payment_type):>10}: INR {round(value,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{'CHANGE':>10}: INR {round(value-total,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n\n" + f"{'<b>NET PAYABLE</b>':>10}: <b>INR {round(total,2)}</b>".rjust(settings.RECEIPT_CHAR_COUNT)
@@ -234,7 +243,7 @@ def addTransaction(user,payment_type,total,cart,value):
     receipt +=  for_signature
     receipt += "\n\n" + settings.RECEIPT_FOOTER
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
-    
+
     return transaction.objects.create(vendor=vendor, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
             payment_type = payment_type, receipt = receipt, products = str(cart_df.to_dict('records')),
@@ -242,3 +251,4 @@ def addTransaction(user,payment_type,total,cart,value):
 
 
 
+     

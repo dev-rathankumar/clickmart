@@ -145,19 +145,15 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     p.line(45, y - 10, 500, y - 10)
     y -= 15
     # Total Summary (Centered text)
-    y -= 20
     p.setFont("Helvetica-Bold", 10)
-    p.drawString(52, y, f"Subtotal:")
-    p.drawString(385, y, f"INR {order.total}")
     y -= 15
-
     # Display Total GST
     if total_gst > 0:
         p.drawString(52, y, f"Total GST:")
         p.drawString(385, y, f"INR {total_gst:.2f}")
         y -= 15
     # Grand Total
-    formatted_grand_total = "{:.2f}".format(order.total + order.total_tax)
+    formatted_grand_total = "{:.2f}".format(order.total)
 
     # Use `formatted_grand_total` in the PDF
     p.drawString(52, y, f"Grand Total:")

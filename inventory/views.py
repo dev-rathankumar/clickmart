@@ -26,18 +26,16 @@ def product_lookup(request):
     obj = None
     notFound = False
     if request.method == "POST":
-        form = ProductLookup(request.POST)
-        if form.is_valid():
-            try:
-                vendor = Vendor.objects.get(user=request.user)
-                obj = product.objects.get(barcode=form.cleaned_data['barcode'], vendor=vendor)
-            except product.DoesNotExist:
-                obj = None
-                notFound= True
-    form = ProductLookup()
+        product_id = request.POST.get('product_id')
+        try:
+            vendor = Vendor.objects.get(user=request.user)
+            obj = product.objects.get(id=product_id, vendor=vendor)
+        except product.DoesNotExist:
+            obj = None
+            notFound= True
     if obj:
-        return render(request,"pos/productLookup.html",context={'form':form,'notFound':notFound,'obj':obj})
-    return render(request,"pos/productLookup.html",context={'form':form,'notFound':notFound})
+        return render(request,"pos/productLookup.html",context={'notFound':notFound,'obj':obj})
+    return render(request,"pos/productLookup.html",context={'notFound':notFound})
 
 
 @login_required(login_url="/pos/user/login")
@@ -69,20 +67,24 @@ def manualAmount(request,manual_department,amount):
 def inventoryAdd(request):
     context = { }
     if request.method == "POST":
-        form = AddProduct(request.POST)
-        if form.is_valid():
-            try:
-                vendor = Vendor.objects.get(user=request.user)
-                obj = product.objects.get(barcode=form.cleaned_data['barcode'], vendor=vendor)
-                # 'product_added':  True if "ProductNotFound" in request.path else False, 
-                context['p_qty'] = obj.qty
-                context['n_qty'] = int(form.cleaned_data['qty'])
-                obj.qty = obj.qty + context['n_qty']
-                obj.save()
-            except product.DoesNotExist:
-                obj = None
-                context['notFound']= form.cleaned_data['barcode']
-            context['obj'] = obj
-    form = AddProduct(initial={'qty':1})
-    context['form'] = form
+        product_id = request.POST.get('product_id')
+        qty = request.POST.get('qty', 1)
+        if qty:
+            pass
+        else:
+            qty = 1
+        print("After QTY", qty)
+
+        try:
+            vendor = Vendor.objects.get(user=request.user)
+            obj = product.objects.get(id=product_id, vendor=vendor)
+            # 'product_added':  True if "ProductNotFound" in request.path else False, 
+            context['p_qty'] = obj.qty
+            context['n_qty'] = int(qty)
+            obj.qty = obj.qty + context['n_qty']
+            obj.save()
+        except product.DoesNotExist:
+            obj = None
+            context['notFound']= request.POST.get('product_id')
+        context['obj'] = obj
     return render(request,'pos/addInventory.html',context=context)

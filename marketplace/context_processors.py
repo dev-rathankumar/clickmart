@@ -59,7 +59,7 @@ def get_cart_amounts(request):
             # Append to tax_dict without breaking the current structure
             tax_dict.append(tax_entry)
 
-        grand_total = subtotal + tax_value
+        grand_total = subtotal
 
     return dict(subtotal=subtotal, tax=tax_value, grand_total=grand_total, tax_dict=tax_dict)
 
