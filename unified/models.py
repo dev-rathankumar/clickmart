@@ -56,6 +56,7 @@ class Product(models.Model):
     product_desc = models.TextField(blank=True, null=True)
     full_specification = models.TextField(blank=True, default='')
     hsn_number = models.CharField(max_length=8, blank=True, null=True)
+    model_number = models.CharField(blank=True, null=True)
     cost_price = models.DecimalField(max_digits=7, decimal_places=2, default=0, null=False)
     regular_price = models.DecimalField(max_digits=10, decimal_places=2)
     sales_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

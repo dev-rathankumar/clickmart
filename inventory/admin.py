@@ -51,7 +51,7 @@ class TaxAdmin(ImportExportModelAdmin):
     list_display= ('tax_category','tax_percentage','tax_desc')
 
 
-# @admin.register(deposit)
+@admin.register(deposit)
 class DepositAdmin(ImportExportModelAdmin):
     list_display= ('deposit_category','deposit_value','deposit_desc')
     

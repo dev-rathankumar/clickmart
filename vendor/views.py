@@ -200,7 +200,8 @@ def import_products(request):
                 product_name = row['product_name'].strip()
                 product_desc = row['product_desc'].strip()
                 full_specification = row['full_specification'].strip()
-                hsn_number = row = ['hsn_code']
+                hsn_number = row['hsn_number']
+                model_number = row['model_number']
                 cost_price = row['purchase_price']
                 regular_price = row['regular_price']
                 sales_price = row['sales_price']
@@ -264,7 +265,9 @@ def import_products(request):
                 except Tax.DoesNotExist:
                     messages.error(request, f"Tax category '{tax_category_name}' not found. Skipping product '{product_name}'.")
                     continue
-                
+                hsn_number = hsn_number if hsn_number else None
+
+
                 main_image_filename = image.split('/')[-1]
                 main_img_content = requests.get(image).content
                 main_content_file = ContentFile(main_img_content, name=main_image_filename)
@@ -277,6 +280,7 @@ def import_products(request):
                     product_desc=product_desc,
                     full_specification=full_specification,
                     hsn_number=hsn_number,
+                    model_number=model_number,
                     cost_price=cost_price,
                     regular_price=regular_price,
                     sales_price=sales_price,
