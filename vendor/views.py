@@ -265,8 +265,6 @@ def import_products(request):
                 except Tax.DoesNotExist:
                     messages.error(request, f"Tax category '{tax_category_name}' not found. Skipping product '{product_name}'.")
                     continue
-                hsn_number = hsn_number if hsn_number else None
-
 
                 main_image_filename = image.split('/')[-1]
                 main_img_content = requests.get(image).content
