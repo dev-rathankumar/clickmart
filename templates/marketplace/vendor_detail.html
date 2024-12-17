@@ -11,8 +11,8 @@
             <div class="row">
                 <!-- Column Start -->
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                    <div class="company-info-detail">
-                        <div class="company-info">
+                    <div class="company-info-detail row">
+                        <div class="company-info col-lg-6 col-md-6 col-ms-12 col-xs-12">
                             <div class="img-holder">
                                 <figure>
                                     {% if vendor.user_profile.profile_picture %}
@@ -49,7 +49,7 @@
                                         <span>{{vendor.user.phone_number}}</span>
                                     </div>
                                     {% endif %}
-                                    {% if vendor.user.phone_number %}
+                                    {% if vendor.user.delivery_radius %}
                                     <div>
                                         <span>Delivery radious: </span>
                                         <span>{{vendor.delivery_radius}}KM.</span>
@@ -60,7 +60,7 @@
                             </div>
                         </div>
                         {% if opening_hours %}
-                        <div class="delivery-timing reviews-sortby">
+                        <div class="delivery-timing reviews-sortby col-lg-6 col-md-6 col-ms-12 col-xs-12 mt-5">
                             <ul>
                                 <li>
                                     <a href="#" class="reviews-sortby-active">
@@ -117,9 +117,9 @@
                     </div>
                 </div>
                 <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 ">
-                    <div class="mb-2">
+                    <div class="mb-3 mt-4">
                      <!-- Search Form -->
-                        <form method="get" class="d-flex w-75">
+                        <form method="get" class="d-flex">
                             <input 
                                 type="text" 
                                 name="search" 
@@ -145,7 +145,7 @@
                                 <img src="{{ product.image.url }}" class="card-img-top w-75 m-auto" alt="product_image">
                                 <div class="card-body text-start">
                                     <h6 class="card-title font-weight-normal">{{ product.product_name }}</h6>
-                                    {% if product.sales_price %}
+                                    {% if product.sales_price != product.regular_price %}
                                     <span class="text-dark">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
                                 {% else %}
                                     <span class="text-dark">Price: ₹ {{ product.regular_price }}</span>

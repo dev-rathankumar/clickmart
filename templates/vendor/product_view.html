@@ -54,7 +54,7 @@
           </div>
   
           <div class="mb-3">
-            {% if product.sales_price %}
+            {% if product.sales_price != product.regular_price %}
               <span class="text-dark h5">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
             {% else %}
               <span class="text-dark h5">Price: ₹ {{ product.regular_price }}</span>

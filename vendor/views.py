@@ -118,6 +118,7 @@ def import_categories(request):
                 category_image_path = row['category_image']
 
                 # Check if category already exists for the vendor
+                print("categroyy name", category_name)
                 existing_category = Category.objects.filter(
                     category_name=category_name,
                     vendor=vendor
