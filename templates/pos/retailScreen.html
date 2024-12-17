@@ -15,7 +15,7 @@ Register | Clickmall Retail POS
         <div class="row mb-0" style="padding-bottom:5px;">
             <form class="form col-lg-6" action="{{ request.get_full_path }}" method="POST" style="width:100%; padding: 10px;">
                 {% csrf_token %}
-                <div class="row" style="width:100%; justify-content: center;">
+                <div class="row" style="width:100%; justify-content: center; position: relative;">
                     <ul style="padding-left: 25px; width: 300px;">
                         <strong style="color:black; width: 100%; padding-right: 15px;">Product:</strong>
                         <!-- Display selected product name -->
@@ -23,12 +23,13 @@ Register | Clickmall Retail POS
                         <!-- Hidden field for selected product ID -->
                         <input id="product_id" type="hidden" name="product_id">
                     </ul>
+                    <div id="product-suggestions" style="display: none; position: absolute;z-index: 9999;top: 65px;left: 24px;background: white;overflow-y: scroll;width: 260px; max-height: 150px;"></div>
                     <ul style="padding-left: 25px; width: 300px;">
                         <strong style="color:black; width: 100%; padding-right: 15px;">Quantity:</strong>
-                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 100%;">
+                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 100%;" value="1" min="1">
+
                     </ul>
                 </div>
-                <div id="product-suggestions" style="margin-top: 10px; overflow: hidden;"></div>
                 <input class="btn btn-primary" style="width:100%; margin-top: 10px;" id="submit-barcode" type="submit" value="Submit">
             </form>            
             <div class="col-lg-6 card border-left-success shadow-sm h-100 py-2" style="width:100%;margin-top:10px;margin-bottom: 10px;">
@@ -199,55 +200,60 @@ Register | Clickmall Retail POS
     $(document).ready(function() {
         $('#id_search').on('input', function() {
             let searchQuery = $(this).val();
-            if (searchQuery.length > 0) {
+            if (searchQuery.length <= 0) {
+                $('#product-suggestions').hide(); // Hide suggestions if search query is empty
+            } else {
                 $.ajax({
                     url: "{% url 'fetch_product' %}", // Ensure this matches your URL name
                     data: { search: searchQuery },
                     dataType: 'json',
                     success: function(data) {
-                        if (data.success) {
+                        if (data.success && data.products.length > 0) {
                             let suggestions = data.products.map(product => `
                               <div 
                                   class="suggestion-item" 
                                   data-id="${product.id}" 
                                   data-name="${product.name}" 
-                                  style="display: flex; align-items: center; border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); cursor: pointer;">
-                                <img src="${product.img_url}" alt="${product.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 15px;">
+                                  style="display: flex; align-items: center; cursor: pointer; margin-top: 10px;">
+                                <img src="${product.img_url}" alt="${product.name}" style="width:40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 15px;">
                                 <div>
-                                    <p style="margin: 0; font-weight: bold; font-size: 1.1em; color: #333;">${product.name}</p>
-                                    
-                                    ${product.id == product.barcode ? `<p style="margin: 5px 0; font-size: 0.9em; color: #555;">ID: <span style="color: #000;">${product.barcode}</span></p>` : `<p style="margin: 5px 0; font-size: 0.9em; color: #555;">Barcode: <span style="color: #000;">${product.barcode}</span></p>`}
-                                    <p style="margin: 5px 0; font-size: 0.9em; color: #555;">Price: <span style="color: #000;">Qty: ${product.qty}</span></p>
-                                    <p style="margin: 5px 0; font-size: 0.9em; color: #555;">Price: <span style="color: #000;">₹${product.sales_price || product.regular_price}</span></p>
+                                    <p style="margin: 0; font-weight: bold; font-size: 0.85rem; color: #333;">${product.name}</p>                                    
+                                    <p style="margin: 5px 0; font-size: 0.7em; color: #555;"><span style="color: #000;">₹${product.sales_price || product.regular_price}</span></p>
                                 </div>
                               </div>
                             `).join('');
-                            $('#product-suggestions').html(suggestions);
-
+                            $('#product-suggestions').html(suggestions).show(); // Populate and show suggestions
+    
                             // Add click event to suggestions
                             $('.suggestion-item').on('click', function() {
                                 let productId = $(this).data('id');
                                 let productName = $(this).data('name');
-
+    
                                 // Set product details in input fields
                                 $('#id_search').val(productName);
                                 $('#product_id').val(productId);
-
+    
                                 // Clear suggestions
-                                $('#product-suggestions').html('');
+                                $('#product-suggestions').html('').hide(); // Hide suggestions after selection
                             });
                         } else {
-                            $('#product-suggestions').html('<p style="color:red;">No products found</p>');
+                            $('#product-suggestions').html('<p style="color:red;">No products found</p>').show(); // Show 'No products found' message
                         }
                     },
                     error: function() {
-                        $('#product-suggestions').html('<p style="color:red;">Error fetching product details</p>');
+                        $('#product-suggestions').html('<p style="color:red;">Error fetching product details</p>').show(); // Show error message
                     }
                 });
-            } else {
-                $('#product-suggestions').html('');
+            }
+        });
+    
+        // Hide suggestions if clicked outside
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#id_search, #product-suggestions').length) {
+                $('#product-suggestions').hide();
             }
         });
     });
+    
 </script>
 {% endblock %}

@@ -96,6 +96,9 @@ $(document).ready(function(){
                 }else if(response.status == 'stock_out'){
                     swal(response.message, '', 'error')
                 }
+                else if(response.status =='different_vendor_product'){
+                    swal(response.message,'','warning')
+                }
                 else{
                     $('#cart_counter').html(response.cart_counter['cart_count']);
                     $('#qty-'+food_id).html(response.qty);
