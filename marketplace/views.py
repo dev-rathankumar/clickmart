@@ -99,8 +99,14 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 def view_Product(request, vendor_slug, product_slug):
     # Get the main product
     product = get_object_or_404(Product, vendor__vendor_slug=vendor_slug, slug=product_slug)
+    vendor = Vendor.objects.get(vendor_slug=vendor_slug)
     if request.user.is_authenticated:
         chkCart = Cart.objects.filter(product=product, user=request.user)
+        different_vendor_product_exists=False
+        existing_products_in_cart = Cart.objects.filter(user=request.user)
+        for single_cart_prodcut in existing_products_in_cart:
+            if single_cart_prodcut.product.vendor != vendor:
+                different_vendor_product_exists=True
         chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     else:
         chkCart = None
@@ -117,7 +123,8 @@ def view_Product(request, vendor_slug, product_slug):
         'similar_products': similar_products,
         'check_cart':chkCart,
         'chkCart_count':chkCart_count,
-        'product_gallery':product_gallery
+        'product_gallery':product_gallery,
+        'different_vendor_product_exists':different_vendor_product_exists
     }
     
     return render(request, 'vendor/product_view.html', context)
@@ -383,6 +390,7 @@ def add_product_to_cart(request, product_id):
                 cart_item.quantity += quantity
                 cart_item.save()
                 message = f"The quantity of {product.product_name} has been updated in your cart."
+                messages.success(request, f"The quantity of {product.product_name} has been updated in your cart.")
             except:
                 cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
                 # product.qty = product.qty - quantity

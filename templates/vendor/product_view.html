@@ -107,9 +107,7 @@
               <i class="me-1 fa fa-eye fa-lg"></i> View Cart
             </a>
           {% else %}
-            <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart mt-3" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">
-              <i class="me-1 fa fa-shopping-basket"></i> Add to cart
-            </a>
+          <a href="#" class="btn btn-danger shadow-0 px-5 py-3 add_to_cart mt-3"data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ different_vendor_product_exists|yesno:'true,false' }}"><i class="me-1 fa fa-shopping-basket"></i> Add to cart</a>
           {% endif %}
           {% endif %}
 
@@ -201,35 +199,63 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
-
-// Add Product to Cart
 document.querySelectorAll('.add_to_cart').forEach(button => {
   button.addEventListener('click', function(event) {
       event.preventDefault();
 
-      var productId = button.getAttribute('data-id');
-      var quantity = document.getElementById('quantity-input').value;
-      var url = button.getAttribute('data-url');
+      const productId = button.getAttribute('data-id');
+      const url = button.getAttribute('data-url');
+      const isDifferentVendor = button.getAttribute('data-different-vendor') === 'true';
+      const quantity = document.getElementById('quantity-input') ? 
+                       document.getElementById('quantity-input').value : 1;
 
-      fetch(url, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken')
-          },
-          body: JSON.stringify({
-              product_id: productId,
-              quantity: parseInt(quantity) 
-          })
-      })
-      .then(response => response.json())
-      .then(data => {
-          if (data.success) {// Display a success message
-              window.location.href = data.redirect_url;  // Redirect to the cart or another page
-          } 
-      });
+      // Check if products from different vendors exist
+      if (isDifferentVendor) {
+          swal({
+              title: "Warning",
+              text: "You have added products from a different vendor to your cart. Adding this product will remove the previously added items. Do you want to proceed?",
+              icon: "warning",
+              buttons: ["Cancel", "OK"],
+              dangerMode: true,
+          }).then((willProceed) => {
+              if (willProceed) {
+                  // Proceed with adding the product to cart
+                  addProductToCart(url, productId, quantity);
+              }
+          });
+      } else {
+          // No vendor conflict, proceed normally
+          addProductToCart(url, productId, quantity);
+      }
   });
 });
+
+// Function to Add Product to Cart
+function addProductToCart(url, productId, quantity) {
+  fetch(url, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+          product_id: productId,
+          quantity: parseInt(quantity)
+      })
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.success) {
+          window.location.href = data.redirect_url; // Redirect to cart if needed
+      } else {
+          swal("Error", data.message || "Something went wrong!", "error");
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+      swal("Error", "Something went wrong!", "error");
+  });
+}
 
 // Utility function to get CSRF token
 function getCookie(name) {
