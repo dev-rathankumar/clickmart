@@ -14,8 +14,8 @@ from django.templatetags.static import static
 import os
 import io
 from django.contrib.staticfiles import finders
-import os
-from django.conf import settings
+
+
 # from orders.models import OrderedFood 
 def detectUser(user):
     if user.role == 1:
@@ -63,11 +63,15 @@ def send_notification(mail_subject, mail_template, context,pdf_file=None):
 
 def generate_receipt_pdf(order, ordered_food, tax_data):
     """
-    Generate a PDF receipt for the given order with vendor details, tax data, and product details.
+    Generate a PDF receipt for the given order with tax data and product details.
     Returns the PDF file as an in-memory byte stream.
     """
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
+
+    # Absolute paths for static assets
+    unpaid_abs_path = finders.find('images/upaid.png')  # Replace with .png
+
 
     # Fetch the vendor details (assuming there's only one vendor)
     vendor = order.vendors.first()  # Fetch the first vendor
@@ -101,43 +105,71 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     p.drawString(50, page_height - 195, f"Payment Method: {order.payment_method}")
     p.drawString(300, page_height - 195, f"Transaction ID: {order.payment.transaction_id}")
 
-    # Customer Info
+    # Add logo on the left corner
+    try:
+        if unpaid_abs_path:  # Ensure the path is not None
+            p.drawImage(unpaid_abs_path, 300, page_height - 310, width=200, height=110, mask='auto')
+        else:
+            print("Unpaid image not found.")
+    except Exception as e:
+        print(f"Error adding unpaid image: {e}")
+    # Customer Info (Centered text)
     p.setFont("Helvetica-Bold", 12)
-    p.drawString(50, page_height - 220, f"Hello {order.first_name} {order.last_name},")
+    p.drawString(50, page_height - 220, f"Hello {order.name},")
     p.setFont("Helvetica", 10)
     p.drawString(50, page_height - 240, f"Review your order details below.")
     p.drawString(50, page_height - 255, f"Address: {order.address}")
     p.drawString(50, page_height - 270, f"Email: {order.email}")
-    p.drawString(50, page_height - 285, f"Phone: {order.phone}")
 
-    # Product Table Header
-    y = page_height - 320
+    # Product Table Header (Centered text)
+    y = page_height - 330
     p.setFont("Helvetica-Bold", 10)
     p.drawString(50, y, "Product")
     p.drawString(295, y, "Quantity")
     p.drawString(380, y, "Price")
     y -= 20
 
-    # Ordered Products
+    # Ordered Products and Tax Details
     p.setFont("Helvetica", 10)
-    total_gst = 0
+    # Adding tax details
+    total_gst = 0  # Initialize total GST variable
     for item in ordered_food:
         p.drawString(50, y, item.product.product_name)
         p.drawString(300, y, str(item.quantity))
-        p.drawString(385, y, f"INR {item.price}")
+
+        # Draw the rupee symbol image before the price
+        p.drawString(385, y, f"INR {item.product.sales_price or item.product.regular_price}")
         y -= 15
 
-    # Add a line separator
-    p.setLineWidth(0.4)
+        # Iterate through tax data and render individual GST details
+        for single_tax_dict in tax_data:
+            if item.product.id == single_tax_dict['product_id']:
+                for key, value in single_tax_dict['tax_info'].items():
+                    if value:
+                        total_gst += value  # Add value to total GST
+                        y -= -2
+                        p.setFont("Helvetica", 7)
+                        p.drawString(385, y, f"GST: INR {value:.2f}")
+                        p.setFont("Helvetica", 10)
+                        y -= 20
+    p.setLineWidth(0.4)  # A thinner line for sections
     p.line(45, y - 10, 500, y - 10)
-    y -= 25
-
-    # Grand Total
-    formatted_total = "{:.2f}".format(order.total)
+    y -= 15
+    # Total Summary (Centered text)
     p.setFont("Helvetica-Bold", 10)
-    p.drawString(50, y, "Grand Total:")
-    p.drawString(385, y, f"INR {formatted_total}")
+    y -= 15
+    # Display Total GST
+    if total_gst > 0:
+        p.drawString(52, y, f"Total GST:")
+        p.drawString(385, y, f"INR {total_gst:.2f}")
+        y -= 15
+    # Grand Total
+    formatted_grand_total = "{:.2f}".format(order.total)
 
+    # Use `formatted_grand_total` in the PDF
+    p.drawString(52, y, f"Grand Total:")
+    p.drawString(385, y, f"INR {formatted_grand_total}")
+    y -= 40
     # Footer
     y -= 50
     p.setFont("Helvetica", 10)
