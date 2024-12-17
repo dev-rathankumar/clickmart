@@ -20,11 +20,38 @@
 
                         <div class="text-holder">
                             <span class="restaurant-title">{{vendor.vendor_name}}</span>
-                            <div class="text">
+                            <div class="text-white"style="font-size: 12px;line-height: 22px;">
                                 {% if vendor.user_profile.address %}
-                                <i class="icon-location"></i>
-                                <p>{{vendor.user_profile.address}}</p>
+                                <div>
+                                    <span class="text-white">Location: </span>
+                                    <span class="text-white">{{vendor.user_profile.address}}</span>
+                                </div>
                                 {% endif %}
+                                {% if vendor.gst_number %}
+                                <div>                                        
+                                    <span>GST Number: </span>
+                                    <span>{{vendor.gst_number}}</span>
+                                </div>
+                                {% endif %}
+                                {% if vendor.fssai_number %}
+                                <div>
+                                    <span>FSSAI Number: </span>
+                                    <span>{{vendor.fssai_number}}</span>
+                                </div>
+                                {% endif %}
+                                {% if vendor.user.phone_number %}
+                                <div>
+                                    <span>Phone Number: </span>
+                                    <span>{{vendor.user.phone_number}}</span>
+                                </div>
+                                {% endif %}
+                                {% if vendor.user.delivery_radius %}
+                                <div>
+                                    <span>Delivery radious: </span>
+                                    <span>{{vendor.delivery_radius}}KM.</span>
+                                </div>
+                                {% endif %}
+
                             </div>
                         </div>
                     </div>

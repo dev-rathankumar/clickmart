@@ -5,11 +5,11 @@
     <div class="row">
         <!-- Sidebar for Categories -->
         <div class="col-md-3">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 sticky-sidebar">
-                <div class="filter-wrapper">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 sticky-sidebar p-0 mb-4">
+                <div class="user-account-nav user-account-sidebar">
                     <div class="categories-menu">
-                        <h3><i class="fa fa-list-alt me-2"></i> Categories</h3>
-                        <ul class="menu-list">
+                        <h3 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i class="fa fa-list-alt me-2"></i> Categories</h3>
+                        <ul class="menu-list" id="category-ul">
                             <!-- Link to show all products when clicking "All Products" -->
                             <li>
                                 <h6>
@@ -74,4 +74,17 @@
         </div>
     </div>
 </div>
+<script>
+    function toggleCategories(event) {
+        event.preventDefault(); // Prevent default behavior of the button/link
+        const category = document.getElementById('category-ul');
+        // Toggle the display property between 'none' and 'block'
+        if (category.style.display === 'none' || category.style.display === '') {
+            category.style.display = 'block';
+        } else {
+            category.style.display = 'none';
+        }
+    }
+</script>
+
 {% endblock %}

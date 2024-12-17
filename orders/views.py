@@ -106,7 +106,7 @@ def place_order(request):
             order.order_number = generate_order_number(order.id)
             order.vendors.add(*vendors_ids)
             order.save()
-
+            
             # RazorPay Payment
             DATA = {
                 "amount": int(order.total) * 100,
@@ -363,7 +363,7 @@ def generate_paypal_access_token():
 
 
 def generate(request):
-        order = Order.objects.get(user=request.user, order_number=20241207104050149)
+        order = Order.objects.get(user=request.user, order_number=20241217184039163)
         ordered_food = OrderedFood.objects.filter(order=order)
         tax_data = json.loads(order.tax_data)
 

@@ -100,9 +100,9 @@ def view_Product(request, vendor_slug, product_slug):
     # Get the main product
     product = get_object_or_404(Product, vendor__vendor_slug=vendor_slug, slug=product_slug)
     vendor = Vendor.objects.get(vendor_slug=vendor_slug)
+    different_vendor_product_exists=False
     if request.user.is_authenticated:
         chkCart = Cart.objects.filter(product=product, user=request.user)
-        different_vendor_product_exists=False
         existing_products_in_cart = Cart.objects.filter(user=request.user)
         for single_cart_prodcut in existing_products_in_cart:
             if single_cart_prodcut.product.vendor != vendor:
