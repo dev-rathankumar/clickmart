@@ -34,8 +34,6 @@ class Category(models.Model):
         # Capitalize the category name before saving
         self.clean()
 
-        # Save the object to generate the ID if not already set
-        super().save(*args, **kwargs)  # Save once to ensure `id` is available
         # Generate the slug using the combination of category name and ID
         self.slug = slugify(f"{self.category_name}-{self.id}")
         
