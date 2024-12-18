@@ -215,7 +215,7 @@ def import_products(request):
                 vendor = Vendor.objects.get(user=user, is_approved=True)
 
                 # Check if product with the same barcode already exists
-                if Product.objects.filter(barcode=barcode).exists():
+                if Product.objects.filter(barcode=barcode , vendor=vendor).exists():
                     print(f"Product with barcode '{barcode}' already exists. Skipping product '{product_name}'.")
                     messages.error(request, f"Error processing product '{row.get('product_name', 'Unknown')}': {e}")
 
