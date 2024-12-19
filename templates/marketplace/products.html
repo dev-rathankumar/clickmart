@@ -8,7 +8,7 @@
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 sticky-sidebar p-0 mb-4">
                 <div class="user-account-nav user-account-sidebar">
                     <div class="categories-menu">
-                        <h3 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i class="fa fa-list-alt me-2"></i> Categories</h3>
+                        <h3 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i id="categoryIcon" class="fa fa-list-alt me-2"></i> Categories</h3>
                         <ul class="menu-list" id="category-ul">
                             <!-- Link to show all products when clicking "All Products" -->
                             <li>
@@ -85,6 +85,29 @@
             category.style.display = 'none';
         }
     }
+    
+    function updateCategoryIcon() {
+        const icon = document.getElementById("categoryIcon");
+        const category = document.getElementById('category-ul'); 
+        
+        if (window.innerWidth <= 990) {
+            category.style.display = 'none';
+            icon.classList.remove("icon-restaurant_menu");
+            icon.classList.add("fa", "fa-bars");
+        } else {
+            category.style.display = 'block';
+            icon.classList.remove("fa", "fa-bars");
+            icon.classList.add("icon-restaurant_menu");
+        }
+    }
+
+    // Run on initial load
+    updateCategoryIcon();
+
+    // Add event listener to handle window resize
+    window.addEventListener("resize", updateCategoryIcon);
+
+
 </script>
 
 {% endblock %}
