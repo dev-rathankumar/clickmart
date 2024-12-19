@@ -100,7 +100,9 @@ def import_categories(request):
         csv_file = request.FILES['category_file']
         # Only allow CSV file
         if not csv_file.name.endswith('.csv'):
-            return HttpResponse("Please upload a CSV file.")
+            messages.error(request, f"Please upload a CSV file.")
+            return redirect('import_categories')
+
         
         # Decode the file and read it
         decoded_file = csv_file.read().decode('utf-8').splitlines()
@@ -113,7 +115,6 @@ def import_categories(request):
                 parent_category_name = row['parent_category']
                 user = request.user
                 vendor = Vendor.objects.get(user=user, is_approved=True)
-                vendor_name = vendor.vendor_name
                 category_description = row['category_description']
                 category_image_path = row['category_image']
 
@@ -122,38 +123,34 @@ def import_categories(request):
                     category_name=category_name,
                     vendor=vendor
                 ).exists()
-
                 if existing_category:
                     messages.error(request, f"Category '{category_name}' already exists. Please check your data. ")
                     return redirect('import_categories')
                 
-                parent_category = None
+                main_content_file = None
+                  
+                if category_image_path: 
+                    main_image_filename = category_image_path.split('/')[-1]
+                    main_img_content = requests.get(category_image_path).content
+                    main_content_file = ContentFile(main_img_content, name=main_image_filename)
+                
+                parent_category=None
+                
                 if parent_category_name:
                     try:
-                        parent_category = Category.objects.get(category_name=parent_category_name)
+                        parent_category = Category.objects.get(category_name=parent_category_name, vendor=vendor)
                     except Category.DoesNotExist:
                         parent_category = Category.objects.create(
                             category_name=parent_category_name,
                             slug=slugify(parent_category_name),
+                            category_image=main_content_file,
                             is_active=True,  # Assuming new categories are active by default
                             vendor=vendor,  # You can adjust this depending on your business logic
                         )
                         print(f"Parent category '{parent_category_name}' not found. This category will be treated as a top-level category.")
                 
-                # Handle Vendor (look it up by name)
-                try:
-                    vendor = Vendor.objects.get(vendor_name=vendor_name)
-                except Vendor.DoesNotExist:
-                    return HttpResponse(f"Vendor '{vendor_name}' not found.")
-                
                 # Handle Slug (generate if not present)
                 slug = slugify(category_name)
-                main_content_file = None
-                  
-                if category_image_path:
-                    main_image_filename = category_image_path.split('/')[-1]
-                    main_img_content = requests.get(category_image_path).content
-                    main_content_file = ContentFile(main_img_content, name=main_image_filename)
 
                 # Create category object
                 category = Category(
@@ -161,15 +158,20 @@ def import_categories(request):
                     slug=slug,
                     description=category_description,
                     category_image=main_content_file,
+                    is_active=True,  # Assuming new categories are active by default
                     parent=parent_category,  # Parent will be None if no parent category
                     vendor=vendor,
                 )
                 categories_to_create.append(category)
                 
             except KeyError:
-                return HttpResponse("CSV format is incorrect. Missing required fields.")
+                messages.error(request, f"CSV format is incorrect. Missing required fields.")
+                continue
+
             except Exception as e:
-                return HttpResponse(f"Error processing row: {e}")
+                messages.error(request, f"Error processing row: {e}")
+                continue
+
             
         # Bulk insert the categories
         if categories_to_create:
@@ -187,7 +189,7 @@ def import_products(request):
         # Validate file type
         if not csv_file.name.endswith('.csv'):
             messages.error(request, "Please upload a valid CSV file.")
-            return render(request, 'vendor/import_products.html')
+            return redirect('import_products')
         
         # Decode and read the file
         decoded_file = csv_file.read().decode('utf-8').splitlines()
@@ -219,7 +221,7 @@ def import_products(request):
                 vendor = Vendor.objects.get(user=user, is_approved=True)
 
                 # Check if product with the same barcode already exists
-                if Product.objects.filter(barcode=barcode).exists():
+                if Product.objects.filter(barcode=barcode , vendor=vendor).exists():
                     print(f"Product with barcode '{barcode}' already exists. Skipping product '{product_name}'.")
                     messages.error(request, f"Error processing product '{row.get('product_name', 'Unknown')}': {e}")
 

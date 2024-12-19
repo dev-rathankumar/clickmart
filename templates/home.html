@@ -91,7 +91,7 @@
 								<div class="card-body">
 								  <h5 class="card-text font-weight-normal ">{{product.product_name}}</h5>
 										
-									{% if product.sales_price %}
+									{% if product.sales_price != product.regular_price %}
 										<span class="text-dark">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
 									{% else %}
 										<span class="text-dark">Price: ₹ {{ product.regular_price }}</span>
