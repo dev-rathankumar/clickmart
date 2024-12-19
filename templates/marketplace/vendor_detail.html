@@ -4,7 +4,7 @@
 
 <!-- Main Section Start -->
 <div class="main-section">
-    <div class="page-section restaurant-detail-image-section" style="background: url({% if vendor.user_profile.cover_photo %} {{ vendor.user_profile.cover_photo.url }} {% else %} {% static 'images/default-cover.png' %} {% endif %}) no-repeat scroll 0 0 / cover;">
+    <div class="page-section restaurant-detail-image-section" style="background: url({% if vendor.user_profile.cover_photo %} {{ vendor.user_profile.cover_photo.url }} {% else %} {% static 'images/default-cover-new.png' %} {% endif %}) no-repeat scroll 0 0 / cover;">
         <!-- Container Start -->
         <div class="container">
             <!-- Row Start -->
@@ -18,7 +18,7 @@
                                     {% if vendor.user_profile.profile_picture %}
                                     <img src="{{ vendor.user_profile.profile_picture.url }}" alt="">
                                     {% else %}
-                                    <img src="{% static 'images/default-profile.png' %}" alt="">
+                                    <img src="{% static 'images/default-profile-new.png' %}" alt="">
                                     {% endif %}
                                 </figure>
                             </div>
