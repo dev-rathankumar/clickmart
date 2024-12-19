@@ -262,7 +262,7 @@ def search(request):
         keyword = request.GET['keyword']
 
         # get vendor ids that has the food item the user is looking for
-        fetch_vendors_by_products = Product.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+        fetch_vendors_by_products = Product.objects.filter(product_name__icontains=keyword, is_available=True).values_list('vendor', flat=True)
         
         vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_products) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
         if latitude and longitude and radius:

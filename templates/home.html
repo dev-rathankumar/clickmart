@@ -77,31 +77,35 @@
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 					<div class="element-title align-left">
 						<a href="{% url 'all_products' %}" class="float-right m-1 btn font-weight-bold btn-outline-danger btn-lg py-2 px-4">See All</a>
-						<h2>Popular Products</h2>
+						<h2 style="font-size: 22px !important;">Popular Products</h2>
 						<p>Discover popular products across various categories and find the perfect items to meet your needs and style.</p>
 					</div>
 				</div>
 				<div>
 				</div>
-				<div class="d-flex flex-row justify-content-center align-items-center flex-wrap" style="gap:20px !important">
-				{% for product in products %}
-						<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="text-decoration-none">
-							<div class="card" style="width: 270px;">
-								<img class="card-img-top w-50 m-auto pt-3" src="{{ product.image.url }}" alt="Card image cap">
-								<div class="card-body">
-								  <h5 class="card-text font-weight-normal ">{{product.product_name}}</h5>
-										
-									{% if product.sales_price != product.regular_price %}
-										<span class="text-dark">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
-									{% else %}
-										<span class="text-dark">Price: ₹ {{ product.regular_price }}</span>
-									{% endif %}
-									
-								</div>
-							  </div>
-						</a>
-						  {% endfor %}
+				<div class="main">
+					<div class="row">
+						{% for product in products %}
+							<div class="col-md-3 col-sm-6 col-6">
+								<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="text-decoration-none">
+									<div class="card">
+										<img class="card-img-top w-50 m-auto pt-3" src="{{ product.image.url }}" alt="Card image cap">
+										<div class="card-body">
+											<h5 class="card-text font-weight-normal">{{ product.product_name }}</h5>
+											{% if product.sales_price != product.regular_price %}
+												<span class="text-dark">
+													<span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}
+												</span>
+											{% else %}
+												<span class="text-dark">₹{{ product.regular_price }}</span>
+											{% endif %}
+										</div>
+									</div>
+								</a>
+							</div>
+						{% endfor %}
 					</div>
+				</div>
 				</div>
 			</div>
 		</div>
