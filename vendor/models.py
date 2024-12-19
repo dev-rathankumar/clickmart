@@ -13,7 +13,7 @@ class Vendor(models.Model):
     vendor_license = models.ImageField(upload_to='vendor/license')
     gst_number = models.CharField(max_length=15, blank=True, null=True)
     fssai_number = models.CharField(max_length=14, blank=True, null=True)
-    delivery_radius = models.CharField(blank=True, null=True)
+    delivery_radius = models.CharField(max_length=10, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
