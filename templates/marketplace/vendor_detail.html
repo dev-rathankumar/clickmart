@@ -94,7 +94,7 @@
                 <div class="col-lg-3 col-md-3 col-sm-9 col-xs-9">
                     <div class="user-account-nav user-account-sidebar">
                         <div class="categories-menu">
-                            <h6 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i class="icon-restaurant_menu"></i>Categories</h6>
+                            <h6 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i id="categoryIcon" class="icon-restaurant_menu"></i>Categories</h6>
                             <ul class="menu-list" id="category-ul">
                                 <li class="active"><a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="menu-category-link font-weight-bold">All Products</a></li>
 
@@ -173,6 +173,30 @@
             category.style.display = 'none';
         }
     }
+    
+    function updateCategoryIcon() {
+        const icon = document.getElementById("categoryIcon");
+        const category = document.getElementById('category-ul'); 
+        
+        if (window.innerWidth <= 990) {
+            category.style.display = 'none';
+            icon.classList.remove("icon-restaurant_menu");
+            icon.classList.add("fa", "fa-bars");
+        } else {
+            category.style.display = 'block';
+            icon.classList.remove("fa", "fa-bars");
+            icon.classList.add("icon-restaurant_menu");
+        }
+    }
+
+    // Run on initial load
+    updateCategoryIcon();
+
+    // Add event listener to handle window resize
+    window.addEventListener("resize", updateCategoryIcon);
+
+
+
 </script>
 
 {% endblock %}
