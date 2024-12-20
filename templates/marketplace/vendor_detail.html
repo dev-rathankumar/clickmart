@@ -146,9 +146,9 @@
                                 <div class="card-body text-start">
                                     <h6 class="card-title font-weight-normal">{{ product.product_name }}</h6>
                                     {% if product.sales_price != product.regular_price %}
-                                    <span class="text-dark">Price: <span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
+                                    <span class="text-dark"><span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
                                 {% else %}
-                                    <span class="text-dark">Price: ₹ {{ product.regular_price }}</span>
+                                    <span class="text-dark">₹ {{ product.regular_price }}</span>
                                 {% endif %}
                                     <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="btn btn-danger w-100 m-auto text-center py-2">View Details</a>
                                 </div>

@@ -61,9 +61,9 @@
                             </a>
                             <h6 class="card-title mt-0">{{ product.product_name }}</h6>
                             {% if product.sales_price %}
-                                <p class="card-text mb-0">Price: ₹ {{ product.sales_price }}</p>
+                                <p class="card-text mb-0">₹ {{ product.sales_price }}</p>
                             {% else %}
-                                <p class="card-text mb-0">Price: ₹ {{ product.regular_price }}</p>
+                                <p class="card-text mb-0">₹ {{ product.regular_price }}</p>
                             {% endif %}
                             <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="btn btn-danger w-100 mt-3">View Details</a>
                         </div>

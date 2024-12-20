@@ -93,6 +93,7 @@ class Product(models.Model):
         # Automatically set sales_price to regular_price if not set
         if not self.sales_price:
             self.sales_price = self.regular_price
+        super().save(*args, **kwargs)
             
         if not self.barcode:
             self.barcode = self.id

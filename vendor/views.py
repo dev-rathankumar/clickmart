@@ -604,7 +604,7 @@ def edit_product(request, product_id):
         else:
             print('error')
             print(form.errors)
-            # print(formset.errors)
+            print(formset.errors)
     else:
         form = EditProductForm(instance=product,vendor_id = vendor.id)
         formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
