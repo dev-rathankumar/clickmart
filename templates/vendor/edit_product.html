@@ -56,7 +56,7 @@
                                                 <img
                                                     id="image-preview"
                                                     class="thumbnail"
-                                                    src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}"
+                                                    src="{% if product.image %}{{ product.image.url }}{% else %}{% static 'images/default-profile-new.png' %}{% endif %}"
                                                     alt="Product Image Preview"
                                                     style="width: 100px; display: block; margin: 10px;">
                                                 {{ form.image }}
@@ -201,7 +201,7 @@
                 reader.readAsDataURL(file);
             } else {
                 // Reset to default image if no file is selected
-                imagePreview.src = "{% static 'images/default-profile.png' %}";
+                imagePreview.src = "{% static 'images/default-profile-new.png' %}";
             }
         });
     });
