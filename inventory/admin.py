@@ -50,6 +50,7 @@ class DepartmentAdmin(ImportExportModelAdmin):
 class TaxAdmin(ImportExportModelAdmin):
     list_display= ('tax_category','tax_percentage','tax_desc')
 
+# Test
 
 # @admin.register(deposit)
 class DepositAdmin(ImportExportModelAdmin):
