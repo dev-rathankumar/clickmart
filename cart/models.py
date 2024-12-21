@@ -33,7 +33,9 @@ class Cart(object):
                 self.remove(product)
                 return
         else:
-            self.cart[product_id] = {'barcode' : product.barcode,
+            self.cart[product_id] = {
+                                        'product_id':product_id,
+                                        'barcode' : product.barcode,
                                         'name': product.product_name,
                                         'price': str(product.sales_price),
                                         'quantity' : quantity, 
