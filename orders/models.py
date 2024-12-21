@@ -53,7 +53,7 @@ class Order(models.Model):
     order_number = models.CharField(max_length=20)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    phone = models.CharField(max_length=15, blank=True)
+    phone = models.CharField(max_length=15)
     email = models.EmailField(max_length=50)
     address = models.CharField(max_length=200)
     country = models.CharField(max_length=15, blank=True)

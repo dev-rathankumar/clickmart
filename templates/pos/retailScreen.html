@@ -83,7 +83,7 @@ Register | Clickmall Retail POS
                 <div class="card-body" style="overflow: auto ;padding:0">
                     <table class="table" style="text-align:right;">
                         <tr>
-                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)" >ID/Barcode/Name</th>
+                            <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)" >Barcode/Name</th>
                             <!-- <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Name</th> -->
                             <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Qty</th>
                             <th style="font-family: bold;color:rgba(0, 0, 0, 0.623)">Price</th>
@@ -94,10 +94,10 @@ Register | Clickmall Retail POS
                         {% for key, value in cart.items %}
                         <tr>
                             <th style="text-align:left">
-                                {% if value.barcode %}
-                                    {{ value.barcode }}<br>{{ value.name }}
-                                {% else %}
+                                {% if value.barcode == key %}
                                     {{ value.name }}
+                                {% else %}
+                                    {{ value.barcode }}<br>{{ value.name }}
                                 {% endif %}
                             </th>
                             <td>{{ value.quantity }}</td>

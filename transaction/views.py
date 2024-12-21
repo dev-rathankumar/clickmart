@@ -182,9 +182,6 @@ def wrap_text(text, max_length):
 
 
 def addTransaction(user,payment_type,total,cart,value):
-    print("total", total)
-    print("value", value)
-    print(cart)
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
@@ -192,13 +189,12 @@ def addTransaction(user,payment_type,total,cart,value):
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
     regular_price_total = round(cart_df["regular_price"].astype(float).sum(),2) 
-    print("regular price ==>", regular_price_total)
     # cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: "T" if x>0 else "-T" if x<0 else "")
     # To print the actual tax amount - but it exceeds the receipt
     cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: f"{x:.2f}" if x != 0 else "")
     cart_df["deposit"] = cart_df["deposit_value"].astype(float).apply(lambda x: "" if x==0.00 else x )
     # Building Receipt
-    
+    print(cart_df)
     current_datetime = datetime.now()
     date_string = current_datetime.strftime("%d-%m-%Y")
     time_string = current_datetime.strftime("%H:%M:%S")
@@ -208,11 +204,11 @@ def addTransaction(user,payment_type,total,cart,value):
     cart_string = "\n".join(
                                 list(cart_df.apply(
                                     lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT) + "\n" +
-                                                f" {row['barcode'] if row['barcode'] else 'N/A':<13}{row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
+                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
                                     axis=1
                                 ))
                             )
-    cart_string = "PRODUCT | BARCODE/ID QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
+    cart_string = "PRODUCT | BARCODE QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
     
     # cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
     total_string = f"Sub-Total: {round(total-tax_total,2)}  Total Tax: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
