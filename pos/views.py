@@ -49,6 +49,7 @@ def fetch_product(request):
                     'img_url': product.image.url if product.image else '',  # Use the URL of the image
                     'regular_price': product.regular_price,
                     'sales_price': product.sales_price,
+                    'unit_type':product.unit_type
                 }
                 for product in products
             ]
@@ -85,6 +86,7 @@ def register(request):
         Tax_Total = 0
 
     context = {
+        'product_not_for_open_sell': True if "ProductNotForOpenSell" in request.path else False,
         'no_product': True if "ProductNotFound" in request.path else False,
         'not_enough_qty': True if "NotEnoughQTY" in request.path else False,
         'cart': cart,

@@ -40,7 +40,7 @@ class ProductForm(forms.ModelForm):
         fields = [
             'product_name', 'product_desc', 'full_specification', 'hsn_number','model_number','cost_price', 'regular_price',
             'sales_price', 'image', 'category',
-            'subcategory', 'barcode', 'qty', 'tax_category'
+            'subcategory', 'barcode','unit_type', 'qty', 'tax_category'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -75,7 +75,7 @@ class EditProductForm(forms.ModelForm):
         fields = [
             'product_name', 'product_desc', 'full_specification', 'hsn_number', 'model_number','cost_price', 'regular_price',
             'sales_price', 'image', 'is_available', 'category',
-            'subcategory', 'barcode', 'qty', 'tax_category'
+            'subcategory', 'barcode','unit_type', 'qty', 'tax_category'
         ]
 
     def __init__(self, *args, **kwargs):

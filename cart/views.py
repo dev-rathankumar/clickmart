@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 
 from vendor.models import Vendor
 from .models import Cart
-
+from decimal import Decimal
 
 # @login_required(login_url="/pos/user/login")
 # def cart_add(request,id,qty):
@@ -43,6 +43,12 @@ def cart_add(request, id, qty):
     if not product:
         scheme = request.is_secure() and "https" or "http"
         return redirect(f"{scheme}://{request.get_host()}/pos/register/ProductNotFound/")
+    # Check if product is 'pcs' and quantity is not a whole number
+    if product and product.unit_type == 'pcs':
+            qty = float(qty)  # Ensure qty is a float
+            if not qty.is_integer():  # Check if qty is not a whole number
+                scheme = "https" if request.is_secure() else "http"
+                return redirect(f"{scheme}://{request.get_host()}/pos/register/ProductNotForOpenSell/")
 
     # Check if the product exists in the cart
     product_in_cart = None
@@ -52,9 +58,9 @@ def cart_add(request, id, qty):
             break
 
     # Calculate the new total quantity
-    new_total_qty = int(qty)
+    new_total_qty = Decimal(qty)
     if product_in_cart:
-        new_total_qty += product_in_cart['quantity']
+        new_total_qty += Decimal(product_in_cart['quantity'])
 
     # Check stock availability
     if new_total_qty > product.qty:
@@ -62,8 +68,8 @@ def cart_add(request, id, qty):
         return redirect(f"{scheme}://{request.get_host()}/pos/register/NotEnoughQTY/")
 
     # Add or update product in the cart
-    cart.add(product=product, quantity=int(qty))
-    return redirect('register')
+    cart.add(product=product, quantity=Decimal(qty))
+    return redirect('register') 
 
 @login_required(login_url="/pos/user/login")
 def item_clear(request, id):

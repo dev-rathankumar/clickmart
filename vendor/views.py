@@ -215,6 +215,7 @@ def import_products(request):
                 subcategory_name = row.get('subcategory', "").strip().replace(" ", "")
                 tax_category_name = row['tax_category'].strip().replace(" ", "")
                 tax_percentage = row['tax_percentage'].strip().replace(" ", "")
+                unit_type= row['unit_type']
                 qty = row['stock']
 
                 user = request.user
@@ -289,6 +290,7 @@ def import_products(request):
                     subcategory=subcategory,
                     qty=qty,
                     tax_category=tax_instance,
+                    unit_type=unit_type,
                 )
                 product.save()
 

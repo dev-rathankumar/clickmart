@@ -28,7 +28,11 @@ class Cart(object):
             print("key ==>", type(key))
         product_id = str(product.id)
         if product_id in self.cart.keys():
-           self.cart[product_id]['quantity'] += quantity
+           print("Print qty form cart func: ", self.cart[product_id]['quantity'])
+           quantity = Decimal(self.cart[product_id]['quantity']) + Decimal(quantity)  
+
+           print(" After Print qty form cart func: ", self.cart[product_id]['quantity'])
+           self.cart[product_id]['quantity'] = str(quantity)
            if self.cart[product_id]['quantity'] == 0:
                 self.remove(product)
                 return
@@ -38,12 +42,14 @@ class Cart(object):
                                         'barcode' : product.barcode,
                                         'name': product.product_name,
                                         'price': str(product.sales_price),
-                                        'quantity' : quantity, 
+                                        'quantity' : str(quantity),
+                                        'unit_type':product.unit_type
+
                                         }
-        self.cart[product_id]['tax_value'] = f"{product.sales_price * self.cart[product_id]['quantity']* (product.tax_category.tax_percentage/100):.2f}"
-        self.cart[product_id]['deposit_value'] = f"{self.cart[product_id]['quantity']* product.deposit_category.deposit_value:.2f}"
-        self.cart[product_id]['line_total'] = f"{(product.sales_price * self.cart[product_id]['quantity']):.2f}"
-        self.cart[product_id]['regular_price'] = f"{(product.regular_price * self.cart[product_id]['quantity']):.2f}"
+        self.cart[product_id]['tax_value'] = f"{product.sales_price * Decimal(self.cart[product_id]['quantity'])* (product.tax_category.tax_percentage/100):.2f}"
+        self.cart[product_id]['deposit_value'] = f"{Decimal(self.cart[product_id]['quantity']) * product.deposit_category.deposit_value:.2f}"
+        self.cart[product_id]['line_total'] = f"{(product.sales_price * Decimal(self.cart[product_id]['quantity'])):.2f}"
+        self.cart[product_id]['regular_price'] = f"{(product.regular_price * Decimal(self.cart[product_id]['quantity'])):.2f}"
         self.save()
 
     

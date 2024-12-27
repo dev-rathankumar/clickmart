@@ -34,6 +34,7 @@ urlpatterns = [
 
     # Register URLs
     path('register/', views.register, name="register"),
+    path('register/ProductNotForOpenSell/', views.register, name="ProductNotForOpenSell"),
     path('register/ProductNotFound/', views.register, name="ProductNotFound"),
     path('register/NotEnoughQTY/', views.register, name="NotEnoughQTY"),
     path('register/cart_clear/', cart_views.cart_clear, name='cart_clear'),

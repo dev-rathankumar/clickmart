@@ -25,8 +25,9 @@ Register | Clickmall Retail POS
                     </ul>
                     <div id="product-suggestions" style="display: none; position: absolute;z-index: 9999;top: 65px;left: 24px;background: white;overflow-y: scroll;width: 260px; max-height: 150px;"></div>
                     <ul style="padding-left: 25px; width: 300px;">
-                        <strong style="color:black; width: 100%; padding-right: 15px;">Quantity:</strong>
-                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 100%;" value="1" min="1">
+                        <strong style="color:black; width: 100%; padding-right: 15px; display: block;">Quantity:</strong>
+                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 75%; display: inline;" value="1" step="0.001">
+                        <span id="product_unit_type" style="font-weight:800;"></span>
 
                     </ul>
                 </div>
@@ -71,6 +72,16 @@ Register | Clickmall Retail POS
                 <div class="formPopup" id="popupForm" style="display:block">
                     <div class="formContainer">
                         <div class="h3 mb-5 text-gray-800"> Sorry, Insufficient Stock for the Requested Quantity. Please add Product Quantity in Inventory </div>
+                        <button type="button" class="btn btn-danger btn-lg btn-block" onclick="closeForm()">Close</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if product_not_for_open_sell %}
+            <div class="loginPopup" id='popup'>
+                <div class="formPopup" id="popupForm" style="display:block">
+                    <div class="formContainer">
+                        <div class="h3 mb-5 text-gray-800"> Sorry, This product is sold only in packed quantities. Please select a valid packing size or explore similar products. </div>
                         <button type="button" class="btn btn-danger btn-lg btn-block" onclick="closeForm()">Close</button>
                     </div>
                 </div>
@@ -214,6 +225,7 @@ Register | Clickmall Retail POS
                                   class="suggestion-item" 
                                   data-id="${product.id}" 
                                   data-name="${product.name}" 
+                                  data-unit-type="${product.unit_type}"
                                   style="display: flex; align-items: center; cursor: pointer; margin-top: 10px;">
                                 <img src="${product.img_url}" alt="${product.name}" style="width:40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 15px;">
                                 <div>
@@ -223,15 +235,16 @@ Register | Clickmall Retail POS
                               </div>
                             `).join('');
                             $('#product-suggestions').html(suggestions).show(); // Populate and show suggestions
-    
+
                             // Add click event to suggestions
                             $('.suggestion-item').on('click', function() {
                                 let productId = $(this).data('id');
                                 let productName = $(this).data('name');
-    
-                                // Set product details in input fields
+                                let productUnitTypeFull = $(this).data('unit-type'); // e.g., 'Kilograms'
+
                                 $('#id_search').val(productName);
                                 $('#product_id').val(productId);
+                                $('#product_unit_type').html(productUnitTypeFull); // e.g., 'KG'
     
                                 // Clear suggestions
                                 $('#product-suggestions').html('').hide(); // Hide suggestions after selection

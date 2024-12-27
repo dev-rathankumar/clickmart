@@ -189,6 +189,8 @@ def addTransaction(user,payment_type,total,cart,value):
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
     regular_price_total = round(cart_df["regular_price"].astype(float).sum(),2) 
+    cart_df["quantity"] = cart_df["quantity"].astype(float)
+
     # cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: "T" if x>0 else "-T" if x<0 else "")
     # To print the actual tax amount - but it exceeds the receipt
     cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: f"{x:.2f}" if x != 0 else "")
@@ -204,7 +206,7 @@ def addTransaction(user,payment_type,total,cart,value):
     cart_string = "\n".join(
                                 list(cart_df.apply(
                                     lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT) + "\n" +
-                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
+                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {row['quantity'] if row['unit_type'] != 'pcs' else int(row['quantity']) :>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
                                     axis=1
                                 ))
                             )
@@ -239,6 +241,7 @@ def addTransaction(user,payment_type,total,cart,value):
     receipt +=  for_signature
     receipt += "\n\n" + settings.RECEIPT_FOOTER
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
+    print("i'm in 198")
 
     return transaction.objects.create(vendor=vendor, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
