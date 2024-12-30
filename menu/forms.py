@@ -112,7 +112,7 @@ class FoodItemForm(forms.ModelForm):
 class ProductGalleryForm(forms.ModelForm):
     class Meta:
         model = ProductGallery
-        fields = ['image']
+        fields = ['id','image']
     image = forms.ImageField(required=False)
 
 ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)

@@ -64,9 +64,18 @@ class EnterBarcode(forms.Form):
 def register(request):
     qty = 1
     if request.method == "POST":
+        inputed_text = request.POST.get('id_search')
         product_id = request.POST.get('product_id')
         qty = request.POST.get('qty', 1)
-
+        if inputed_text and not product_id:
+            try:
+                vendor = Vendor.objects.get(user=request.user)
+                barcode_product = product.objects.filter(barcode=inputed_text, vendor=vendor).first()
+                product_id=barcode_product.id
+                print(barcode_product)
+            except:
+                print("product barcode was not correct") 
+        
         if qty:
             pass
         else:
@@ -215,6 +224,7 @@ def dashboard_products(request):
         context['low_inventory_products'] = product.objects.filter(vendor=vendor).order_by('qty').values('barcode','product_name','qty')[:50]
         context['number'] = number
     except Exception as e:
+        print(e)
         return redirect("/pos/register/")
     return render(request,"pos/productsDashboard.html",context=context)
 

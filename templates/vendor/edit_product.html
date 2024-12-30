@@ -22,6 +22,8 @@
                             <h6>Update Product Information</h6>
                             <form action="{% url 'edit_product' product.id %}" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
+                                {{ formset.management_form }}
+
                                 <div class="form-fields-set">
                                     <div class="row">
 
@@ -128,8 +130,8 @@
 
                                     <div>
                                         <h3>Manage Gallery Images</h3>
-                                        {{ formset.management_form }}
-                                        {% for form in formset %}
+                                        {{formset}}
+                                        {% comment %} {% for form in formset %}
                                             <div style="margin-bottom: 20px;">
                                                 {% if form.instance.image %}
                                                     <img src="{{ form.instance.image.url }}" alt="Gallery Image" style="width: 50px; height: 50px;">
@@ -137,8 +139,8 @@
                                                 {{ form.image.label }} {{ form.image }}
                                                 {{ form.DELETE.label }} {{ form.DELETE }}
                                             </div>
+                                            {% endfor %} {% endcomment %}
                                             <hr>
-                                        {% endfor %}
                                     </div>
                                     
                                         

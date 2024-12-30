@@ -33,12 +33,10 @@ from .models import Cart
 
 @login_required(login_url="/pos/user/login")
 def cart_add(request, id, qty):
-    print("type qty", qty)
 
     cart = Cart(request)  # Custom Cart instance
     vendor = Vendor.objects.get(user=request.user)
     product = Product.objects.filter(id=id, vendor=vendor).first()
-    print(cart)
 
     if not product:
         scheme = request.is_secure() and "https" or "http"
