@@ -36,6 +36,7 @@ urlpatterns = [
     path('register/', views.register, name="register"),
     path('register/ProductNotFound/', views.register, name="ProductNotFound"),
     path('register/NotEnoughQTY/', views.register, name="NotEnoughQTY"),
+    path('register/AddressNotFound/', views.register, name="AddressNotFound"),
     path('register/cart_clear/', cart_views.cart_clear, name='cart_clear'),
     path('register/returns_transaction/', transaction_views.returnsTransaction, name='returns_transaction'),
     path('register/suspend_transaction/', transaction_views.suspendTransaction, name='suspend_transaction'),

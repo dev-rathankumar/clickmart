@@ -76,6 +76,16 @@ Register | Clickmall Retail POS
                 </div>
             </div>
             {% endif %}
+            {% if address_not_found %}
+            <div class="loginPopup" id='popup'>
+                <div class="formPopup" id="popupForm" style="display:block">
+                    <div class="formContainer">
+                        <div class="h3 mb-5 text-gray-800">Please add your store address in your profile.</div>
+                        <button onclick="window.open('{% url 'vprofile' %}', '_blank'); closeForm();" class="btn btn-danger btn-lg btn-block">Okay</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             <div class="card shadow-sm" style="width:100%;height:465px;">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Transaction Details</h6>

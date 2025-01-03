@@ -164,6 +164,12 @@ def endTransaction(request,type,value):
             elif value=="DEBIT_CREDIT": 
                 return_transaction = addTransaction(request.user,"DEBIT/CREDIT",total,cart,total)
         elif type=="cash": # Cash Transaction
+            print("Name", request.user.userprofile)
+            print("adress", request.user.userprofile.address) 
+            if request.user.userprofile.address == None:
+                scheme = request.is_secure() and "https" or "http"
+                print(request.user.userprofile.address)
+                return redirect(f"{scheme}://{request.get_host()}/pos/register/AddressNotFound/")
             value = round(float(value),2)
             if value>= total:
                 return_transaction = addTransaction(request.user,"CASH",total,cart,value)

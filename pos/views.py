@@ -95,6 +95,7 @@ def register(request):
 
     context = {
         'no_product': True if "ProductNotFound" in request.path else False,
+        'address_not_found': True if "AddressNotFound" in request.path else False,
         'not_enough_qty': True if "NotEnoughQTY" in request.path else False,
         'cart': cart,
         'total': Total,
@@ -316,10 +317,27 @@ def dashboard_sales(request):
         context['30_Days_Avg_Sales'] = df_date[df_date.index>today_date-timedelta(30)].mean()
         context['30_Days_Total_Sales'] = df_date[df_date.index>today_date-timedelta(30)].sum()
         # context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum()[-1]
+        weekly_sales = df_date.resample('W').sum()
         context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum().iloc[-1]
-        context["add_info"]['Last Week Total Sales'] = df_date.resample('W').sum().iloc[-2]
-        context["add_info"]['MTD Total Sales'] = df_date.resample('ME').sum().iloc[-1]
-        context["add_info"]['YTD Total Sales'] = df_date.resample('YE').sum().iloc[-1]
+        context["add_info"]['Last Week Total Sales'] = weekly_sales.iloc[-2] if len(weekly_sales) > 1 else 0
+        if len(weekly_sales) > 0:
+            context["add_info"]['WTD Total Sales'] = weekly_sales.iloc[-1]
+        else:
+            context["add_info"]['WTD Total Sales'] = 0
+
+        # Monthly resampling
+        monthly_sales = df_date.resample('ME').sum()
+        if len(monthly_sales) > 0:
+            context["add_info"]['MTD Total Sales'] = monthly_sales.iloc[-1]
+        else:
+            context["add_info"]['MTD Total Sales'] = 0
+
+        # Yearly resampling
+        yearly_sales = df_date.resample('YE').sum()
+        if len(yearly_sales) > 0:
+            context["add_info"]['YTD Total Sales'] = yearly_sales.iloc[-1]
+        else:
+            context["add_info"]['YTD Total Sales'] = 0().iloc[-1]
 
         # print(df_date.resample('W').sum())
         fig = px.bar(x= df_date.index,  y=df_date,text_auto=True,barmode='group',template="plotly_white" ,labels={"x":"Date","y":"Total Sales"})
@@ -334,7 +352,7 @@ def dashboard_sales(request):
             labels={"payment_type":"Payment Type","total_sale":"Total Sales"})
         fig2.update_layout( margin = dict(b=10,pad=0,t=10), )
         context['day_payment_graph'] = po.plot(fig2, auto_open=False, output_type='div',config= {'displayModeBar': False},include_plotlyjs=False)
-    except:
+    except Exception as e:
         return redirect("/pos/register/")
     return render(request,"pos/salesDashboard.html",context=context)
 
