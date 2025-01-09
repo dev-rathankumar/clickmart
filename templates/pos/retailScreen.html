@@ -1,5 +1,6 @@
 {% extends 'pos/base.html' %}
 {% load mathfilters %}
+{% load transaction_tags %}
 
 {% block title %}
 Register | Clickmall Retail POS
@@ -19,7 +20,7 @@ Register | Clickmall Retail POS
                     <ul style="padding-left: 25px; width: 300px;">
                         <strong style="color:black; width: 100%; padding-right: 15px;">Product:</strong>
                         <!-- Display selected product name -->
-                        <input id="id_search" type="text" class="form-control" autofocus="autofocus", autocomplete="off", placeholder="Search by barcode, name, or description" style="width: 100%;">
+                        <input id="id_search" name="id_search" type="text" class="form-control" autofocus="autofocus", autocomplete="off", placeholder="Search by barcode, name, or description" style="width: 100%;">
                         <!-- Hidden field for selected product ID -->
                         <input id="product_id" type="hidden" name="product_id">
                     </ul>
@@ -77,6 +78,16 @@ Register | Clickmall Retail POS
                 </div>
             </div>
             {% endif %}
+            {% if address_not_found %}
+            <div class="loginPopup" id='popup'>
+                <div class="formPopup" id="popupForm" style="display:block">
+                    <div class="formContainer">
+                        <div class="h3 mb-5 text-gray-800">Please add your store address in your profile.</div>
+                        <button onclick="window.open('{% url 'vprofile' %}', '_blank'); closeForm();" class="btn btn-danger btn-lg btn-block">Okay</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             {% if product_not_for_open_sell %}
             <div class="loginPopup" id='popup'>
                 <div class="formPopup" id="popupForm" style="display:block">
@@ -111,7 +122,13 @@ Register | Clickmall Retail POS
                                     {{ value.barcode }}<br>{{ value.name }}
                                 {% endif %}
                             </th>
-                            <td>{{ value.quantity }}</td>
+                            
+                            {% if value.quantity|multiply:1 < 1 %}
+                                <td>{{ value.quantity|multiply:1000 }} g</td>
+                                {% else %}
+                                <td>{{ value.quantity }} {{ value.unit_type }}</td>
+                            {% endif %}
+                                
                             <td>{{ value.price }}</td>
                             <td>{{ value.tax_value }}</td>
                             <td>{{ value.line_total }}</td>
@@ -230,7 +247,7 @@ Register | Clickmall Retail POS
                                 <img src="${product.img_url}" alt="${product.name}" style="width:40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 15px;">
                                 <div>
                                     <p style="margin: 0; font-weight: bold; font-size: 0.85rem; color: #333;">${product.name}</p>                                    
-                                    <p style="margin: 5px 0; font-size: 0.7em; color: #555;"><span style="color: #000;">₹${product.sales_price || product.regular_price}</span></p>
+                                    <p style="margin: 5px 0; font-size: 0.7em; color: #555;"><span style="color: #000;">₹${product.sales_price || product.regular_price} / ${product.unit_type}</span></p>
                                 </div>
                               </div>
                             `).join('');

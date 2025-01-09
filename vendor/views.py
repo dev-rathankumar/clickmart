@@ -527,44 +527,47 @@ def get_subcategories(request, category_id):
     subcategories = Category.objects.filter(parent_id=category_id)
     subcategory_list = [{'id': subcategory.id, 'name': subcategory.category_name} for subcategory in subcategories]
     return JsonResponse({'subcategories': subcategory_list})
-
+    
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def add_product(request):
     vendor_id = request.user.user.id
 
     ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES,vendor_id=vendor_id)
-        formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
-        if form.is_valid() and formset.is_valid():
-            product = form.save(commit=False)
-            product.vendor = get_vendor(request)
-            # Generate the slug from the product name
-            product.slug = slugify(product.product_name)
-            product.save()
-            # Save the images from the formset
-            for form in formset:
-                if form.cleaned_data.get('image'):
-                    gallery = form.save(commit=False)
-                    gallery.product = product
-                    gallery.save()
-            messages.success(request, 'Product added successfully!')
-            return redirect('vendor_products_list')
-    else:
-        form = ProductForm(vendor_id=vendor_id)
-        formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
+    try:
+        if request.method == 'POST':
+            form = ProductForm(request.POST, request.FILES, vendor_id=vendor_id)
+            formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
+            if form.is_valid() and formset.is_valid():
+                product = form.save(commit=False)
+                product.vendor = get_vendor(request)
+                # Generate the slug from the product name
+                product.slug = slugify(product.product_name)
+                product.save()
+                # Save the images from the formset
+                for form in formset:
+                    if form.cleaned_data.get('image'):
+                        gallery = form.save(commit=False)
+                        gallery.product = product
+                        gallery.save()
+                messages.success(request, 'Product added successfully!')
+                return redirect('vendor_products_list')
+        else:
+            form = ProductForm(vendor_id=vendor_id)
+            formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
 
-    # Pass categories to the template for the dropdown
-    categories = Category.objects.filter(parent__isnull=True, vendor_id = vendor_id)  # Top-level categories
-    context = {
-        'form': form,
-        'categories': categories,
-        'formset': formset
-    }
-    return render(request, 'vendor/add_product.html', context)
+        # Pass categories to the template for the dropdown
+        categories = Category.objects.filter(parent__isnull=True, vendor_id=vendor_id)  # Top-level categories
+        context = {
+            'form': form,
+            'categories': categories,
+            'formset': formset
+        }
+        return render(request, 'vendor/add_product.html', context)
 
-
+    except Exception as e:
+        messages.error(request, f"An error occurred: {e}")
+        return redirect('vendor_products_list')
 
 
 
@@ -605,7 +608,6 @@ def edit_product(request, product_id):
             return redirect('vendor_products_list')
         else:
             print('error')
-            print(form.errors)
             print(formset.errors)
     else:
         form = EditProductForm(instance=product,vendor_id = vendor.id)
@@ -771,9 +773,31 @@ def order_status(request):
         order_number = request.POST.get('order_number')
         try:
             order = Order.objects.get(order_number=order_number)
-            order.status = status
+            ordered_products = OrderedFood.objects.filter(order=order)
+            if order.status not in ['Cancelled', 'Refunded'] and status in ['Cancelled','Refunded']:
+                print("we are in cancel")
+                print(ordered_products)
+                for single_ordered_product in ordered_products:
+                    product = Product.objects.get(id=single_ordered_product.product.id)
+                    product.qty+=single_ordered_product.quantity
+                    product.save()
+                    print("Product", product)
+                    print(single_ordered_product.quantity)
+                    print(product.qty)
+            if order.status not in ['Paid', 'Completed', 'Processing'] and status in ['Paid', 'Completed', 'Processing']:
+                 print("current status ", order.status)
+                 for single_ordered_product in ordered_products:
+                    product = Product.objects.get(id=single_ordered_product.product.id)
+                    product.qty-=single_ordered_product.quantity
+                    product.save()
+                    print("Product", product)
+                    print(single_ordered_product.quantity)
+                    print(product.qty)
+            
+ 
+            order.status = status 
             order.save()
-            # Send email
+            # Send email 
             mail_subject = f'Your Order #{order_number} is {status}'
             message = f"""
             Dear {order.user.first_name},

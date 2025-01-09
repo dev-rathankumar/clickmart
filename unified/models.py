@@ -120,7 +120,7 @@ class Product(models.Model):
             ("Product Description", self.product_desc),
             ("Regular Price", self.regular_price),
             ("Sale Price", self.sales_price),
-            ("Stock", self.qty),
+            ("Stock", f"{self.qty} {self.unit_type}"),
             ("Department Category", self.category.category_name),
             ("Tax Category", self.tax_category.tax_category),
             # ("Deposit Category", self.deposit_category.deposit_category),
@@ -130,7 +130,7 @@ class Product(models.Model):
         return [
             ("Barcode", self.barcode),
             ("Name", self.product_name),
-            ("Inventory Qty", self.qty),
+            ("Inventory Qty", f"{self.qty} {self.unit_type}"),
             ("Sales Price", self.sales_price),
             ("Cost Price", self.cost_price),
             ("Department Category", self.category.category_name),

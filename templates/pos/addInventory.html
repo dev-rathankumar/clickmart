@@ -26,7 +26,7 @@ Add Inventory | Clickmall Retail POS
                     </ul>
                     <ul class="col-lg-6">
                         <strong style="color:black;">Quantity:</strong>
-                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 100%;">
+                        <input id="qty" type="number" name="qty" class="form-control" placeholder="Quantity" style="width: 100%;" step="0.001">
                     </ul>
                 </div>
                 <div id="product-suggestions" class="col-12" style="margin-top: 10px; overflow: hidden;"></div>
@@ -52,15 +52,15 @@ Add Inventory | Clickmall Retail POS
                         <tbody >
                             <tr height="50px"  >
                                 <td style="font-weight:bold;vertical-align: middle;">Previous Inventory Qty</td>
-                                <td style="vertical-align: middle;">{{p_qty}}</td>
+                                <td style="vertical-align: middle;">{{p_qty}} {{unit_type}}</td>
                             </tr>
                             <tr height="50px" >
                                 <td style="font-weight:bold;vertical-align: middle;">Added Inventory Qty</td>
-                                <td style="vertical-align: middle;">{{n_qty}}</td>
+                                <td style="vertical-align: middle;">{{n_qty}} {{unit_type}}</td>
                             </tr>
                             <tr height="75px" >
                                 <td class="h4" style="font-weight:bold;vertical-align: middle;">Total Current Inventory Qty</td>
-                                <td class="h4" style="vertical-align: middle;">{{p_qty|add:n_qty}}</td>
+                                <td class="h4" style="vertical-align: middle;">{{p_qty|add:n_qty}} {{unit_type}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -69,6 +69,16 @@ Add Inventory | Clickmall Retail POS
             {% endif %}
         </div>
     </div>
+    {% if not_add_open_qty_pic %}
+    <div class="loginPopup" id='popup'>
+        <div class="formPopup" id="popupForm" style="display:block">
+            <div class="formContainer">
+                <div class="h3 mb-5 text-gray-800">This product must be added in whole numbers, not decimals.</div>
+                        <button onclick="window.location.href='{% url 'inventory_add' %}'" class="btn btn-danger btn-lg btn-block">Close</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
     <div class="col-lg-6 mt-2" style="width: 100%;">
         <div class="row">
             <div class="col-lg-1 row"></div>

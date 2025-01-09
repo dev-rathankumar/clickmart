@@ -59,15 +59,24 @@ def fetch_product(request):
 
 class EnterBarcode(forms.Form):
     product = forms.CharField(widget=forms.TextInput(attrs={'autofocus':"autofocus",' autocomplete':"off",'style':"width:100%"}),max_length = 32)
-    qty = forms.IntegerField(label="Quantity",widget=forms.TextInput(attrs={'style':"width:100%"}))
+    qty = forms.DecimalField(label="Quantity",widget=forms.TextInput(attrs={'style':"width:100%"}))
 
 @login_required(login_url="/pos/user/login/")
 def register(request):
     qty = 1
     if request.method == "POST":
+        inputed_text = request.POST.get('id_search')
         product_id = request.POST.get('product_id')
         qty = request.POST.get('qty', 1)
-
+        if inputed_text and not product_id:
+            try:
+                vendor = Vendor.objects.get(user=request.user)
+                barcode_product = product.objects.filter(barcode=inputed_text, vendor=vendor).first()
+                product_id=barcode_product.id
+                print(barcode_product)
+            except:
+                print("product barcode was not correct") 
+        
         if qty:
             pass
         else:
@@ -88,6 +97,7 @@ def register(request):
     context = {
         'product_not_for_open_sell': True if "ProductNotForOpenSell" in request.path else False,
         'no_product': True if "ProductNotFound" in request.path else False,
+        'address_not_found': True if "AddressNotFound" in request.path else False,
         'not_enough_qty': True if "NotEnoughQTY" in request.path else False,
         'cart': cart,
         'total': Total,
@@ -217,6 +227,7 @@ def dashboard_products(request):
         context['low_inventory_products'] = product.objects.filter(vendor=vendor).order_by('qty').values('barcode','product_name','qty')[:50]
         context['number'] = number
     except Exception as e:
+        print(e)
         return redirect("/pos/register/")
     return render(request,"pos/productsDashboard.html",context=context)
 
@@ -308,10 +319,27 @@ def dashboard_sales(request):
         context['30_Days_Avg_Sales'] = df_date[df_date.index>today_date-timedelta(30)].mean()
         context['30_Days_Total_Sales'] = df_date[df_date.index>today_date-timedelta(30)].sum()
         # context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum()[-1]
+        weekly_sales = df_date.resample('W').sum()
         context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum().iloc[-1]
-        context["add_info"]['Last Week Total Sales'] = df_date.resample('W').sum().iloc[-2]
-        context["add_info"]['MTD Total Sales'] = df_date.resample('ME').sum().iloc[-1]
-        context["add_info"]['YTD Total Sales'] = df_date.resample('YE').sum().iloc[-1]
+        context["add_info"]['Last Week Total Sales'] = weekly_sales.iloc[-2] if len(weekly_sales) > 1 else 0
+        if len(weekly_sales) > 0:
+            context["add_info"]['WTD Total Sales'] = weekly_sales.iloc[-1]
+        else:
+            context["add_info"]['WTD Total Sales'] = 0
+
+        # Monthly resampling
+        monthly_sales = df_date.resample('ME').sum()
+        if len(monthly_sales) > 0:
+            context["add_info"]['MTD Total Sales'] = monthly_sales.iloc[-1]
+        else:
+            context["add_info"]['MTD Total Sales'] = 0
+
+        # Yearly resampling
+        yearly_sales = df_date.resample('YE').sum()
+        if len(yearly_sales) > 0:
+            context["add_info"]['YTD Total Sales'] = yearly_sales.iloc[-1]
+        else:
+            context["add_info"]['YTD Total Sales'] = 0
 
         # print(df_date.resample('W').sum())
         fig = px.bar(x= df_date.index,  y=df_date,text_auto=True,barmode='group',template="plotly_white" ,labels={"x":"Date","y":"Total Sales"})
@@ -326,7 +354,7 @@ def dashboard_sales(request):
             labels={"payment_type":"Payment Type","total_sale":"Total Sales"})
         fig2.update_layout( margin = dict(b=10,pad=0,t=10), )
         context['day_payment_graph'] = po.plot(fig2, auto_open=False, output_type='div',config= {'displayModeBar': False},include_plotlyjs=False)
-    except:
+    except Exception as e:
         return redirect("/pos/register/")
     return render(request,"pos/salesDashboard.html",context=context)
 

@@ -24,8 +24,11 @@ class Cart(object):
         Add a product to the cart or update its quantity.
 
         """
-        for key in self.cart.keys():
-            print("key ==>", type(key))
+        print(product)
+        print(quantity)
+
+
+        
         product_id = str(product.id)
         if product_id in self.cart.keys():
            print("Print qty form cart func: ", self.cart[product_id]['quantity'])
@@ -43,6 +46,8 @@ class Cart(object):
                                         'name': product.product_name,
                                         'price': str(product.sales_price),
                                         'quantity' : str(quantity),
+                                        'hsn_number':product.hsn_number,
+                                        'model_number':product.model_number,
                                         'unit_type':product.unit_type
 
                                         }

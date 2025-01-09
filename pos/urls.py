@@ -37,6 +37,7 @@ urlpatterns = [
     path('register/ProductNotForOpenSell/', views.register, name="ProductNotForOpenSell"),
     path('register/ProductNotFound/', views.register, name="ProductNotFound"),
     path('register/NotEnoughQTY/', views.register, name="NotEnoughQTY"),
+    path('register/AddressNotFound/', views.register, name="AddressNotFound"),
     path('register/cart_clear/', cart_views.cart_clear, name='cart_clear'),
     path('register/returns_transaction/', transaction_views.returnsTransaction, name='returns_transaction'),
     path('register/suspend_transaction/', transaction_views.suspendTransaction, name='suspend_transaction'),
@@ -58,6 +59,7 @@ urlpatterns = [
     path('transaction/<transNo>/', transaction_views.transactionView , name='transactionView_id'),
     path('transaction_receipt/<transNo>/', transaction_views.transactionReceipt , name='transactionReceipt'),
     path('transaction_receipt/<transNo>/print/', transaction_views.transactionPrintReceipt , name='transactionPrintReceipt'),
+    path('transaction_invoice/<transNo>/', transaction_views.transactionInvoice , name='transactionInvoice'),
 
     # Customer Screen URLs
     path("retail_display/",views.retail_display,name="retail_display"),
