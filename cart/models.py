@@ -38,7 +38,9 @@ class Cart(object):
                                         'barcode' : product.barcode,
                                         'name': product.product_name,
                                         'price': str(product.sales_price),
-                                        'quantity' : quantity, 
+                                        'quantity' : quantity,
+                                        'hsn_number':product.hsn_number,
+                                        'model_number':product.model_number
                                         }
         self.cart[product_id]['tax_value'] = f"{product.sales_price * self.cart[product_id]['quantity']* (product.tax_category.tax_percentage/100):.2f}"
         self.cart[product_id]['deposit_value'] = f"{self.cart[product_id]['quantity']* product.deposit_category.deposit_value:.2f}"

@@ -363,7 +363,7 @@ def generate_paypal_access_token():
 
 
 def generate(request):
-        order = Order.objects.get(user=request.user, order_number=202501061550254)
+        order = Order.objects.get(order_number=202412302159143)
         ordered_food = OrderedFood.objects.filter(order=order)
         tax_data = json.loads(order.tax_data)
 

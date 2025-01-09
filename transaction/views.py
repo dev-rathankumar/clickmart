@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django import forms
 from escpos.printer import Usb
 
+from pos.utils import generate_invoice_pdf
+
 class DateSelector(forms.Form):
     start_date = forms.DateField(widget = forms.SelectDateWidget())
     end_date = forms.DateField(widget = forms.SelectDateWidget())
@@ -45,6 +47,17 @@ def transactionReceipt(request,transNo):
     except transaction.DoesNotExist:
         raise Http404("No Transactions Found!!!")
 
+def transactionInvoice(request, transNo):
+    try:
+        transaction_data = transaction.objects.get(transaction_id=transNo)
+        invoice_pdf = generate_invoice_pdf(transaction_data, transNo)
+        response = HttpResponse(invoice_pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="transaction_{transNo}.pdf"'
+        return response
+    except transaction.DoesNotExist:
+        raise Http404("No Transactions Found!!!")
+    
+    
 def transactionPrintReceipt(request,transNo):
     try:
         receipt = transaction.objects.get(transaction_id=transNo).receipt
@@ -164,11 +177,8 @@ def endTransaction(request,type,value):
             elif value=="DEBIT_CREDIT": 
                 return_transaction = addTransaction(request.user,"DEBIT/CREDIT",total,cart,total)
         elif type=="cash": # Cash Transaction
-            print("Name", request.user.userprofile)
-            print("adress", request.user.userprofile.address) 
             if request.user.userprofile.address == None:
                 scheme = request.is_secure() and "https" or "http"
-                print(request.user.userprofile.address)
                 return redirect(f"{scheme}://{request.get_host()}/pos/register/AddressNotFound/")
             value = round(float(value),2)
             if value>= total:

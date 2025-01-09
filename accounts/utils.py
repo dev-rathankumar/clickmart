@@ -199,6 +199,10 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     # Vendor Info
     vendor = order.vendors.first()  # Fetch the first vendor
 
+    # Absolute paths for static assets
+    unpaid_abs_path = finders.find('images/upaid.png')  # Replace with .png
+
+
     # Header
     c.setFont("Helvetica-Bold", 14)
     c.drawString(40, height - 50, vendor.vendor_name)
@@ -270,14 +274,23 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
 
     # Section of the Total prices
     c.setFont("Helvetica", 10)
-    c.drawString(380, y_position, f"Total Tax:                                     {total_gst:.2f}")
-    c.drawString(380, y_position - 15, f"Total (Tax included):                    {order.total:.2f}")
+    c.drawString(380, y_position, f"Total Tax:                                 INR {total_gst:.2f}")
+    c.drawString(380, y_position - 15, f"Total (Tax included):                INR {order.total:.2f}")
 
     # Add a horizontal line (HR) below the totals
     c.setLineWidth(1)  # Line thickness
     c.line(570, y_position - 25, 280, y_position - 25)  # Draw the line across the page
     c.setFont("Helvetica-Bold", 10)
     c.drawString(380, y_position - 40, f"Grand Total:                               {order.total:.2f}")
+
+
+    try:
+        if unpaid_abs_path:  # Ensure the path is not None
+            c.drawImage(unpaid_abs_path, 20, y_position - 65, width=200, height=110, mask='auto')
+        else:
+            print("Unpaid image not found.")
+    except Exception as e:
+        print(f"Error adding unpaid image: {e}")
     
     # Footer
     c.setFont("Helvetica", 10)
