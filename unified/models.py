@@ -46,7 +46,14 @@ class Category(models.Model):
     def get_subcategory_count(self):
         return self.subcategories.count()
     
-    
+UNIT_TYPE_CHOICES = (
+    ('pcs', 'Pieces'),
+    ('kg', 'Kilograms'),
+    ('g', 'Grams'),
+    ('l', 'Liters'),
+    ('ml', 'Milliliters'),
+)
+  
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='products')
     product_name = models.CharField(max_length=200)
@@ -67,10 +74,13 @@ class Product(models.Model):
     
     # Fields from inventory.product model
     barcode = models.CharField(max_length=25, blank=True, null=True)
-    qty = models.IntegerField(default=0, null=False)
+    # qty = models.IntegerField(default=0, null=False)
+    qty = models.DecimalField(max_digits=10, decimal_places=3, default=0, null=False, help_text="Quantity in selected unit type")
     tax_category     = models.ForeignKey(TaxCategory, on_delete=models.RESTRICT, null=False,blank=False, related_name='products')
     deposit_category = models.ForeignKey(DepositCategory, on_delete=models.RESTRICT, null=True,blank=True, related_name='products')
     
+    unit_type = models.CharField(max_length=15, choices=UNIT_TYPE_CHOICES, default='pcs', help_text="Unit type for the product")
+
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 
@@ -110,7 +120,7 @@ class Product(models.Model):
             ("Product Description", self.product_desc),
             ("Regular Price", self.regular_price),
             ("Sale Price", self.sales_price),
-            ("Stock", self.qty),
+            ("Stock", f"{self.qty} {self.unit_type}"),
             ("Department Category", self.category.category_name),
             ("Tax Category", self.tax_category.tax_category),
             # ("Deposit Category", self.deposit_category.deposit_category),
@@ -120,7 +130,7 @@ class Product(models.Model):
         return [
             ("Barcode", self.barcode),
             ("Name", self.product_name),
-            ("Inventory Qty", self.qty),
+            ("Inventory Qty", f"{self.qty} {self.unit_type}"),
             ("Sales Price", self.sales_price),
             ("Cost Price", self.cost_price),
             ("Department Category", self.category.category_name),

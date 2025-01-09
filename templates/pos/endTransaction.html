@@ -24,7 +24,7 @@ Ending Transaction | Clickmall Retail POS
                 {{ change|safe }}
             </div>
         </div>
-        <div class="container p-3 mt-5 pt-5" style="justify-content: center;">
+        <div class="container p-3 mt-1 pt-1" style="justify-content: center;">
             <a href="{% url 'register' %}"><button class="btn-lg btn-primary" style="height: 100px; width: 250px;">Back to Register</button></a>
         </div>
     </div>
@@ -36,6 +36,11 @@ Ending Transaction | Clickmall Retail POS
                     <a href="/pos/transaction_receipt{{request.path|cut:'/pos/endTransaction'}}">
                         <button class="btn-lg btn-secondary " style="width: 100%;">
                             View Receipt 
+                        </button>
+                        </a>
+                    <a href="/pos/transaction_invoice{{request.path|cut:'/pos/endTransaction'}}">
+                        <button class="btn-lg btn-success mt-3" style="width: 100%;">
+                            Download Invoice
                         </button>
                         </a>
                 </div>

@@ -56,7 +56,7 @@
                                                     {% else %}
                                                     <td style="padding:5px 5px">{{ product.regular_price }}</td>
                                                     {% endif %}
-                                                    <td style="padding:5px 5px">{{ product.qty }}</td>
+                                                    <td style="padding:5px 5px">{{ product.qty|floatformat }} {{product.unit_type}}</td>
                                                     <td style="padding:5px 5px">{{ product.is_available|yesno:"Yes,No" }}</td>
                                                     <td style="padding:5px 5px">
                                                         <a href="{% url 'edit_product' product.id %}" style="color: unset;"><i class="fa fa-pencil" aria-hidden="true"></i></a> &nbsp;</a> 

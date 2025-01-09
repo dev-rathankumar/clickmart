@@ -10,4 +10,11 @@ def transactionID_2_date(value):
 def sort(value):
     return sorted(value,reverse=True)
 
+@register.filter
+def multiply(value, multiplier):
+    try:
+        print(type(value))
+        return int(float(value) * float(multiplier))
+    except (ValueError, TypeError):
+        return ''
 

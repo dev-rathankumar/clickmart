@@ -49,6 +49,7 @@ def fetch_product(request):
                     'img_url': product.image.url if product.image else '',  # Use the URL of the image
                     'regular_price': product.regular_price,
                     'sales_price': product.sales_price,
+                    'unit_type':product.unit_type
                 }
                 for product in products
             ]
@@ -58,7 +59,7 @@ def fetch_product(request):
 
 class EnterBarcode(forms.Form):
     product = forms.CharField(widget=forms.TextInput(attrs={'autofocus':"autofocus",' autocomplete':"off",'style':"width:100%"}),max_length = 32)
-    qty = forms.IntegerField(label="Quantity",widget=forms.TextInput(attrs={'style':"width:100%"}))
+    qty = forms.DecimalField(label="Quantity",widget=forms.TextInput(attrs={'style':"width:100%"}))
 
 @login_required(login_url="/pos/user/login/")
 def register(request):
@@ -94,6 +95,7 @@ def register(request):
         Tax_Total = 0
 
     context = {
+        'product_not_for_open_sell': True if "ProductNotForOpenSell" in request.path else False,
         'no_product': True if "ProductNotFound" in request.path else False,
         'address_not_found': True if "AddressNotFound" in request.path else False,
         'not_enough_qty': True if "NotEnoughQTY" in request.path else False,
@@ -337,7 +339,7 @@ def dashboard_sales(request):
         if len(yearly_sales) > 0:
             context["add_info"]['YTD Total Sales'] = yearly_sales.iloc[-1]
         else:
-            context["add_info"]['YTD Total Sales'] = 0().iloc[-1]
+            context["add_info"]['YTD Total Sales'] = 0
 
         # print(df_date.resample('W').sum())
         fig = px.bar(x= df_date.index,  y=df_date,text_auto=True,barmode='group',template="plotly_white" ,labels={"x":"Date","y":"Total Sales"})

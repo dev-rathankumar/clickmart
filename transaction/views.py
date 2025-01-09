@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django import forms
 from escpos.printer import Usb
 
+from pos.utils import generate_invoice_pdf
+
 class DateSelector(forms.Form):
     start_date = forms.DateField(widget = forms.SelectDateWidget())
     end_date = forms.DateField(widget = forms.SelectDateWidget())
@@ -45,6 +47,17 @@ def transactionReceipt(request,transNo):
     except transaction.DoesNotExist:
         raise Http404("No Transactions Found!!!")
 
+def transactionInvoice(request, transNo):
+    try:
+        transaction_data = transaction.objects.get(transaction_id=transNo)
+        invoice_pdf = generate_invoice_pdf(transaction_data, transNo)
+        response = HttpResponse(invoice_pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="transaction_{transNo}.pdf"'
+        return response
+    except transaction.DoesNotExist:
+        raise Http404("No Transactions Found!!!")
+    
+    
 def transactionPrintReceipt(request,transNo):
     try:
         receipt = transaction.objects.get(transaction_id=transNo).receipt
@@ -164,11 +177,8 @@ def endTransaction(request,type,value):
             elif value=="DEBIT_CREDIT": 
                 return_transaction = addTransaction(request.user,"DEBIT/CREDIT",total,cart,total)
         elif type=="cash": # Cash Transaction
-            print("Name", request.user.userprofile)
-            print("adress", request.user.userprofile.address) 
             if request.user.userprofile.address == None:
                 scheme = request.is_secure() and "https" or "http"
-                print(request.user.userprofile.address)
                 return redirect(f"{scheme}://{request.get_host()}/pos/register/AddressNotFound/")
             value = round(float(value),2)
             if value>= total:
@@ -195,6 +205,7 @@ def addTransaction(user,payment_type,total,cart,value):
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
     regular_price_total = round(cart_df["regular_price"].astype(float).sum(),2) 
+    cart_df["quantity"] = cart_df["quantity"].astype(float)
     # cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: "T" if x>0 else "-T" if x<0 else "")
     # To print the actual tax amount - but it exceeds the receipt
     cart_df["tax"] = cart_df["tax_value"].astype(float).apply(lambda x: f"{x:.2f}" if x != 0 else "")
@@ -210,12 +221,12 @@ def addTransaction(user,payment_type,total,cart,value):
     cart_string = "\n".join(
                                 list(cart_df.apply(
                                     lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT) + "\n" +
-                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {row['quantity']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
+                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {str(int(float(row['quantity']) * 1000)) + 'g' if float(row['quantity']) < 1 and row['unit_type'] != 'pcs' else str(row['quantity']) + row['unit_type'] if row['unit_type'] != 'pcs' else str(int(float(row['quantity']))) + row['unit_type'] :>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
                                     axis=1
                                 ))
                             )
     cart_string = "PRODUCT | BARCODE QTY PRICE TAX".rjust(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n" + cart_string
-    
+    cart_df["quantity"] = cart_df["quantity"].astype(float)
     # cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
     total_string = f"Sub-Total: {round(total-tax_total,2)}  Total Tax: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'GROSS AMOUNT':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)

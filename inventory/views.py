@@ -9,6 +9,7 @@ from django.forms import TextInput
 from cart.models import Cart
 import decimal
 
+from decimal import Decimal
 from vendor.models import Vendor
 
 
@@ -78,13 +79,24 @@ def inventoryAdd(request):
         try:
             vendor = Vendor.objects.get(user=request.user)
             obj = product.objects.get(id=product_id, vendor=vendor)
+                # Check if product is 'pcs' and quantity is not a whole number
+            if obj and obj.unit_type == 'pcs':
+                    qty = float(qty)  # Ensure qty is a float
+                    if not qty.is_integer():  # Check if qty is not a whole number                        
+                        context['not_add_open_qty_pic'] =  True 
+                        return render(request,'pos/addInventory.html',context=context)
+
+
             # 'product_added':  True if "ProductNotFound" in request.path else False, 
             context['p_qty'] = obj.qty
-            context['n_qty'] = int(qty)
+            context['n_qty'] = Decimal(qty)
+            context['unit_type'] = obj.unit_type
             obj.qty = obj.qty + context['n_qty']
             obj.save()
         except product.DoesNotExist:
             obj = None
             context['notFound']= request.POST.get('product_id')
         context['obj'] = obj
+        print(True if "NotAddOpenQTYForPics" in request.path else False)
+
     return render(request,'pos/addInventory.html',context=context)

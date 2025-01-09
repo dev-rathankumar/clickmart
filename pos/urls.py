@@ -34,6 +34,7 @@ urlpatterns = [
 
     # Register URLs
     path('register/', views.register, name="register"),
+    path('register/ProductNotForOpenSell/', views.register, name="ProductNotForOpenSell"),
     path('register/ProductNotFound/', views.register, name="ProductNotFound"),
     path('register/NotEnoughQTY/', views.register, name="NotEnoughQTY"),
     path('register/AddressNotFound/', views.register, name="AddressNotFound"),
@@ -58,6 +59,7 @@ urlpatterns = [
     path('transaction/<transNo>/', transaction_views.transactionView , name='transactionView_id'),
     path('transaction_receipt/<transNo>/', transaction_views.transactionReceipt , name='transactionReceipt'),
     path('transaction_receipt/<transNo>/print/', transaction_views.transactionPrintReceipt , name='transactionPrintReceipt'),
+    path('transaction_invoice/<transNo>/', transaction_views.transactionInvoice , name='transactionInvoice'),
 
     # Customer Screen URLs
     path("retail_display/",views.retail_display,name="retail_display"),
