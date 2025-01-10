@@ -141,20 +141,15 @@ def generate_invoice_pdf(transaction, transNo):
     # Draw the text at the calculated position
     c.drawString(x_position, y_position - 70, invoice_total_text)
 
-
-    c.setStrokeColor(colors.black)
-    c.setLineWidth(2)
-    c.line(570, y_position - 195, 240, y_position - 195)
    
     # Define the right margin (e.g., 20 units from the right edge of the page)
     right_margin = 25
 
     # Text to draw
-    auth_signatory_text = "Authorized Signatory"
-    eoe_text = "E. & O.E."
+    auth_signatory_text = "This is an electronically generated invoice, no signature is required"
 
     # Font and size
-    font_name = "Helvetica-Bold"
+    font_name = "Helvetica"
     font_size = 12
     c.setFont(font_name, font_size)
 
@@ -165,17 +160,6 @@ def generate_invoice_pdf(transaction, transNo):
     # Draw "Authorized Signatory" right-aligned
     c.drawString(auth_signatory_x, y_position - 215, auth_signatory_text)
 
-    # For "E. & O.E." (smaller font size)
-    font_name_eoe = "Helvetica"
-    font_size_eoe = 10
-    c.setFont(font_name_eoe, font_size_eoe)
-
-    # Calculate the width of the "E. & O.E." text
-    eoe_text_width = stringWidth(eoe_text, font_name_eoe, font_size_eoe)
-    eoe_text_x = A4[0] - right_margin - eoe_text_width  # Align to right
-
-    # Draw "E. & O.E." right-aligned
-    c.drawString(eoe_text_x, y_position - 230, eoe_text)
     # Text "E. & O.E."
     c.setFont("Helvetica", 8)
     # c.drawString(490, y_position - 130, "E.& O.E.")
