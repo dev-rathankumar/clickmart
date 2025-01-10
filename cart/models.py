@@ -36,6 +36,7 @@ class Cart(object):
 
            print(" After Print qty form cart func: ", self.cart[product_id]['quantity'])
            self.cart[product_id]['quantity'] = str(quantity)
+           self.cart[product_id]['price'] = str((product.sales_price * quantity))
            if self.cart[product_id]['quantity'] == 0:
                 self.remove(product)
                 return
@@ -44,7 +45,7 @@ class Cart(object):
                                         'product_id':product_id,
                                         'barcode' : product.barcode,
                                         'name': product.product_name,
-                                        'price': str(product.sales_price),
+                                        'price': str((product.sales_price * quantity)),
                                         'quantity' : str(quantity),
                                         'hsn_number':product.hsn_number,
                                         'model_number':product.model_number,
