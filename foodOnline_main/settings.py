@@ -14,6 +14,7 @@ from pathlib import Path
 from decouple import config
 import os, socket
 from django import conf
+import platform
 
 ip_address = socket.gethostbyname(socket.gethostname())
 
@@ -197,10 +198,12 @@ DEFAULT_FROM_EMAIL = 'Clickmall Marketplace <django.foodonline@gmail.com>'
 GOOGLE_API_KEY = config('GOOGLE_API_KEY')
 
 # Windows
-if DEBUG == True:
+if platform.system() == "Windows":
     os.environ['PATH'] = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo') + ';' + os.environ['PATH']
     os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo\data\proj') + ';' + os.environ['PATH']
     GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo\gdal304.dll')
+else:
+    pass
 
 # MacOS
 # if DEBUG == True:
@@ -217,9 +220,9 @@ RZP_KEY_ID = config('RZP_KEY_ID')
 RZP_KEY_SECRET = config('RZP_KEY_SECRET')
 
 
-os.environ['PATH'] = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo') + ';' + os.environ['PATH']
-os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo/data/proj') + ';' + os.environ['PATH']
-GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo/gdal.dll')
+# os.environ['PATH'] = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo') + ';' + os.environ['PATH']
+# os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo/data/proj') + ';' + os.environ['PATH']
+# GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo/gdal.dll')
 
 
 RECEIPT_CHAR_COUNT = int(config('RECEIPT_CHAR_COUNT', 32)) 
