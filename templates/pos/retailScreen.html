@@ -123,10 +123,10 @@ Register | Clickmall Retail POS
                                 {% endif %}
                             </th>
                             
-                            {% if value.quantity|multiply:1 < 1 %}
+                            {% if value.quantity|multiply:1 < 1 and value.unit_type == 'kg' %}
                                 <td>{{ value.quantity|multiply:1000 }} g</td>
                                 {% else %}
-                                <td>{{ value.quantity }} {{ value.unit_type }}</td>
+                                <td>{{ value.quantity }}  {% if value.unit_type == 'm2' %} m² {% else %} {{value.unit_type}} {% endif %}</td>
                             {% endif %}
                                 
                             <td>{{ value.price }}</td>
@@ -142,6 +142,23 @@ Register | Clickmall Retail POS
         
     </div>
     <div class="col-lg-6" >
+        <form class="form col-lg-12" action="{{ request.get_full_path }}" method="POST" style="width:100%; padding: 10px;">
+            {% csrf_token %}
+            <div class="row" style="width:100%; justify-content: start; position: relative;">
+                <ul style="padding-left: 25px; width:100%;">
+                    <strong style="color:black; width: 100%; padding-right: 15px;">Name:</strong>
+                    <input id="id_customer_name" name="id_customer_name" type="text" class="form-control" autofocus="autofocus" autocomplete="off" placeholder="Enter customer name..." style="width: 100%;">
+                </ul>
+                <ul style="padding-left: 25px; width:100%;">
+                    <strong style="color:black; width: 100%; padding-right: 15px; display: block;">Email:</strong>
+                    <input id="id_customer_email" type="email" name="id_customer_email" autofocus="autofocus" autocomplete="off" class="form-control" placeholder="Enter customer email address..." style="width: 100%; display: inline;">
+                </ul>
+                <ul style="padding-left: 25px; width: 100%;">
+                    <strong style="color:black; width: 100%; padding-right: 15px; display: block;">Phone Number:</strong>
+                    <input id="id_customer_phone" type="phone_number" name="id_customer_phone" autofocus="autofocus" autocomplete="off" class="form-control" placeholder="Enter customer phone number..." style="width: 100%; display: inline;" >
+                </ul>
+            </div>
+        </form>         
         <hr >
         <div class="btn-block" style="padding-top: 10px;text-align:center">
             <button id="disable_1" onclick="return window.open('/pos/register/returns_transaction/',target='_self')" class="btn btn-warning" style="width:23%;margin:2px;height:60px;margin-bottom:5px" > (-)<br>Returns </button>
@@ -160,18 +177,6 @@ Register | Clickmall Retail POS
             <!-- <button id="disable_P_7" onclick="endTransactionCash(50,'{{ total }}')" class="btn btn-success" style="width:23%;margin: 2px;height:60px;margin-bottom:5px"> 50$ </button> -->
             <!-- <button id="disable_P_8" onclick="endTransactionCash('CASH','{{ total }}')" class="btn btn-success" style="width:23%;margin:2px;height:60px;margin-bottom:5px;background-color:rgb(27, 66, 27)"> CASH </button> -->
         </div>
-        <div class="loginPopup" id='cash_popup'> </div>
-        <hr >
-        <div class="btn-block"  style="height: 353px;overflow:scroll;text-align:center;padding-top: 7px;">
-            {% for i in displayed_items %}
-             <!-- only 24 buttons to be added per section  -->
-            {% if i.variable_price %}
-            <button onclick="variableAmount('{{i.barcode}}','{{ i.display_name }}','{{ i.display_info }}')" class="btn btn-primary" style="width:23%;margin:2px;height:60px;margin-bottom:5px;margin-top:5px;background-color:'{{ i.display_color }}'"> {{ i.display_name }} </a>
-            {% else %}
-            <button onclick="return window.open('/pos/cart/add/{{i.barcode}}/1/',target='_self')" class="btn btn-dark" style="width:23%;margin:2px;height:60px;margin-bottom:5px;background-color:'{{ i.display_color }}'" >  {{ i.display_name }} </button>
-            {% endif %}
-            {% endfor %}
-        </div>
         <hr style="margin-right: 4%;">
     </div>
 </div>
@@ -186,9 +191,22 @@ Register | Clickmall Retail POS
         var total = Number(total)
         if (value=="Next"){
             value = Math.ceil(total) }
+
+        var customer_name = $('#id_customer_name').val()
+        var customer_email = $('#id_customer_email').val()
+        var customer_phone = $('#id_customer_phone').val()
+        console.log(customer_name);
+        console.log(customer_email);
+        console.log(customer_phone);
+        var data ={
+            "customer_name":customer_name,
+            "customer_email":customer_email,
+            "customer_phone":customer_phone
+        }
+        var encodedData = encodeURIComponent(JSON.stringify(data));
         var value = Number(value)
         if (total<=value){
-            window.open("/pos/endTransaction/cash/"+value+"/", target="_self")
+            window.open("/pos/endTransaction/cash/"+value+"/"+encodedData+"/", target="_self")
             return false;
         }else{
             // var cash = Number(prompt("Enter Cash Amount...\n\n"))
@@ -258,7 +276,9 @@ Register | Clickmall Retail POS
                                 let productId = $(this).data('id');
                                 let productName = $(this).data('name');
                                 let productUnitTypeFull = $(this).data('unit-type'); // e.g., 'Kilograms'
-
+                                if(productUnitTypeFull == 'm2'){
+                                    productUnitTypeFull = 'm²'
+                                }
                                 $('#id_search').val(productName);
                                 $('#product_id').val(productId);
                                 $('#product_unit_type').html(productUnitTypeFull); // e.g., 'KG'

@@ -52,8 +52,10 @@ UNIT_TYPE_CHOICES = (
     ('g', 'Grams'),
     ('l', 'Liters'),
     ('ml', 'Milliliters'),
+    ('m', 'Meters'),
+    ('m2', 'Meter Square'),
 )
-  
+
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='products')
     product_name = models.CharField(max_length=200)

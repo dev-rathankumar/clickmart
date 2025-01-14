@@ -13,9 +13,24 @@ from django_ckeditor_5.fields import CKEditor5Field
 timezone = pytz.timezone("Asia/Kolkata")
 
 
+# Create a model for customer info for POS 
+class CustomerInfo(models.Model):
+    name = models.CharField(max_length=150, blank=True, null=True)
+    phone_number = models.CharField(max_length=12, blank=True, null=True)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        if self.name:
+            return self.name
+        elif self.email:
+            return self.email
+        elif self.phone_number:
+            return self.phone_number
+
 # Create your models here.transaction_dt
 class transaction(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, blank=True, null=True, editable=False)
+    customer_info = models.ForeignKey(CustomerInfo, on_delete=models.CASCADE, blank=True, null=True, editable=False)
     date_time       = models.DateTimeField(auto_now_add=True, editable=False)
     transaction_dt  = models.DateTimeField(null=False, blank=False,editable=False)
     user            = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, null=False, blank=False, editable=False)

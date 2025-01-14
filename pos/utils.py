@@ -25,15 +25,30 @@ def generate_invoice_pdf(transaction, transNo):
     c.drawString(15, height - 115, f"Transaction ID: {transaction.transaction_id}")
     c.drawString(15, height - 130, f"Payment Type: {transaction.payment_type}")
 
-    # # Customer Info
-    # user = transaction.user
-    # c.setFont("Helvetica", 11)
-    # c.drawString(400, height - 50, f"Billed To: ")
-    # c.setFont("Helvetica", 11)
-    # c.drawString(400, height - 65, f"{user if user else 'N/A'},")
-    # c.setFont("Helvetica", 10)
-    # c.drawString(400, height - 80, f"Email: {user.email if user else 'N/A'}")
-    # c.drawString(400, height - 95, f"Phone: {user.phone_number if user else 'N/A'}")
+    # Customer Info
+    customer_info = transaction.customer_info
+    c.setFont("Helvetica", 11)
+    c.drawString(400, height - 50, "Billed To:")
+
+    if customer_info and customer_info.name: 
+        # Name
+        c.setFont("Helvetica", 11)
+        c.drawString(400, height - 65, f"Name: {customer_info.name}")
+    else:
+        c.setFont("Helvetica", 11)
+        c.drawString(400, height - 65, f"Name: Walk-In Customer")
+    # Email (conditionally displayed)
+    if customer_info and customer_info.email:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 80, f"Email: {customer_info.email}")
+
+    # Phone (conditionally displayed)
+    if customer_info and customer_info.phone_number and customer_info.email == None:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 80, f"Phone: {customer_info.phone_number}")
+    elif customer_info and customer_info.phone_number and customer_info.email:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95, f"Phone: {customer_info.phone_number}")
 
     # Product Table Header
     data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Regular Price", "Tax", "Total"]]
@@ -50,12 +65,14 @@ def generate_invoice_pdf(transaction, transNo):
         regular_price = item.get('regular_price')
         regular_price_total+=Decimal(regular_price)
         unit_type=item.get('unit_type')
-        if unit_type != 'pcs' and  float(quantity) < 1:
+        if unit_type == 'kg' and  float(quantity) < 1:
             unit_type = 'g'
             quantity= float(quantity)*1000
             quantity = int(quantity)
         if unit_type == 'pcs':
             quantity=int(quantity)
+        elif unit_type == 'm2':
+            unit_type = 'm²'
 
 
         data.append([str(idx), product_name, product_hsn_number, product_model_number,
@@ -95,7 +112,11 @@ def generate_invoice_pdf(transaction, transNo):
     c.setFont("Helvetica", 10)
 
     # Draw "Total Tax" right-aligned
-    total_discount_text = f"Discount Amount:                                   INR {(regular_price_total-transaction.total_sale):.2f}"
+    if regular_price_total > transaction.total_sale:
+        total_discount_text = f"Discount Amount:                                   INR {(regular_price_total-transaction.total_sale):.2f}"
+    else: 
+        total_discount_text = f"Discount Amount:                                   INR {0:.2f}"
+
     total_discount_width = stringWidth(total_discount_text, "Helvetica", 10)
     c.drawString(A4[0] - right_margin - total_discount_width, y_position + 15, total_discount_text)
     # Draw "Total Tax" right-aligned
