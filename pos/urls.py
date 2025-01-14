@@ -53,7 +53,7 @@ urlpatterns = [
     # path('cart/item_decrement/<id>/',cart_views.item_decrement, name='item_decrement'),
 
     #Transactions Related URLs
-    path('endTransaction/<type>/<value>/', transaction_views.endTransaction , name='endTransaction'),
+    path('endTransaction/<type>/<value>/<c_data>/', transaction_views.endTransaction , name='endTransaction'),
     path('endTransaction/<transNo>/', transaction_views.endTransactionReceipt , name='endTransactionReceipt'),
     path('transaction/', transaction_views.transactionView , name='transactionView'),
     path('transaction/<transNo>/', transaction_views.transactionView , name='transactionView_id'),

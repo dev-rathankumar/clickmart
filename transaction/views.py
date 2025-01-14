@@ -6,14 +6,14 @@ import pandas as pd
 
 from unified.models import Product
 from vendor.models import Vendor
-from .models import transaction
+from .models import transaction,CustomerInfo
 from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django import forms
 from escpos.printer import Usb
 
 from pos.utils import generate_invoice_pdf
-
+import json
 class DateSelector(forms.Form):
     start_date = forms.DateField(widget = forms.SelectDateWidget())
     end_date = forms.DateField(widget = forms.SelectDateWidget())
@@ -163,10 +163,13 @@ def endTransactionReceipt(request,transNo):
 
 
 @login_required(login_url="/user/login/")
-def endTransaction(request,type,value):
+def endTransaction(request,type,value,c_data):
     try:
         return_transaction = None
         # Card Transactions
+
+        print("cdata form endtransection",c_data)
+
         cart = request.session[settings.CART_SESSION_ID]
         total = round(pd.DataFrame(cart).T["line_total"].astype(float).sum(),2)
         if type == "card": # Card Transaction
@@ -182,7 +185,7 @@ def endTransaction(request,type,value):
                 return redirect(f"{scheme}://{request.get_host()}/pos/register/AddressNotFound/")
             value = round(float(value),2)
             if value>= total:
-                return_transaction = addTransaction(request.user,"CASH",total,cart,value)
+                return_transaction = addTransaction(request.user,"CASH",total,cart,value,c_data)
         if return_transaction:
             Cart(request).clear()
             return redirect(f"/pos/endTransaction/{return_transaction.transaction_id}/?type={type}&value={value}&total={total}")
@@ -197,7 +200,11 @@ def wrap_text(text, max_length):
     return [text[i:i+max_length] for i in range(0, len(text), max_length)]
 
 
-def addTransaction(user,payment_type,total,cart,value):
+def addTransaction(user,payment_type,total,cart,value,c_data):
+    decoded_data = json.loads(c_data)
+    customer_name = decoded_data.get("customer_name", "").strip()
+    customer_email = decoded_data.get("customer_email", "").strip()
+    customer_phone = decoded_data.get("customer_phone", "").strip()
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
@@ -216,12 +223,19 @@ def addTransaction(user,payment_type,total,cart,value):
     date_string = current_datetime.strftime("%d-%m-%Y")
     time_string = current_datetime.strftime("%H:%M:%S")
     info_string = f"{'-' * settings.RECEIPT_CHAR_COUNT}\n"
-    info_string += f"Name: Walk-In Customer\nDate: {date_string}\nTime: {time_string}\nBill: {transaction_id}"
+    info_string += (
+        f"Name: {customer_name if customer_name else 'Walk-In Customer'}\n"
+        + (f"Email: {customer_email}\n" if customer_email else "")
+        + (f"Phone: {customer_phone}\n" if customer_phone else "")
+        + f"Date: {date_string}\n"
+        + f"Time: {time_string}\n"
+        + f"Bill: {transaction_id}"
+    )
     info_string += f"\n{'-' * settings.RECEIPT_CHAR_COUNT}"
     cart_string = "\n".join(
                                 list(cart_df.apply(
                                     lambda row: f"{str(row.name)+')':<3} {row['name'][:28]}".ljust(settings.RECEIPT_CHAR_COUNT) + "\n" +
-                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {str(int(float(row['quantity']) * 1000)) + 'g' if float(row['quantity']) < 1 and row['unit_type'] != 'pcs' else str(row['quantity']) + row['unit_type'] if row['unit_type'] != 'pcs' else str(int(float(row['quantity']))) + row['unit_type'] :>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
+                                                f"{'' if row['barcode'] == row['product_id'] else row['barcode']:<13} {str(int(float(row['quantity']) * 1000)) + 'g' if float(row['quantity']) < 1 and row['unit_type'] != 'pcs' and row['unit_type'] != 'ml' and row['unit_type'] != 'l' and row['unit_type'] != 'm' and row['unit_type'] != 'm2' and row['unit_type'] != 'g' else  str(row['quantity']) + ('m²' if row['unit_type'] == 'm2' else row['unit_type']) if row['unit_type'] != 'pcs' else str(int(float(row['quantity']))) + row['unit_type']:>3}{row['price']:>7}{row['tax']:>7}".rjust(settings.RECEIPT_CHAR_COUNT),
                                     axis=1
                                 ))
                             )
@@ -256,8 +270,18 @@ def addTransaction(user,payment_type,total,cart,value):
     receipt +=  for_signature
     receipt += "\n\n" + settings.RECEIPT_FOOTER
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
-
-    return transaction.objects.create(vendor=vendor, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
+   
+    if customer_name or customer_email or customer_phone:
+        # Create the CustomerInfo record if at least one field is not empty
+        customer_info = CustomerInfo.objects.create(
+            name=customer_name if customer_name else None,
+            phone_number=customer_phone if customer_phone else None,
+            email=customer_email if customer_email else None
+        )
+    else:
+        # If all fields are empty, set customer_info to None
+        customer_info = None
+    return transaction.objects.create(vendor=vendor,customer_info=customer_info, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
             payment_type = payment_type, receipt = receipt, products = str(cart_df.to_dict('records')),
         )

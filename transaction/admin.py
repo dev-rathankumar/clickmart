@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import transaction, productTransaction
+from .models import transaction, productTransaction,CustomerInfo
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.http import urlencode
@@ -16,8 +16,8 @@ from rangefilter.filters import DateTimeRangeFilter
 # Register your models here.
 @admin.register(transaction)
 class TransactionAdmin(ImportExportModelAdmin):
-    list_display= ("vendor","transaction_dt","transaction_id","total_sale","tax_total","payment_type","products_link","receipt_link",)
-    fields = ["user","transaction_dt","transaction_id", "total_sale","sub_total","tax_total","deposit_total","payment_type","receipt","receipt_link","products_link"]
+    list_display= ("vendor","customer_info","transaction_dt","transaction_id","total_sale","tax_total","payment_type","products_link","receipt_link",)
+    fields = ["user","transaction_dt","customer_info","transaction_id", "total_sale","sub_total","tax_total","deposit_total","payment_type","receipt","receipt_link","products_link"]
     list_filter = (("transaction_dt",DateTimeRangeFilter),"transaction_dt","user","payment_type",)
     search_fields = ["transaction_id"] 
 
@@ -51,7 +51,6 @@ class TransactionAdmin(ImportExportModelAdmin):
     
     class Media:
         js = ["js/jquery.js","js/list_filter_collapse.js",]
-
 
 @admin.register(productTransaction)
 class ProductTransactionAdmin(ImportExportModelAdmin):
