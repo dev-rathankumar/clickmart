@@ -149,13 +149,21 @@ Register | Clickmall Retail POS
                     <strong style="color:black; width: 100%; padding-right: 15px;">Name:</strong>
                     <input id="id_customer_name" name="id_customer_name" type="text" class="form-control" autofocus="autofocus" autocomplete="off" placeholder="Enter customer name..." style="width: 100%;">
                 </ul>
-                <ul style="padding-left: 25px; width:100%;">
+                <ul style="padding-left: 25px; width:50%;">
                     <strong style="color:black; width: 100%; padding-right: 15px; display: block;">Email:</strong>
                     <input id="id_customer_email" type="email" name="id_customer_email" autofocus="autofocus" autocomplete="off" class="form-control" placeholder="Enter customer email address..." style="width: 100%; display: inline;">
                 </ul>
-                <ul style="padding-left: 25px; width: 100%;">
+                <ul style="padding-left: 25px; width: 50%;">
                     <strong style="color:black; width: 100%; padding-right: 15px; display: block;">Phone Number:</strong>
                     <input id="id_customer_phone" type="phone_number" name="id_customer_phone" autofocus="autofocus" autocomplete="off" class="form-control" placeholder="Enter customer phone number..." style="width: 100%; display: inline;" >
+                </ul>
+                <ul style="padding-left: 25px; width: 100%;">
+                    <strong style="color:black; width: 100%; padding-right: 15px; display: block;">Address:</strong>
+                    <input id="id_customer_address" type="address" name="id_customer_address" autofocus="autofocus" autocomplete="off" class="form-control" placeholder="Enter customer address..." style="width: 100%; display: inline;" >
+                </ul>
+                <ul style="padding-left: 25px; width: 100%;">
+                    <strong style="color:black; width: 100%; padding-right: 15px; display: block;">GSTIN:</strong>
+                    <input id="id_customer_gstin" type="gstin" name="id_customer_gstin" autofocus="autofocus" autocomplete="off" class="form-control" placeholder="Enter customer gstin..." style="width: 100%; display: inline;" >
                 </ul>
             </div>
         </form>         
@@ -195,13 +203,17 @@ Register | Clickmall Retail POS
         var customer_name = $('#id_customer_name').val()
         var customer_email = $('#id_customer_email').val()
         var customer_phone = $('#id_customer_phone').val()
+        var customer_address = $('#id_customer_address').val()
+        var customer_gstin = $('#id_customer_gstin').val()
         console.log(customer_name);
         console.log(customer_email);
         console.log(customer_phone);
         var data ={
             "customer_name":customer_name,
             "customer_email":customer_email,
-            "customer_phone":customer_phone
+            "customer_phone":customer_phone,
+            "customer_address":customer_address,
+            "customer_gstin":customer_gstin
         }
         var encodedData = encodeURIComponent(JSON.stringify(data));
         var value = Number(value)

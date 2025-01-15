@@ -18,6 +18,8 @@ class CustomerInfo(models.Model):
     name = models.CharField(max_length=150, blank=True, null=True)
     phone_number = models.CharField(max_length=12, blank=True, null=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
+    address=models.CharField(max_length=250, blank=True, null=True)
+    gstin=models.CharField(max_length=50,blank=True, null=True)
 
     def __str__(self):
         if self.name:
@@ -26,6 +28,10 @@ class CustomerInfo(models.Model):
             return self.email
         elif self.phone_number:
             return self.phone_number
+        elif self.address:
+            return self.address
+        elif self.gstin:
+            return self.gstin
 
 # Create your models here.transaction_dt
 class transaction(models.Model):

@@ -199,9 +199,9 @@ GOOGLE_API_KEY = config('GOOGLE_API_KEY')
 
 # Windows
 if platform.system() == "Windows":
-    os.environ['PATH'] = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo') + ';' + os.environ['PATH']
-    os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo\data\proj') + ';' + os.environ['PATH']
-    GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'env\Lib\site-packages\osgeo\gdal304.dll')
+    os.environ['PATH'] = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo') + ';' + os.environ['PATH']
+    os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo/data/proj') + ';' + os.environ['PATH']
+    GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'env/Lib/site-packages/osgeo/gdal.dll')
 else:
     pass
 
