@@ -50,6 +50,46 @@ def generate_invoice_pdf(transaction, transNo):
         c.setFont("Helvetica", 10)
         c.drawString(400, height - 95, f"Phone: {customer_info.phone_number}")
 
+    # Address (conditionally displayed)
+    if customer_info and customer_info.phone_number and customer_info.email and customer_info.address:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110, f"Address: {customer_info.address}")
+    elif customer_info and customer_info.phone_number == None and customer_info.email == None and customer_info.address:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 80, f"Address: {customer_info.address}")
+    elif customer_info and customer_info.phone_number == None and customer_info.email and customer_info.address:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95, f"Address: {customer_info.address}")
+    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95, f"Address: {customer_info.address}")
+
+    # GSTIN (conditionally displayed)
+    if customer_info and customer_info.phone_number and customer_info.email and customer_info.address and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 125, f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number == None and customer_info.email == None and customer_info.address == None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 80,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number == None and customer_info.email and customer_info.address and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    
+    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address ==None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
+    
+    elif customer_info and customer_info.phone_number==None and customer_info.email  and customer_info.address== None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number and customer_info.email  and customer_info.address== None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    
+
     # Product Table Header
     data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Regular Price", "Tax", "Total"]]
     product_items = eval(transaction.products)  # Assuming `transaction.products` is serialized JSON

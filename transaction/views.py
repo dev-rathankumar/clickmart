@@ -205,6 +205,8 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     customer_name = decoded_data.get("customer_name", "").strip()
     customer_email = decoded_data.get("customer_email", "").strip()
     customer_phone = decoded_data.get("customer_phone", "").strip()
+    customer_address = decoded_data.get("customer_address", "").strip()
+    customer_gstin = decoded_data.get("customer_gstin", "").strip()
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
@@ -227,6 +229,8 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
         f"Name: {customer_name if customer_name else 'Walk-In Customer'}\n"
         + (f"Email: {customer_email}\n" if customer_email else "")
         + (f"Phone: {customer_phone}\n" if customer_phone else "")
+        + (f"Address: {customer_address}\n" if customer_address else "")
+        + (f"GSTN. {customer_gstin}\n" if customer_gstin else "")
         + f"Date: {date_string}\n"
         + f"Time: {time_string}\n"
         + f"Bill: {transaction_id}"
@@ -271,12 +275,14 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     receipt += "\n\n" + settings.RECEIPT_FOOTER
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
    
-    if customer_name or customer_email or customer_phone:
+    if customer_name or customer_email or customer_phone or customer_address or customer_gstin:
         # Create the CustomerInfo record if at least one field is not empty
         customer_info = CustomerInfo.objects.create(
             name=customer_name if customer_name else None,
             phone_number=customer_phone if customer_phone else None,
-            email=customer_email if customer_email else None
+            email=customer_email if customer_email else None,
+            address=customer_address if customer_address else None, 
+            gstin=customer_gstin if customer_gstin else None
         )
     else:
         # If all fields are empty, set customer_info to None
