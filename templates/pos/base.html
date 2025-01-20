@@ -126,6 +126,7 @@
                         <!-- <h6 class="collapse-header">Dashboards</h6> -->
                         <a class="collapse-item" href="{% url 'dashboard_sales' %}"><i class="fas fa-fw fa-chart-line"></i> Sales Dashboard</a>
                         <a class="collapse-item" href="{% url 'dashboard_department' %}"><i class="fas fa-fw fa-chart-bar"></i> Department Dashboard</a>
+                        <a class="collapse-item" href="{% url 'product_sales_report_page' %}"><i class="fas fa-fw fa-file-alt"></i> Product-wise Report</a>
                         <a class="collapse-item" href="{% url 'dashboard_products' %}"><i class="fas fa-fw fa-table"></i> Products Dashboard</a>
                     </div>
                 </div>
@@ -253,7 +254,15 @@
     <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
     <!-- Page level custom scripts -->
     <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+    <!-- Include DataTables -->
+    <script src="https://cdn.datatables.net/2.2.1/js/dataTables.js"></script>
     
+    <!-- Include Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+    
+    <!-- Include DataTables DateTime -->
+    <script src="https://cdn.datatables.net/datetime/1.5.5/js/dataTables.dateTime.min.js"></script>
+
     {% block script %}
     {% endblock %}
 

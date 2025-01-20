@@ -78,7 +78,7 @@ class productTransaction(models.Model):
     name                    = models.CharField(max_length=125, editable=False, blank = False, null = False)
     department              = models.CharField(max_length=125, editable=False,blank = False, null = True)
     sales_price             = models.DecimalField(max_digits=7, editable=False,decimal_places=2,null=False,blank = False)
-    qty                     = models.IntegerField(default=0, editable=False, null=True)
+    qty                     = models.DecimalField(max_digits=10, decimal_places=3, default=0, null=False, help_text="Quantity in selected unit type")
     cost_price              = models.DecimalField(max_digits=7,decimal_places=2,editable=False, default=0,null=True)
     tax_category            = models.CharField(max_length=125, editable=False,blank = False, null = False)
     tax_percentage          = models.DecimalField(max_digits=6, decimal_places=3, validators=PERCENTAGE_VALIDATOR,null=False,blank=False)

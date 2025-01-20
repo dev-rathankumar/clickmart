@@ -15,8 +15,14 @@ import plotly.figure_factory as ff
 from datetime import datetime, timedelta
 import pandas as pd
 import pytz, os, shutil
-
 from vendor.models import Vendor
+from django.http import JsonResponse
+from unified.models import Product
+import openpyxl
+from django.http import HttpResponse
+from datetime import datetime
+
+
 timezone = pytz.timezone("Asia/Kolkata")
 from django.http import JsonResponse
 @login_required(login_url="/pos/user/login/")
@@ -380,3 +386,210 @@ def user_logout(request):
     logout(request)
     return render(request, 'pos/registration/login.html',context={'logout':True})
 
+def product_sales_report(request):
+    # Helper function to parse dates
+    def parse_date(date_str):
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d')
+        except (ValueError, TypeError):
+            return None
+
+    # Get date range from request
+    min_date = parse_date(request.GET.get('min_date'))
+    max_date = parse_date(request.GET.get('max_date'))
+
+    # Filter transactions based on date range and vendor
+    transactions = productTransaction.objects.filter(transaction__vendor=request.user.user)
+    if min_date:
+        transactions = transactions.filter(transaction_date_time__gte=min_date)
+    if max_date:
+        transactions = transactions.filter(transaction_date_time__lte=max_date)
+    
+    def product_finder(barcode):
+        product = Product.objects.filter(barcode=barcode).first()
+        return product
+    # Dictionary to store aggregated data per barcode
+    aggregated_data = {}
+
+    for transaction in transactions:
+        barcode = transaction.barcode
+        print(barcode)
+        if barcode not in aggregated_data:
+            aggregated_data[barcode] = {
+                'name': transaction.name,   
+                'department': transaction.department,  
+                'sales_price': product_finder(barcode).sales_price if product_finder(barcode) else transaction.sales_price, 
+                'hsn_number': product_finder(barcode).hsn_number if product_finder(barcode) else '',  
+                'model_number': product_finder(barcode).model_number if product_finder(barcode) else '',  
+                'unit_type': product_finder(barcode).unit_type if product_finder(barcode) else '',  
+                'tax_percentage':transaction.tax_percentage,
+                'tax_category':transaction.tax_category,
+                'total_tax_amount':0,
+                'total_qty_sold': 0,
+                'total_value': 0,
+            }
+        
+        aggregated_data[barcode]['total_qty_sold'] += transaction.qty
+        aggregated_data[barcode]['total_tax_amount'] += transaction.tax_amount
+        aggregated_data[barcode]['total_value'] = aggregated_data[barcode]['sales_price'] * aggregated_data[barcode]['total_qty_sold']
+
+    for barcode, data in aggregated_data.items():
+        data['total_qty_sold'] = (int(data['total_qty_sold'])if data['total_qty_sold'] == int(data['total_qty_sold']) else round(data['total_qty_sold'], 1))
+        data['total_tax_amount'] = (int(data['total_tax_amount'])if data['total_tax_amount'] == int(data['total_tax_amount']) else round(data['total_tax_amount'], 2))
+        data['total_value'] = round(data['total_value'], 2)
+
+
+
+    for barcode, data in aggregated_data.items():
+        unit_type = data.get('unit_type', '')
+
+        # Convert total_qty_sold to string with unit type appended
+        data['total_qty_sold'] = f"{data['total_qty_sold']} {unit_type}"
+        
+        # Format total_value as a currency value with two decimal points
+        data['total_value'] = f"₹{float(data['total_value']):.2f}"
+
+        data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
+
+        # Format sales_price as a currency value
+        data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
+        
+            
+    # Convert aggregated data to a list
+    data = list(aggregated_data.values())
+
+    # Return the result as JSON
+    return JsonResponse({'data': data}, safe=False)
+
+
+def product_sales_report_page(request):
+    return render(request, 'pos/product_sales_report.html')
+
+
+def product_sales_report_download(request):
+    # Helper function to parse dates
+    def parse_date(date_str):
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d')
+        except (ValueError, TypeError):
+            return None
+
+    if request.method == "POST":  # Ensure the method is POST
+        # Get date range from request
+        min_date = request.POST.get('min_date')
+        max_date = request.POST.get('max_date')
+
+        # Parse dates if needed
+        parsed_min_date = parse_date(min_date)
+        parsed_max_date = parse_date(max_date)
+
+        # Filter transactions based on date range and vendor
+        transactions = productTransaction.objects.filter(transaction__vendor=request.user.user)
+        if min_date:
+            transactions = transactions.filter(transaction_date_time__gte=parsed_min_date)
+        if max_date:
+            transactions = transactions.filter(transaction_date_time__lte=parsed_max_date)
+
+        def product_finder(barcode):
+            product = Product.objects.filter(barcode=barcode).first()
+            return product
+       # Dictionary to store aggregated data per barcode
+        aggregated_data = {}
+
+        for transaction in transactions:
+            barcode = transaction.barcode
+            print(barcode)
+            if barcode not in aggregated_data:
+                aggregated_data[barcode] = {
+                    'name': transaction.name,   
+                    'department': transaction.department,  
+                    'sales_price': product_finder(barcode).sales_price if product_finder(barcode) else transaction.sales_price, 
+                    'hsn_number': product_finder(barcode).hsn_number if product_finder(barcode) else '',  
+                    'model_number': product_finder(barcode).model_number if product_finder(barcode) else '',  
+                    'unit_type': product_finder(barcode).unit_type if product_finder(barcode) else '',  
+                    'tax_percentage':transaction.tax_percentage,
+                    'tax_category':transaction.tax_category,
+                    'total_tax_amount':0,
+                    'total_qty_sold': 0,
+                    'total_value': 0,
+                }
+            
+            aggregated_data[barcode]['total_qty_sold'] += transaction.qty
+            aggregated_data[barcode]['total_tax_amount'] += transaction.tax_amount
+            aggregated_data[barcode]['total_value'] = aggregated_data[barcode]['sales_price'] * aggregated_data[barcode]['total_qty_sold']
+
+        for barcode, data in aggregated_data.items():
+            data['total_qty_sold'] = (int(data['total_qty_sold'])if data['total_qty_sold'] == int(data['total_qty_sold']) else round(data['total_qty_sold'], 1))
+            data['total_tax_amount'] = (int(data['total_tax_amount'])if data['total_tax_amount'] == int(data['total_tax_amount']) else round(data['total_tax_amount'], 2))
+            data['total_value'] = round(data['total_value'], 2)
+
+
+
+        for barcode, data in aggregated_data.items():
+            unit_type = data.get('unit_type', '')
+
+            # Convert total_qty_sold to string with unit type appended
+            data['total_qty_sold'] = f"{data['total_qty_sold']} {unit_type}"
+            
+            # Format total_value as a currency value with two decimal points
+            data['total_value'] = f"₹{float(data['total_value']):.2f}"
+
+            data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
+
+            # Format sales_price as a currency value
+            data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
+            
+        # Create an Excel workbook and sheet
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Product Sales Report"
+
+        # Add column headers
+        columns = [
+            'Name', 'Department', 'HSN Number','Model Number',
+            'Sales Price', 'Total Quantity Sold', 'Tax','Total Value'
+        ]
+        sheet.append(columns)
+
+        # Add data rows
+        for data in aggregated_data.values():
+            row = [
+                data['name'],
+                data['department'],
+                data['hsn_number'],
+                data['model_number'],
+                data['sales_price'],
+                data['total_qty_sold'],
+                data['total_tax_amount'],
+                data['total_value'],
+            ]
+            sheet.append(row)
+
+        # Auto-adjust column width
+        for column_cells in sheet.columns:
+            max_length = 0
+            col_letter = column_cells[0].column_letter  # Get column letter
+            for cell in column_cells:
+                try:
+                    if cell.value:
+                        max_length = max(max_length, len(str(cell.value)))
+                except Exception:
+                    pass
+            adjusted_width = max_length + 2
+            sheet.column_dimensions[col_letter].width = adjusted_width
+
+        # Save the workbook to an HTTP response for download
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        # Use the current date if min_date or max_date is not provided
+        from datetime import date
+        formatted_min_date = min_date if min_date else request.user.created_date.strftime("%Y-%m-%d")
+        formatted_max_date = max_date if max_date else date.today().strftime("%Y-%m-%d")
+
+        response['Content-Disposition'] = f'attachment; filename="product_sales_report_{formatted_min_date}_to_{formatted_max_date}.xlsx"'
+
+        workbook.save(response)
+        return response
+
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=400)

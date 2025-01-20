@@ -56,6 +56,9 @@ class Cart(object):
         self.cart[product_id]['deposit_value'] = f"{Decimal(self.cart[product_id]['quantity']) * product.deposit_category.deposit_value:.2f}"
         self.cart[product_id]['line_total'] = f"{(product.sales_price * Decimal(self.cart[product_id]['quantity'])):.2f}"
         self.cart[product_id]['regular_price'] = f"{(product.regular_price * Decimal(self.cart[product_id]['quantity'])):.2f}"
+        self.cart[product_id]['sales_price'] = f"{(product.sales_price):.2f}"
+        self.cart[product_id]['tax_category_name'] = f"{product.tax_category.tax_category}"
+        self.cart[product_id]['tax_percentage'] = f"{product.tax_category.tax_percentage}"
         self.save()
 
     

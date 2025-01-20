@@ -27,6 +27,9 @@ urlpatterns = [
     path('dashboard_sales/',views.dashboard_sales, name="dashboard_sales"),
     path('dashboard_department/',views.dashboard_department, name="dashboard_department"),
     path('dashboard_products/',views.dashboard_products, name="dashboard_products"),
+    path('product-sales-report/', views.product_sales_report_page, name='product_sales_report_page'),
+    path('api/product-sales-report/', views.product_sales_report, name='product_sales_report_api'),
+    path('product-sales-report/download-report/', views.product_sales_report_download, name='product_sales_report_download'),
     path("department_report/<start_date>/<end_date>/",views.report_regular),
 
     # Inventory add

@@ -320,7 +320,9 @@ def checkout(request):
 
 def All_products(request, category_id=None, subcategory_id=None):
     categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
-    
+    # Handle search query
+    search_query = request.GET.get('search', None)
+
     if subcategory_id:
         # Filter by subcategory
         selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
@@ -336,6 +338,12 @@ def All_products(request, category_id=None, subcategory_id=None):
     else:
         # Show all products if no filter is selected
         products = Product.objects.filter(is_available=True, is_active=True)
+    # Apply search filter
+    if search_query:
+        products = products.filter(
+            models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
+        )
+        
     print(products)
     context = {
         'categories': categories,

@@ -69,6 +69,9 @@
   
             <dt class="col-3">SubCategory:</dt>
             <dd class="col-9">{{ product.subcategory.category_name }}</dd>
+
+            <dt class="col-3">Shop Name:</dt>
+            <dd class="col-9"><a href="{% url 'vendor_detail' product.vendor.vendor_slug %}" >{{product.vendor.vendor_name | capfirst}}</a></dd>
           </div>
   
           <hr />
