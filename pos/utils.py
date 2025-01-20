@@ -6,6 +6,9 @@ import io
 from num2words import num2words
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from decimal import Decimal
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 def generate_invoice_pdf(transaction, transNo):
     buffer = io.BytesIO()
@@ -14,6 +17,11 @@ def generate_invoice_pdf(transaction, transNo):
 
     # Vendor Info
     vendor = transaction.vendor
+    # Get styles
+    styles = getSampleStyleSheet()
+    small_style = styles["Normal"]
+    small_style.fontSize = 7  # Adjust font size to make it smaller
+    small_style.leading = 8  # Adjust line spacing if necessary
 
     # Header
     c.setFont("Helvetica-Bold", 14)
@@ -91,7 +99,7 @@ def generate_invoice_pdf(transaction, transNo):
     
 
     # Product Table Header
-    data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Regular Price", "Tax", "Total"]]
+    data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Sales Price", "Tax", "Total"]]
     product_items = eval(transaction.products)  # Assuming `transaction.products` is serialized JSON
     regular_price_total = 0
     for idx, item in enumerate(product_items, start=1):
@@ -102,9 +110,11 @@ def generate_invoice_pdf(transaction, transNo):
         price = item.get('price', 0.0)
         tax_value = item.get('tax_value', 0.0)
         total_price = item.get('line_total')
-        regular_price = item.get('regular_price')
-        regular_price_total+=Decimal(regular_price)
+        sales_price = item.get('sales_price')
+        regular_price_total+=Decimal(sales_price)
         unit_type=item.get('unit_type')
+        tax_category = item.get('tax_category_name')
+        tax_percentage = float(item.get('tax_percentage'))
         if unit_type == 'kg' and  float(quantity) < 1:
             unit_type = 'g'
             quantity= float(quantity)*1000
@@ -116,13 +126,13 @@ def generate_invoice_pdf(transaction, transNo):
 
 
         data.append([str(idx), product_name, product_hsn_number, product_model_number,
-                     str(quantity)+str(unit_type), f"INR {regular_price}", f"INR {tax_value}", f"INR {total_price}"])
+                     str(quantity)+str(unit_type), f"INR {sales_price}", Paragraph(f"INR {tax_value}({tax_category} {tax_percentage:.0f}%)", small_style), f"INR {total_price}"])
 
     # Add totals
     data.append(["", "", "", "","Total",f"INR {regular_price_total:.2f}", f"INR {transaction.tax_total:.2f}", f"INR {transaction.total_sale:.2f}"])
 
     # Create and style the table
-    table = Table(data, colWidths=[30, 120, 70, 70, 50, 70, 65, 90])
+    table = Table(data, colWidths=[30, 110, 70, 70, 50, 70, 80, 90])
 
     style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.white),
@@ -139,14 +149,14 @@ def generate_invoice_pdf(transaction, transNo):
 
     # Draw Table
     table.wrapOn(c, width, height)
+    table.drawOn(c, 15, height - 390)
     table_width, table_height = table.wrap(width, height)
-    table.drawOn(c, 15, height - 290)
 
     # Right margin
     right_margin = 25
 
     # Calculate Y-position for totals
-    y_position = height - 200 - table_height - 55
+    y_position = height - 390 - table_height
 
     # Total Section
     c.setFont("Helvetica", 10)

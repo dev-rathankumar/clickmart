@@ -1,0 +1,131 @@
+{% extends 'pos/base.html' %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.5/css/dataTables.dateTime.min.css">
+
+<div class="d-flex align-items-center flex-wrap justify-content-between align-content-center">
+    <h2 class="d-inline">Products Sales Report</h2>
+
+<a onclick='download_report(event)' class="d-inline text-decoration-none mr-4">
+    <button class="btn-lg btn-success mt-3 d-inline" style="width: 100%;">
+        Download Report
+    </button>
+    </a>
+</div>
+<div class="main-section" style='width:1200px'>
+    <table border="0" cellspacing="5" cellpadding="5">
+        <tbody>
+            <tr>
+                <td>Start date:</td>
+                <td><input type="text" id="min" name="min"></td>
+            </tr>
+            <tr>
+                <td>End date:</td>
+                <td><input type="text" id="max" name="max"></td>
+            </tr>
+        </tbody>
+    </table>
+    <table id="salesTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Department</th>
+                <th>HSN Number</th>
+                <th>Model Number</th>
+                <th>Sales Price</th>
+                <th>Total Quantity Sold</th>
+                <th>Tax</th>
+                <th>Total Value</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Date range picker initialization
+        let minDate = new DateTime('#min', { format: 'YYYY-MM-DD' });
+        let maxDate = new DateTime('#max', { format: 'YYYY-MM-DD' });
+
+        // Initialize DataTable
+        let table = $('#salesTable').DataTable({
+            ajax: {
+                url: "{% url 'product_sales_report_api' %}",
+                data: function (d) {
+                    d.min_date = $('#min').val();
+                    d.max_date = $('#max').val();
+                }
+            },
+            columns: [
+                { data: 'name' },
+                { data: 'department' },
+                { data: 'hsn_number' },
+                { data: 'model_number' },
+                { data: 'sales_price' },
+                { data: 'total_qty_sold' },
+                { data: 'total_tax_amount' },
+                { data: 'total_value' },
+            ]
+        });
+
+        // Refilter the table on date change
+        $('#min, #max').on('change', function () {
+            table.ajax.reload();
+        });
+    });
+    function download_report(event) {
+        event.preventDefault();
+    
+        let minDate = $('#min').val();
+        let maxDate = $('#max').val();
+    
+        console.log(minDate);
+        console.log(maxDate);
+    
+        // Perform the POST request using `fetch`
+        fetch("{% url 'product_sales_report_download' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}", // Include CSRF token for Django
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                min_date: minDate,
+                max_date: maxDate,
+            }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+    
+                // Extract file name from the Content-Disposition header
+                const contentDisposition = response.headers.get("Content-Disposition");
+                let fileName = "product_sales_report.xlsx"; // Default file name
+                if (contentDisposition && contentDisposition.includes("filename=")) {
+                    fileName = contentDisposition.split("filename=")[1].replace(/"/g, "");
+                }
+    
+                return response.blob().then(blob => ({ blob, fileName }));
+            })
+            .then(({ blob, fileName }) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.style.display = "none";
+                a.href = url;
+                a.download = fileName; // Use the extracted file name
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error("Error downloading report:", error);
+            });
+    }
+    
+</script>
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.2.1/js/dataTables.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+<script src="https://cdn.datatables.net/datetime/1.5.5/js/dataTables.dateTime.min.js"></script>
+{% endblock %}

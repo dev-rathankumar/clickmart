@@ -270,7 +270,7 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     table.drawOn(c, 15, height -320)  # Draw the table at the specified position
 
     # Dynamically calculate Y-position for the totals
-    y_position = height - 200 - table_height - 55  # Position below the table with a 55-point gap
+    y_position = height - 320 - table_height # Position below the table with a 55-point gap
 
     # Section of the Total prices
     c.setFont("Helvetica", 10)
