@@ -20,8 +20,8 @@ def generate_invoice_pdf(transaction, transNo):
     # Get styles
     styles = getSampleStyleSheet()
     small_style = styles["Normal"]
-    small_style.fontSize = 7  # Adjust font size to make it smaller
-    small_style.leading = 8  # Adjust line spacing if necessary
+    small_style.fontSize = 7  
+    small_style.leading = 8  
 
     # Header
     c.setFont("Helvetica-Bold", 14)
@@ -96,9 +96,8 @@ def generate_invoice_pdf(transaction, transNo):
     elif customer_info and customer_info.phone_number and customer_info.email  and customer_info.address== None and customer_info.gstin:
         c.setFont("Helvetica", 10)
         c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
-    
-
-    # Product Table Header
+   
+    # Code block
     data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Sales Price", "Tax", "Total"]]
     product_items = eval(transaction.products)  # Assuming `transaction.products` is serialized JSON
     regular_price_total = 0
@@ -111,23 +110,39 @@ def generate_invoice_pdf(transaction, transNo):
         tax_value = item.get('tax_value', 0.0)
         total_price = item.get('line_total')
         sales_price = item.get('sales_price')
-        regular_price_total+=Decimal(sales_price)
-        unit_type=item.get('unit_type')
+        regular_price_total += Decimal(sales_price)
+        unit_type = item.get('unit_type')
         tax_category = item.get('tax_category_name')
         tax_percentage = float(item.get('tax_percentage'))
-        if unit_type == 'kg' and  float(quantity) < 1:
+
+        # Adjust unit type and quantity
+        if unit_type == 'kg' and float(quantity) < 1:
             unit_type = 'g'
-            quantity= float(quantity)*1000
+            quantity = float(quantity) * 1000
             quantity = int(quantity)
         if unit_type == 'pcs':
-            quantity=int(quantity)
+            quantity = int(quantity)
         elif unit_type == 'm2':
             unit_type = 'm²'
+ 
+        # Define styles
+        styles = getSampleStyleSheet()
+        regular_style = styles['Normal']
+        small_style = styles['Normal'].clone('small_style')
+        small_style.fontSize = 7  # Define smaller font size
+        regular_style.fontSize = 9
+        small_style.leading = 8
+        regular_style.leading = 8
 
+        # Create tax details with mixed styles
+        tax_details = f"INR {tax_value}<font size='6'>({tax_category} {tax_percentage:.0f}%)</font>"
+        tax_paragraph = Paragraph(tax_details, regular_style)
 
-        data.append([str(idx), product_name, product_hsn_number, product_model_number,
-                     str(quantity)+str(unit_type), f"INR {sales_price}", Paragraph(f"INR {tax_value}({tax_category} {tax_percentage:.0f}%)", small_style), f"INR {total_price}"])
-
+        # Append to data
+        data.append([
+            str(idx), product_name, product_hsn_number, product_model_number,
+            str(quantity) + str(unit_type), f"INR {sales_price}", tax_paragraph, f"INR {total_price}"
+        ])
     # Add totals
     data.append(["", "", "", "","Total",f"INR {regular_price_total:.2f}", f"INR {transaction.tax_total:.2f}", f"INR {transaction.total_sale:.2f}"])
 
@@ -156,7 +171,7 @@ def generate_invoice_pdf(transaction, transNo):
     right_margin = 25
 
     # Calculate Y-position for totals
-    y_position = height - 390 - table_height
+    y_position = height - 360 - table_height
 
     # Total Section
     c.setFont("Helvetica", 10)
