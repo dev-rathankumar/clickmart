@@ -23,10 +23,6 @@ def generate_invoice_pdf(transaction, transNo):
     small_style.fontSize = 7  
     small_style.leading = 8  
 
-    # Customer Info
-    customer_info = transaction.customer_info
-
-
     # Header
     c.setFont("Helvetica-Bold", 14)
     c.drawString(15, height - 50, vendor.vendor_name if vendor else "Vendor Not Available")
@@ -36,10 +32,9 @@ def generate_invoice_pdf(transaction, transNo):
     c.drawString(15, height - 100, f"Transaction Date: {transaction.transaction_dt.strftime('%b %d, %Y, %I:%M %p')}")
     c.drawString(15, height - 115, f"Transaction ID: {transaction.transaction_id}")
     c.drawString(15, height - 130, f"Payment Type: {transaction.payment_type}")
-    if customer_info and customer_info.gstin:
-            c.drawString(15, height - 145,  f"GSTIN. {customer_info.gstin}")
 
-
+    # Customer Info
+    customer_info = transaction.customer_info
     c.setFont("Helvetica", 11)
     c.drawString(400, height - 50, "Billed To:")
 
@@ -78,29 +73,29 @@ def generate_invoice_pdf(transaction, transNo):
         c.drawString(400, height - 95, f"Address: {customer_info.address}")
 
     # GSTIN (conditionally displayed)
-    # if customer_info and customer_info.phone_number and customer_info.email and customer_info.address and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 125, f"GSTIN. {customer_info.gstin}")
-    # elif customer_info and customer_info.phone_number == None and customer_info.email == None and customer_info.address == None and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 80,  f"GSTIN. {customer_info.gstin}")
-    # elif customer_info and customer_info.phone_number == None and customer_info.email and customer_info.address and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
-    # elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    if customer_info and customer_info.phone_number and customer_info.email and customer_info.address and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 125, f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number == None and customer_info.email == None and customer_info.address == None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 80,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number == None and customer_info.email and customer_info.address and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
     
-    # elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address ==None and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address ==None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
     
-    # elif customer_info and customer_info.phone_number==None and customer_info.email  and customer_info.address== None and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
-    # elif customer_info and customer_info.phone_number and customer_info.email  and customer_info.address== None and customer_info.gstin:
-    #     c.setFont("Helvetica", 10)
-    #     c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number==None and customer_info.email  and customer_info.address== None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
+    elif customer_info and customer_info.phone_number and customer_info.email  and customer_info.address== None and customer_info.gstin:
+        c.setFont("Helvetica", 10)
+        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
    
     # Code block
     data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Sales Price", "Tax", "Total"]]
