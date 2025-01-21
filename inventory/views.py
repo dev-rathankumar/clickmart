@@ -20,7 +20,12 @@ class AddProduct(forms.Form):
     qty = forms.IntegerField(label="Quantity To Be Added",widget=TextInput(attrs={'style':"width:100%"}))
     barcode = forms.CharField(label="Product Barcode", widget=TextInput(attrs={'autofocus':"autofocus",' autocomplete':"off",'style':"width:100%"}),max_length = 32)
 
-
+def isInteger(value):
+    try:
+        int(value)
+        return True
+    except (ValueError, TypeError):
+        return False
 # Create your views here.
 @login_required(login_url="/user/login")
 def product_lookup(request):
@@ -28,6 +33,10 @@ def product_lookup(request):
     notFound = False
     if request.method == "POST":
         product_id = request.POST.get('product_id')
+        if not product_id or not isInteger(product_id):
+            obj = None
+            notFound= True
+            return render(request,"pos/productLookup.html",context={'notFound':notFound,'obj':obj})
         try:
             vendor = Vendor.objects.get(user=request.user)
             obj = product.objects.get(id=product_id, vendor=vendor)
@@ -69,6 +78,12 @@ def inventoryAdd(request):
     context = { }
     if request.method == "POST":
         product_id = request.POST.get('product_id')
+        
+        if not product_id or not isInteger(product_id):
+            obj = None
+            context['notFound']= request.POST.get('product_id')
+            return render(request,'pos/addInventory.html',context=context)
+        
         qty = request.POST.get('qty', 1)
         if qty:
             pass
