@@ -496,8 +496,12 @@ def product_sales_report_download(request):
         if max_date:
             transactions = transactions.filter(transaction_date_time__lte=parsed_max_date)
 
-        def product_finder(barcode):
-            product = Product.objects.filter(barcode=barcode).first()
+        def product_finder(request,barcode):
+        # Try to find the product by id
+            product = Product.objects.filter(vendor=request.user.user, id=barcode).first()
+            if not product:
+                # If no product is found by id, try to find it by barcode
+                product = Product.objects.filter(vendor=request.user.user, barcode=barcode).first()
             return product
     # Dictionary to store aggregated data per (barcode, sales_price)
         aggregated_data = {}
@@ -511,9 +515,9 @@ def product_sales_report_download(request):
                     'name': transaction.name,   
                     'department': transaction.department,  
                     'sales_price': transaction.sales_price, 
-                    'hsn_number': product_finder(transaction.barcode).hsn_number if product_finder(transaction.barcode) else '',  
-                    'model_number': product_finder(transaction.barcode).model_number if product_finder(transaction.barcode) else '',  
-                    'unit_type': product_finder(transaction.barcode).unit_type if product_finder(transaction.barcode) else '',  
+                    'hsn_number': product_finder(request,transaction.barcode).hsn_number if product_finder(request,transaction.barcode) else '',  
+                    'model_number': product_finder(request, transaction.barcode).model_number if product_finder(request,transaction.barcode) else '',  
+                    'unit_type': product_finder(request, transaction.barcode).unit_type if product_finder(request,transaction.barcode) else '',  
                     'tax_percentage': transaction.tax_percentage,
                     'tax_category': transaction.tax_category,
                     'total_tax_amount': 0,
