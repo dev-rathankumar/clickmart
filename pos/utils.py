@@ -32,6 +32,9 @@ def generate_invoice_pdf(transaction, transNo):
     c.drawString(15, height - 100, f"Transaction Date: {transaction.transaction_dt.strftime('%b %d, %Y, %I:%M %p')}")
     c.drawString(15, height - 115, f"Transaction ID: {transaction.transaction_id}")
     c.drawString(15, height - 130, f"Payment Type: {transaction.payment_type}")
+    if vendor and vendor.gst_number: 
+        c.drawString(15, height - 145, f"GSTIN. {vendor.gst_number}")
+
 
     # Customer Info
     customer_info = transaction.customer_info
