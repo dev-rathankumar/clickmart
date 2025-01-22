@@ -405,51 +405,62 @@ def product_sales_report(request):
     if max_date:
         transactions = transactions.filter(transaction_date_time__lte=max_date)
     
-    def product_finder(barcode):
-        product = Product.objects.filter(barcode=barcode).first()
+    def product_finder(request,barcode):
+        # Try to find the product by id
+        product = Product.objects.filter(vendor=request.user.user, id=barcode).first()
+        if not product:
+            # If no product is found by id, try to find it by barcode
+            product = Product.objects.filter(vendor=request.user.user, barcode=barcode).first()
         return product
-    # Dictionary to store aggregated data per barcode
+            
+    # Dictionary to store aggregated data per (barcode, sales_price)
     aggregated_data = {}
 
     for transaction in transactions:
-        barcode = transaction.barcode
-        print(barcode)
-        if barcode not in aggregated_data:
-            aggregated_data[barcode] = {
+        # Composite key of barcode and sales_price
+        key = (transaction.barcode, transaction.sales_price)
+        print(key)
+        if key not in aggregated_data:
+            aggregated_data[key] = {
+                'barcode': transaction.barcode,
                 'name': transaction.name,   
                 'department': transaction.department,  
-                'sales_price': product_finder(barcode).sales_price if product_finder(barcode) else transaction.sales_price, 
-                'hsn_number': product_finder(barcode).hsn_number if product_finder(barcode) else '',  
-                'model_number': product_finder(barcode).model_number if product_finder(barcode) else '',  
-                'unit_type': product_finder(barcode).unit_type if product_finder(barcode) else '',  
-                'tax_percentage':transaction.tax_percentage,
-                'tax_category':transaction.tax_category,
-                'total_tax_amount':0,
+                'sales_price': transaction.sales_price, 
+                'hsn_number': product_finder(request,transaction.barcode).hsn_number if product_finder(request,transaction.barcode) else '',  
+                'model_number': product_finder(request, transaction.barcode).model_number if product_finder(request,transaction.barcode) else '',  
+                'unit_type': product_finder(request, transaction.barcode).unit_type if product_finder(request,transaction.barcode) else '',  
+                'tax_percentage': transaction.tax_percentage,
+                'tax_category': transaction.tax_category,
+                'total_tax_amount': 0,
                 'total_qty_sold': 0,
                 'total_value': 0,
             }
         
-        aggregated_data[barcode]['total_qty_sold'] += transaction.qty
-        aggregated_data[barcode]['total_tax_amount'] += transaction.tax_amount
-        aggregated_data[barcode]['total_value'] = aggregated_data[barcode]['sales_price'] * aggregated_data[barcode]['total_qty_sold']
+        # Update aggregated data
+        aggregated_data[key]['total_qty_sold'] += transaction.qty
+        aggregated_data[key]['total_tax_amount'] += transaction.tax_amount
+        aggregated_data[key]['total_value'] = aggregated_data[key]['sales_price'] * aggregated_data[key]['total_qty_sold']
 
-    for barcode, data in aggregated_data.items():
-        data['total_qty_sold'] = (int(data['total_qty_sold'])if data['total_qty_sold'] == int(data['total_qty_sold']) else round(data['total_qty_sold'], 1))
-        data['total_tax_amount'] = (int(data['total_tax_amount'])if data['total_tax_amount'] == int(data['total_tax_amount']) else round(data['total_tax_amount'], 2))
+    # Format the values in aggregated_data
+    for key, data in aggregated_data.items():
+        data['total_qty_sold'] = (
+            int(data['total_qty_sold']) 
+            if data['total_qty_sold'] == int(data['total_qty_sold']) 
+            else round(data['total_qty_sold'], 1)
+        )
+        data['total_tax_amount'] = (
+            int(data['total_tax_amount']) 
+            if data['total_tax_amount'] == int(data['total_tax_amount']) 
+            else round(data['total_tax_amount'], 2)
+        )
         data['total_value'] = round(data['total_value'], 2)
 
-
-
-    for barcode, data in aggregated_data.items():
-        # Format total_value as a currency value with two decimal points
+    # Format data for display
+    for key, data in aggregated_data.items():
         data['total_value'] = f"₹{float(data['total_value']):.2f}"
-
         data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
-
-        # Format sales_price as a currency value
         data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
-        
-            
+
     # Convert aggregated data to a list
     data = list(aggregated_data.values())
 
@@ -485,49 +496,60 @@ def product_sales_report_download(request):
         if max_date:
             transactions = transactions.filter(transaction_date_time__lte=parsed_max_date)
 
-        def product_finder(barcode):
-            product = Product.objects.filter(barcode=barcode).first()
+        def product_finder(request,barcode):
+        # Try to find the product by id
+            product = Product.objects.filter(vendor=request.user.user, id=barcode).first()
+            if not product:
+                # If no product is found by id, try to find it by barcode
+                product = Product.objects.filter(vendor=request.user.user, barcode=barcode).first()
             return product
-       # Dictionary to store aggregated data per barcode
+    # Dictionary to store aggregated data per (barcode, sales_price)
         aggregated_data = {}
 
         for transaction in transactions:
-            barcode = transaction.barcode
-            print(barcode)
-            if barcode not in aggregated_data:
-                aggregated_data[barcode] = {
+            # Composite key of barcode and sales_price
+            key = (transaction.barcode, transaction.sales_price)
+            if key not in aggregated_data:
+                aggregated_data[key] = {
+                    'barcode': transaction.barcode,
                     'name': transaction.name,   
                     'department': transaction.department,  
-                    'sales_price': product_finder(barcode).sales_price if product_finder(barcode) else transaction.sales_price, 
-                    'hsn_number': product_finder(barcode).hsn_number if product_finder(barcode) else '',  
-                    'model_number': product_finder(barcode).model_number if product_finder(barcode) else '',  
-                    'unit_type': product_finder(barcode).unit_type if product_finder(barcode) else '',  
-                    'tax_percentage':transaction.tax_percentage,
-                    'tax_category':transaction.tax_category,
-                    'total_tax_amount':0,
+                    'sales_price': transaction.sales_price, 
+                    'hsn_number': product_finder(request,transaction.barcode).hsn_number if product_finder(request,transaction.barcode) else '',  
+                    'model_number': product_finder(request, transaction.barcode).model_number if product_finder(request,transaction.barcode) else '',  
+                    'unit_type': product_finder(request, transaction.barcode).unit_type if product_finder(request,transaction.barcode) else '',  
+                    'tax_percentage': transaction.tax_percentage,
+                    'tax_category': transaction.tax_category,
+                    'total_tax_amount': 0,
                     'total_qty_sold': 0,
                     'total_value': 0,
                 }
             
-            aggregated_data[barcode]['total_qty_sold'] += transaction.qty
-            aggregated_data[barcode]['total_tax_amount'] += transaction.tax_amount
-            aggregated_data[barcode]['total_value'] = aggregated_data[barcode]['sales_price'] * aggregated_data[barcode]['total_qty_sold']
+            # Update aggregated data
+            aggregated_data[key]['total_qty_sold'] += transaction.qty
+            aggregated_data[key]['total_tax_amount'] += transaction.tax_amount
+            aggregated_data[key]['total_value'] = aggregated_data[key]['sales_price'] * aggregated_data[key]['total_qty_sold']
 
-        for barcode, data in aggregated_data.items():
-            data['total_qty_sold'] = (int(data['total_qty_sold'])if data['total_qty_sold'] == int(data['total_qty_sold']) else round(data['total_qty_sold'], 1))
-            data['total_tax_amount'] = (int(data['total_tax_amount'])if data['total_tax_amount'] == int(data['total_tax_amount']) else round(data['total_tax_amount'], 2))
+        # Format the values in aggregated_data
+        for key, data in aggregated_data.items():
+            data['total_qty_sold'] = (
+                int(data['total_qty_sold']) 
+                if data['total_qty_sold'] == int(data['total_qty_sold']) 
+                else round(data['total_qty_sold'], 1)
+            )
+            data['total_tax_amount'] = (
+                int(data['total_tax_amount']) 
+                if data['total_tax_amount'] == int(data['total_tax_amount']) 
+                else round(data['total_tax_amount'], 2)
+            )
             data['total_value'] = round(data['total_value'], 2)
 
-
-
-        for barcode, data in aggregated_data.items():
-            # Format total_value as a currency value with two decimal points
+        # Format data for display
+        for key, data in aggregated_data.items():
             data['total_value'] = f"₹{float(data['total_value']):.2f}"
-
             data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
-
-            # Format sales_price as a currency value
             data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
+
             
         # Create an Excel workbook and sheet
         workbook = openpyxl.Workbook()

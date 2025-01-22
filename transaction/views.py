@@ -248,7 +248,7 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     # cart_string = f"Transaction:{transaction_id}".center(settings.RECEIPT_CHAR_COUNT) + f"\n{'-'*int(settings.RECEIPT_CHAR_COUNT)}\n" + cart_string
     total_string = f"Sub-Total: {round(total-tax_total,2)}  Total Tax: {round(tax_total,2)}".center(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + (' - '*int(settings.RECEIPT_CHAR_COUNT/3)) +"\n" + f"{'GROSS AMOUNT':>10}: {round(total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
-    total_string = total_string + "\n" + f"{'Discount AMOUNT':>10}: {round(regular_price_total-total,2)}".rjust(settings.RECEIPT_CHAR_COUNT)
+    total_string = total_string + "\n" + f"{'Discount AMOUNT':>10}: {round(regular_price_total-total,2) if regular_price_total > total else 0}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{str(payment_type):>10}: INR {round(value,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n" + f"{'CHANGE':>10}: INR {round(value-total,2):.2f}".rjust(settings.RECEIPT_CHAR_COUNT)
     total_string = total_string + "\n\n" + f"{'<b>NET PAYABLE</b>':>10}: <b>INR {round(total,2)}</b>".rjust(settings.RECEIPT_CHAR_COUNT)

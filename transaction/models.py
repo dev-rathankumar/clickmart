@@ -57,10 +57,10 @@ class transaction(models.Model):
         self.transaction_dt = timezone.localize(self.transaction_dt)
         super().save(*args, **kwargs)
         for product_item in eval(self.products):
-            try: item = product.objects.get(barcode = product_item['barcode'], vendor=self.vendor)
-            except: item = product.objects.get(barcode = product_item['barcode'].split("_")[0])
+            try: item = product.objects.get(id= product_item['product_id'], vendor=self.vendor)
+            except: item = product.objects.get(id= product_item['product_id'].split("_")[0])
             productTransaction.objects.create(transaction = self, transaction_id_num = self.transaction_id, transaction_date_time = self.transaction_dt,
-                barcode = product_item['barcode'], name = product_item['name'], department = item.category.category_name, sales_price= product_item['price'],
+                barcode = product_item['product_id'], name = product_item['name'], department = item.category.category_name, sales_price= product_item['sales_price'],
                 qty = product_item['quantity'], cost_price = item.cost_price, tax_category = item.tax_category.tax_category,tax_percentage= item.tax_category.tax_percentage ,
                 tax_amount = product_item['tax_value'], deposit_category = item.deposit_category.deposit_category,deposit = item.deposit_category.deposit_value ,
                 deposit_amount = product_item['deposit_value'], payment_type= self.payment_type )

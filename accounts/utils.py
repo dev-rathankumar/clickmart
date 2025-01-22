@@ -213,6 +213,8 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     c.drawString(40, height - 115, f"Order No: {order.order_number}")
     c.drawString(40, height - 130, f"Payment Method: {order.payment_method}")
     c.drawString(40, height - 145, f"Transaction ID: {order.payment.transaction_id}")
+    if vendor and vendor.gst_number: 
+        c.drawString(40, height - 160, f"GSTIN. {vendor.gst_number}")
 
     # Customer Info
     c.setFont("Helvetica", 11)
