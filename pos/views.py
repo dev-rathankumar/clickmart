@@ -441,11 +441,6 @@ def product_sales_report(request):
 
 
     for barcode, data in aggregated_data.items():
-        unit_type = data.get('unit_type', '')
-
-        # Convert total_qty_sold to string with unit type appended
-        data['total_qty_sold'] = f"{data['total_qty_sold']} {unit_type}"
-        
         # Format total_value as a currency value with two decimal points
         data['total_value'] = f"₹{float(data['total_value']):.2f}"
 
@@ -526,11 +521,6 @@ def product_sales_report_download(request):
 
 
         for barcode, data in aggregated_data.items():
-            unit_type = data.get('unit_type', '')
-
-            # Convert total_qty_sold to string with unit type appended
-            data['total_qty_sold'] = f"{data['total_qty_sold']} {unit_type}"
-            
             # Format total_value as a currency value with two decimal points
             data['total_value'] = f"₹{float(data['total_value']):.2f}"
 
@@ -547,7 +537,7 @@ def product_sales_report_download(request):
         # Add column headers
         columns = [
             'Name', 'Department', 'HSN Number','Model Number',
-            'Sales Price', 'Total Quantity Sold', 'Tax','Total Value'
+            'Sales Price', 'Total Quantity Sold','Unit Type', 'Tax','Total Value'
         ]
         sheet.append(columns)
 
@@ -560,6 +550,7 @@ def product_sales_report_download(request):
                 data['model_number'],
                 data['sales_price'],
                 data['total_qty_sold'],
+                data['unit_type'],
                 data['total_tax_amount'],
                 data['total_value'],
             ]
