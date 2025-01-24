@@ -8,7 +8,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from decimal import Decimal
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-
+import textwrap
 
 def generate_invoice_pdf(transaction, transNo):
     buffer = io.BytesIO()
@@ -31,9 +31,8 @@ def generate_invoice_pdf(transaction, transNo):
     c.drawString(15, height - 85, f"Phone: {vendor.user.phone_number if vendor and vendor.user else 'N/A'}")
     c.drawString(15, height - 100, f"Transaction Date: {transaction.transaction_dt.strftime('%b %d, %Y, %I:%M %p')}")
     c.drawString(15, height - 115, f"Transaction ID: {transaction.transaction_id}")
-    c.drawString(15, height - 130, f"Payment Type: {transaction.payment_type}")
     if vendor and vendor.gst_number: 
-        c.drawString(15, height - 145, f"GSTIN. {vendor.gst_number}")
+        c.drawString(15, height - 130, f"GSTIN. {vendor.gst_number}")
 
 
     # Customer Info
@@ -127,7 +126,9 @@ def generate_invoice_pdf(transaction, transNo):
             quantity = int(quantity)
         elif unit_type == 'm2':
             unit_type = 'm²'
- 
+        
+        # Wrap product name if it exceeds 20 characters
+        wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
         # Define styles
         styles = getSampleStyleSheet()
         regular_style = styles['Normal']
@@ -143,7 +144,7 @@ def generate_invoice_pdf(transaction, transNo):
 
         # Append to data
         data.append([
-            str(idx), product_name, product_hsn_number, product_model_number,
+            str(idx), wrapped_product_name, product_hsn_number, product_model_number,
             str(quantity) + str(unit_type), f"INR {sales_price}", tax_paragraph, f"INR {total_price}"
         ])
     # Add totals
@@ -249,15 +250,6 @@ def generate_invoice_pdf(transaction, transNo):
     # Draw "Authorized Signatory" right-aligned
     c.drawString(auth_signatory_x, y_position - 215, auth_signatory_text)
 
-    # Text "E. & O.E."
-    c.setFont("Helvetica", 8)
-    # c.drawString(490, y_position - 130, "E.& O.E.")
-    # Footer at the bottom of the page
-    footer_y_position = 20  # 20 units from the bottom of the page
-    c.setFont("Helvetica", 10)
-    c.drawString(15, footer_y_position + 15, "Thank you for your purchase!")
-    c.drawString(15, footer_y_position, "Need help? Call +91 0011223344")
-    
     # Save PDF
     c.save()
     buffer.seek(0)

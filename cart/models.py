@@ -112,7 +112,7 @@ class Cart(object):
         return items
     def returns(self):
         for key, value in self.cart.items():
-            value['quantity'] = value['quantity'] * (-1)
+            value['quantity'] = float(value['quantity']) * (-1)
             value['tax_value'] =float(value['tax_value']) if float(value['tax_value'])==0.0 else float(value['tax_value']) * (-1) 
             value['deposit_value'] = float(value['deposit_value']) if float(value['deposit_value']) == 0.0 else float(value['deposit_value']) * (-1) 
             value['regular_price'] = float(value['regular_price']) * (-1)
