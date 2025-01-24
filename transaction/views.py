@@ -168,11 +168,13 @@ def endTransaction(request,type,value,c_data):
         return_transaction = None
         # Card Transactions
 
-        print("cdata form endtransection",c_data)
 
         cart = request.session[settings.CART_SESSION_ID]
         total = round(pd.DataFrame(cart).T["line_total"].astype(float).sum(),2)
         if type == "card": # Card Transaction
+            if request.user.userprofile.address == None:
+                scheme = request.is_secure() and "https" or "http"
+                return redirect(f"{scheme}://{request.get_host()}/pos/register/AddressNotFound/")
             # EBT Transaction
             if value=="EBT": 
                 return_transaction = addTransaction(request.user,"EBT",total,cart,total)
@@ -210,6 +212,7 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
+    print(cart_df)
     cart_df.index = cart_df.index + 1
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
@@ -287,6 +290,10 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     else:
         # If all fields are empty, set customer_info to None
         customer_info = None
+
+
+    print(cart_df["quantity"])
+    print(type(cart_df["quantity"]))
     return transaction.objects.create(vendor=vendor,customer_info=customer_info, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
             payment_type = payment_type, receipt = receipt, products = str(cart_df.to_dict('records')),

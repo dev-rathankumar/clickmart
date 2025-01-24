@@ -22,7 +22,7 @@ import os
 import io
 from django.conf import settings
 from django.contrib.staticfiles import finders
-
+import textwrap
 # from orders.models import OrderedFood 
 def detectUser(user):
     if user.role == 1:
@@ -230,6 +230,8 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     # Product Table Header
     data = [["#", "Product","HSN Number","Model Number", "Quantity", "Price", "Tax", "Total"]]
     total_gst = 0  # Initialize total GST
+    item_total_price = 0
+    item_total_qty = 0
     for idx, item in enumerate(ordered_food, start=1):
         product_name = item.product.product_name
         product_hsn_number = item.product.hsn_number
@@ -237,7 +239,10 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
         quantity = item.quantity
         price = item.product.sales_price or item.product.regular_price
         item_total = price * quantity
-
+        item_total_price+=price
+        item_total_qty+=quantity
+        # Wrap product name if it exceeds 20 characters
+        wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
         # Calculate GST from tax_data
         gst_value = 0
         for single_tax_dict in tax_data:
@@ -247,10 +252,10 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
                         gst_value += value
                         total_gst += value
 
-        data.append([str(idx), product_name,product_hsn_number,product_model_number, str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"])
+        data.append([str(idx), wrapped_product_name,product_hsn_number,product_model_number, str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"])
     # Add totals
     # data.append(["", "","","","", "", "Total GST", f"INR {total_gst:.2f}"])
-    data.append(["", "","","","", "", "Total", f"INR {order.total:.2f}"])
+    data.append(["","", "","Total", f"{item_total_qty}",f"INR{item_total_price}", f"INR{total_gst}", f"INR {order.total:.2f}"])
 
     # Create and style the table
     table = Table(data, colWidths=[30, 120, 70,70,50, 70, 65, 90])
@@ -269,10 +274,10 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
 
     # Dynamically calculate the table height
     table_width, table_height = table.wrap(width, height)  # Get the table's height
-    table.drawOn(c, 15, height -320)  # Draw the table at the specified position
+    table.drawOn(c, 15, height -350)  # Draw the table at the specified position
 
     # Dynamically calculate Y-position for the totals
-    y_position = height - 320 - table_height # Position below the table with a 55-point gap
+    y_position = height - 350 - table_height # Position below the table with a 55-point gap
 
     # Section of the Total prices
     c.setFont("Helvetica", 10)
@@ -294,11 +299,6 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     except Exception as e:
         print(f"Error adding unpaid image: {e}")
     
-    # Footer
-    c.setFont("Helvetica", 10)
-    c.drawString(40,y_position - 180, "Thank you for your order!")
-    c.drawString(40, y_position - 195, "Need help? Call +91 0011223344")
-
     # Save PDF
     c.save()
     buffer.seek(0)
