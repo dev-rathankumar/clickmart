@@ -212,7 +212,6 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
     vendor = Vendor.objects.get(user=user)
     cart_df = pd.DataFrame(cart).T.reset_index(drop=True)
-    print(cart_df)
     cart_df.index = cart_df.index + 1
     tax_total = round(cart_df["tax_value"].astype(float).sum(),2)
     deposit_total = round(cart_df["deposit_value"].astype(float).sum(),2)
@@ -266,14 +265,14 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
     terms_and_conditions += '<div style="font-size:12px;">* Rates are inclusive of all taxes</div>'
     terms_and_conditions += '<div style="font-size:12px;">* Exchange within 48 hours</div>'
 
-    free_home_delivery = "<div style='font-size:18px;font-weight:600;'>FREE HOME DELIVERY</div>"
+    # free_home_delivery = "<div style='font-size:18px;font-weight:600;'>FREE HOME DELIVERY</div>"
     for_signature = f"<div style='font-size:14px;font-weight:300;'>FOR - {vendor.vendor_name.upper()}</div>"
 
     # wrapped_terms = "\n".join(wrap_text(terms_and_conditions, settings.RECEIPT_CHAR_COUNT))
     receipt = sales_invoice_header + "\n" +receipt_header_store_name+ "\n" +wrapped_address+ "\n" + phone_number_display + "\n" + gst_number + "\n" + fssai_number + "\n\n" + info_string + "\n\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"
     # receipt = settings.RECEIPT_HEADER+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" +cart_string+ f"\n{'-'*settings.RECEIPT_CHAR_COUNT}\n{total_string}"+f"\n{'*'*int(settings.RECEIPT_CHAR_COUNT)}\n" + settings.RECEIPT_FOOTER
     receipt += "\n\n" + terms_and_conditions
-    receipt += free_home_delivery
+    # receipt += free_home_delivery
     receipt +=  for_signature
     receipt += "\n\n" + settings.RECEIPT_FOOTER
     receipt = "\n".join([i.center(settings.RECEIPT_CHAR_COUNT) for i in receipt.splitlines()])
@@ -291,9 +290,6 @@ def addTransaction(user,payment_type,total,cart,value,c_data):
         # If all fields are empty, set customer_info to None
         customer_info = None
 
-
-    print(cart_df["quantity"])
-    print(type(cart_df["quantity"]))
     return transaction.objects.create(vendor=vendor,customer_info=customer_info, transaction_id = transaction_id , transaction_dt = datetime.strptime(transaction_id[:-6],'%Y%m%d%H%M%S'),
             user = user, total_sale= total, sub_total = round(total-tax_total,2),tax_total=tax_total, deposit_total = deposit_total,
             payment_type = payment_type, receipt = receipt, products = str(cart_df.to_dict('records')),

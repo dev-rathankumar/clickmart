@@ -211,10 +211,10 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     c.drawString(40, height - 85, f"Phone: {vendor.user.phone_number}")
     c.drawString(40, height - 100, f"Order Date: {order.created_at.strftime('%b %d, %Y, %I:%M %p')}")
     c.drawString(40, height - 115, f"Order No: {order.order_number}")
-    c.drawString(40, height - 130, f"Payment Method: {order.payment_method}")
-    c.drawString(40, height - 145, f"Transaction ID: {order.payment.transaction_id}")
+    # c.drawString(40, height - 130, f"Payment Method: {order.payment_method}")
+    c.drawString(40, height - 130, f"Transaction ID: {order.payment.transaction_id}")
     if vendor and vendor.gst_number: 
-        c.drawString(40, height - 160, f"GSTIN. {vendor.gst_number}")
+        c.drawString(40, height - 145, f"GSTIN. {vendor.gst_number}")
 
     # Customer Info
     c.setFont("Helvetica", 11)
@@ -243,6 +243,8 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
         item_total_qty+=quantity
         # Wrap product name if it exceeds 20 characters
         wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
+        wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
+        wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
         # Calculate GST from tax_data
         gst_value = 0
         for single_tax_dict in tax_data:
@@ -252,7 +254,7 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
                         gst_value += value
                         total_gst += value
 
-        data.append([str(idx), wrapped_product_name,product_hsn_number,product_model_number, str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"])
+        data.append([str(idx), wrapped_product_name,wrapped_product_hsn_number,wrapped_product_model_number, str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"])
     # Add totals
     # data.append(["", "","","","", "", "Total GST", f"INR {total_gst:.2f}"])
     data.append(["","", "","Total", f"{item_total_qty}",f"INR{item_total_price}", f"INR{total_gst}", f"INR {order.total:.2f}"])
