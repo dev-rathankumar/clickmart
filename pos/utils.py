@@ -17,6 +17,7 @@ def generate_invoice_pdf(transaction, transNo):
 
     # Vendor Info
     vendor = transaction.vendor
+    print(vendor.user_profile)
     # Get styles
     styles = getSampleStyleSheet()
     small_style = styles["Normal"]
@@ -27,12 +28,13 @@ def generate_invoice_pdf(transaction, transNo):
     c.setFont("Helvetica-Bold", 14)
     c.drawString(15, height - 50, vendor.vendor_name if vendor else "Vendor Not Available")
     c.setFont("Helvetica", 10)
-    c.drawString(15, height - 70, f"Email: {vendor.user.email if vendor and vendor.user else 'N/A'}")
-    c.drawString(15, height - 85, f"Phone: {vendor.user.phone_number if vendor and vendor.user else 'N/A'}")
-    c.drawString(15, height - 100, f"Transaction Date: {transaction.transaction_dt.strftime('%b %d, %Y, %I:%M %p')}")
-    c.drawString(15, height - 115, f"Transaction ID: {transaction.transaction_id}")
+    c.drawString(15, height - 70, f"Address: {vendor.user_profile.address if vendor and vendor.user_profile.address else 'N/A'}")
+    c.drawString(15, height - 85, f"Email: {vendor.user.email if vendor and vendor.user else 'N/A'}")
+    c.drawString(15, height - 100, f"Phone: {vendor.user.phone_number if vendor and vendor.user else 'N/A'}")
+    c.drawString(15, height - 115, f"Transaction Date: {transaction.transaction_dt.strftime('%b %d, %Y, %I:%M %p')}")
+    c.drawString(15, height - 130, f"Transaction ID: {transaction.transaction_id}")
     if vendor and vendor.gst_number: 
-        c.drawString(15, height - 130, f"GSTIN. {vendor.gst_number}")
+        c.drawString(15, height - 145, f"GSTIN. {vendor.gst_number}")
 
 
     # Customer Info
@@ -127,8 +129,10 @@ def generate_invoice_pdf(transaction, transNo):
         elif unit_type == 'm2':
             unit_type = 'm²'
         
-        # Wrap product name if it exceeds 20 characters
+        # Wrap 
         wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
+        wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
+        wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
         # Define styles
         styles = getSampleStyleSheet()
         regular_style = styles['Normal']
@@ -144,7 +148,7 @@ def generate_invoice_pdf(transaction, transNo):
 
         # Append to data
         data.append([
-            str(idx), wrapped_product_name, product_hsn_number, product_model_number,
+            str(idx), wrapped_product_name, wrapped_product_hsn_number, wrapped_product_model_number,
             str(quantity) + str(unit_type), f"INR {sales_price}", tax_paragraph, f"INR {total_price}"
         ])
     # Add totals

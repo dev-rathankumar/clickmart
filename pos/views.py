@@ -21,7 +21,7 @@ from unified.models import Product
 import openpyxl
 from django.http import HttpResponse
 from datetime import datetime
-
+from orders.models import Order,OrderedFood
 
 timezone = pytz.timezone("Asia/Kolkata")
 from django.http import JsonResponse
@@ -79,7 +79,6 @@ def register(request):
                 vendor = Vendor.objects.get(user=request.user)
                 barcode_product = product.objects.filter(barcode=inputed_text, vendor=vendor).first()
                 product_id=barcode_product.id
-                print(barcode_product)
             except:
                 print("product barcode was not correct") 
         
@@ -386,6 +385,124 @@ def user_logout(request):
     logout(request)
     return render(request, 'pos/registration/login.html',context={'logout':True})
 
+# def product_sales_report(request):
+#     # Helper function to parse dates
+#     def parse_date(date_str):
+#         try:
+#             return datetime.strptime(date_str, '%Y-%m-%d')
+#         except (ValueError, TypeError):
+#             return None
+
+#     # Get date range from request
+#     min_date = parse_date(request.GET.get('min_date'))
+#     max_date = parse_date(request.GET.get('max_date'))
+
+#     order_transactions = Order.objects.filter(vendors=request.user.user, is_ordered=True)
+
+#     # Filter transactions based on date range and vendor
+#     transactions = productTransaction.objects.filter(transaction__vendor=request.user.user)
+#     if min_date:
+#         transactions = transactions.filter(transaction_date_time__gte=min_date)
+#     if max_date:
+#         transactions = transactions.filter(transaction_date_time__lte=max_date)
+    
+#     def product_finder(request,barcode):
+#         # Try to find the product by id
+#         product = Product.objects.filter(vendor=request.user.user, id=barcode).first()
+#         if not product:
+#             # If no product is found by id, try to find it by barcode
+#             product = Product.objects.filter(vendor=request.user.user, barcode=barcode).first()
+#         return product
+    
+            
+#     # Dictionary to store aggregated data per (barcode, sales_price)
+#     aggregated_data = {}
+#     for transaction in order_transactions:
+#         # key = (transaction.barcode, transaction.sales_price)
+#         order_products = OrderedFood.objects.filter(order=transaction)
+#         for order_product in order_products:
+#             key = (order_product.product.barcode, order_product.product.sales_price,'Online')
+#             print(key)
+#             if key not in aggregated_data:
+#                 aggregated_data[key] = {
+#                     'barcode': order_product.product.barcode,
+#                     'name': order_product.product.product_name,   
+#                     'department': order_product.product.category,  
+#                     'sales_price': order_product.product.sales_price, 
+#                     'hsn_number': order_product.product.hsn_number if order_product.product.hsn_number else '',  
+#                     'model_number': order_product.product.model_number if order_product.product.model_number else '',  
+#                     'unit_type': order_product.product.unit_type if order_product.product.unit_type else '',  
+#                     'tax_percentage': order_product.product.tax_category.tax_percentage,
+#                     'tax_category': order_product.product.tax_category,
+#                     'total_tax_amount': 0,
+#                     'total_qty_sold': 0,
+#                     'total_value': 0,
+#                 }
+        
+#             # Update aggregated data
+#             aggregated_data[key]['total_qty_sold'] += order_product.quantity
+#             aggregated_data[key]['total_tax_amount'] += (aggregated_data[key]['sales_price']*(order_product.product.tax_category.tax_percentage/100))* aggregated_data[key]['total_qty_sold']
+#             aggregated_data[key]['total_value'] = aggregated_data[key]['sales_price'] * aggregated_data[key]['total_qty_sold']
+
+#     print(aggregated_data)
+#     print('--------------------------------------------------------------------------------------')
+
+#     for transaction in transactions:
+#         # Composite key of barcode and sales_price
+#         key = (transaction.barcode, transaction.sales_price,'POS')
+#         if key not in aggregated_data:
+#             aggregated_data[key] = {
+#                 'barcode': transaction.barcode,
+#                 'name': transaction.name,   
+#                 'department': transaction.department,  
+#                 'sales_price': transaction.sales_price, 
+#                 'hsn_number': product_finder(request,transaction.barcode).hsn_number if product_finder(request,transaction.barcode) else '',  
+#                 'model_number': product_finder(request, transaction.barcode).model_number if product_finder(request,transaction.barcode) else '',  
+#                 'unit_type': product_finder(request, transaction.barcode).unit_type if product_finder(request,transaction.barcode) else '',  
+#                 'tax_percentage': transaction.tax_percentage,
+#                 'tax_category': transaction.tax_category,
+#                 'total_tax_amount': 0,
+#                 'total_qty_sold': 0,
+#                 'total_value': 0,
+#             }
+        
+#         # Update aggregated data
+#         aggregated_data[key]['total_qty_sold'] += transaction.qty
+#         aggregated_data[key]['total_tax_amount'] += transaction.tax_amount
+#         aggregated_data[key]['total_value'] = aggregated_data[key]['sales_price'] * aggregated_data[key]['total_qty_sold']
+#     print(aggregated_data)
+
+#     # Format the values in aggregated_data
+#     for key, data in aggregated_data.items():
+#         data['total_qty_sold'] = (
+#             int(data['total_qty_sold']) 
+#             if data['total_qty_sold'] == int(data['total_qty_sold']) 
+#             else round(data['total_qty_sold'], 1)
+#         )
+#         data['total_tax_amount'] = (
+#             int(data['total_tax_amount']) 
+#             if data['total_tax_amount'] == int(data['total_tax_amount']) 
+#             else round(data['total_tax_amount'], 2)
+#         )
+#         data['total_value'] = round(data['total_value'], 2)
+
+#     # Format data for display
+#     for key, data in aggregated_data.items():
+#         data['total_value'] = f"₹{float(data['total_value']):.2f}"
+#         data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
+#         data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
+
+#     # Convert aggregated data to a list
+#     data = list(aggregated_data.values())
+
+#     # Return the result as JSON
+#     return JsonResponse({'data': data}, safe=False)
+
+from datetime import datetime
+from django.http import JsonResponse
+from decimal import Decimal
+
+
 def product_sales_report(request):
     # Helper function to parse dates
     def parse_date(date_str):
@@ -398,68 +515,102 @@ def product_sales_report(request):
     min_date = parse_date(request.GET.get('min_date'))
     max_date = parse_date(request.GET.get('max_date'))
 
-    # Filter transactions based on date range and vendor
-    transactions = productTransaction.objects.filter(transaction__vendor=request.user.user)
+    # Query related data
+    order_transactions = Order.objects.filter(
+        vendors=request.user.user, 
+        is_ordered=True
+    ).select_related('user')  # Use select_related to optimize DB calls
+    
+    transactions = productTransaction.objects.filter(
+        transaction__vendor=request.user.user
+    ).select_related('transaction')  # Optimize with select_related
+    
     if min_date:
         transactions = transactions.filter(transaction_date_time__gte=min_date)
+        order_transactions = order_transactions.filter(created_at__gte=min_date)
     if max_date:
         transactions = transactions.filter(transaction_date_time__lte=max_date)
-    
-    def product_finder(request,barcode):
-        # Try to find the product by id
-        product = Product.objects.filter(vendor=request.user.user, id=barcode).first()
-        if not product:
-            # If no product is found by id, try to find it by barcode
-            product = Product.objects.filter(vendor=request.user.user, barcode=barcode).first()
-        return product
-            
-    # Dictionary to store aggregated data per (barcode, sales_price)
+        order_transactions = order_transactions.filter(created_at__lte=max_date)
+
+    # Dictionary to store aggregated data
     aggregated_data = {}
 
+    # Process order transactions (Online orders)
+    for transaction in order_transactions:
+        order_products = OrderedFood.objects.filter(order=transaction).select_related(
+            'product', 'product__tax_category', 'product__category'
+        )
+        for order_product in order_products:
+            key = (order_product.product.barcode, order_product.product.sales_price, 'Online')
+            if key not in aggregated_data:
+                aggregated_data[key] = {
+                    'barcode': order_product.product.barcode,
+                    'name': order_product.product.product_name,
+                    'department': str(order_product.product.category),
+                    'sales_price': order_product.product.sales_price,
+                    'hsn_number': order_product.product.hsn_number or '',
+                    'model_number': order_product.product.model_number or '',
+                    'unit_type': order_product.product.unit_type or '',
+                    'tax_percentage': float(order_product.product.tax_category.tax_percentage),
+                    'tax_category': str(order_product.product.tax_category.tax_category),
+                    'platform':'Online',
+                    'total_tax_amount': Decimal('0'),
+                    'total_qty_sold': Decimal('0'),
+                    'total_value': Decimal('0'),
+                }
+
+            aggregated_data[key]['total_qty_sold'] += Decimal(order_product.quantity)
+            aggregated_data[key]['total_tax_amount'] += (
+                order_product.product.sales_price 
+                * (order_product.product.tax_category.tax_percentage / 100)
+                * order_product.quantity
+            )
+            aggregated_data[key]['total_value'] += order_product.product.sales_price * order_product.quantity
+
+    # Process POS transactions
     for transaction in transactions:
-        # Composite key of barcode and sales_price
-        key = (transaction.barcode, transaction.sales_price)
-        print(key)
+        key = (transaction.barcode, transaction.sales_price, 'POS')
+        product = Product.objects.filter(vendor=request.user.user, id=transaction.barcode).select_related(
+            'tax_category', 'category'
+        ).first()
+        if not product:
+            product = Product.objects.filter(vendor=request.user.user, barcode=transaction.barcode).select_related(
+                    'tax_category', 'category'
+                ).first()
+            
         if key not in aggregated_data:
             aggregated_data[key] = {
                 'barcode': transaction.barcode,
-                'name': transaction.name,   
-                'department': transaction.department,  
-                'sales_price': transaction.sales_price, 
-                'hsn_number': product_finder(request,transaction.barcode).hsn_number if product_finder(request,transaction.barcode) else '',  
-                'model_number': product_finder(request, transaction.barcode).model_number if product_finder(request,transaction.barcode) else '',  
-                'unit_type': product_finder(request, transaction.barcode).unit_type if product_finder(request,transaction.barcode) else '',  
-                'tax_percentage': transaction.tax_percentage,
-                'tax_category': transaction.tax_category,
-                'total_tax_amount': 0,
-                'total_qty_sold': 0,
-                'total_value': 0,
+                'name': transaction.name,
+                'department': str(product.category) if product else '',
+                'sales_price': transaction.sales_price,
+                'hsn_number': product.hsn_number if product else '',
+                'model_number': product.model_number if product else '',
+                'unit_type': product.unit_type if product else '',
+                'tax_percentage': float(transaction.tax_percentage),
+                'tax_category': str(transaction.tax_category),
+                'platform':'POS',
+                'total_tax_amount': Decimal('0'),
+                'total_qty_sold': Decimal('0'),
+                'total_value': Decimal('0'),
             }
-        
-        # Update aggregated data
-        aggregated_data[key]['total_qty_sold'] += transaction.qty
-        aggregated_data[key]['total_tax_amount'] += transaction.tax_amount
-        aggregated_data[key]['total_value'] = aggregated_data[key]['sales_price'] * aggregated_data[key]['total_qty_sold']
 
-    # Format the values in aggregated_data
+        aggregated_data[key]['total_qty_sold'] += Decimal(transaction.qty)
+        aggregated_data[key]['total_tax_amount'] += Decimal(transaction.tax_amount)
+        aggregated_data[key]['total_value'] += transaction.sales_price * Decimal(transaction.qty)
+
+    # Format and serialize the data
     for key, data in aggregated_data.items():
         data['total_qty_sold'] = (
             int(data['total_qty_sold']) 
             if data['total_qty_sold'] == int(data['total_qty_sold']) 
             else round(data['total_qty_sold'], 1)
         )
-        data['total_tax_amount'] = (
-            int(data['total_tax_amount']) 
-            if data['total_tax_amount'] == int(data['total_tax_amount']) 
-            else round(data['total_tax_amount'], 2)
-        )
+        data['total_tax_amount'] = round(data['total_tax_amount'], 2)
         data['total_value'] = round(data['total_value'], 2)
-
-    # Format data for display
-    for key, data in aggregated_data.items():
-        data['total_value'] = f"₹{float(data['total_value']):.2f}"
-        data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
         data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
+        data['total_tax_amount'] = f"₹{data['total_tax_amount']} ({data['tax_category']} {data['tax_percentage']}%)"
+        data['total_value'] = f"₹{data['total_value']:.2f}"
 
     # Convert aggregated data to a list
     data = list(aggregated_data.values())
@@ -489,68 +640,104 @@ def product_sales_report_download(request):
         parsed_min_date = parse_date(min_date)
         parsed_max_date = parse_date(max_date)
 
-        # Filter transactions based on date range and vendor
-        transactions = productTransaction.objects.filter(transaction__vendor=request.user.user)
+        # Query related data
+        order_transactions = Order.objects.filter(
+            vendors=request.user.user, 
+            is_ordered=True
+        ).select_related('user')  # Use select_related to optimize DB calls
+
+        transactions = productTransaction.objects.filter(
+            transaction__vendor=request.user.user
+        ).select_related('transaction')  # Optimize with select_related
+
         if min_date:
             transactions = transactions.filter(transaction_date_time__gte=parsed_min_date)
+            order_transactions = order_transactions.filter(created_at__gte=parsed_min_date)
+
         if max_date:
             transactions = transactions.filter(transaction_date_time__lte=parsed_max_date)
+            order_transactions = order_transactions.filter(created_at__lte=parsed_max_date)
 
-        def product_finder(request,barcode):
-        # Try to find the product by id
-            product = Product.objects.filter(vendor=request.user.user, id=barcode).first()
-            if not product:
-                # If no product is found by id, try to find it by barcode
-                product = Product.objects.filter(vendor=request.user.user, barcode=barcode).first()
-            return product
-    # Dictionary to store aggregated data per (barcode, sales_price)
+        # Dictionary to store aggregated data
         aggregated_data = {}
 
+        # Process order transactions (Online orders)
+        for transaction in order_transactions:
+            order_products = OrderedFood.objects.filter(order=transaction).select_related(
+                'product', 'product__tax_category', 'product__category'
+            )
+            for order_product in order_products:
+                key = (order_product.product.barcode, order_product.product.sales_price, 'Online')
+                if key not in aggregated_data:
+                    aggregated_data[key] = {
+                        'barcode': order_product.product.barcode,
+                        'name': order_product.product.product_name,
+                        'department': str(order_product.product.category),
+                        'sales_price': order_product.product.sales_price,
+                        'hsn_number': order_product.product.hsn_number or '',
+                        'model_number': order_product.product.model_number or '',
+                        'unit_type': order_product.product.unit_type or '',
+                        'tax_percentage': float(order_product.product.tax_category.tax_percentage),
+                        'tax_category': str(order_product.product.tax_category.tax_category),
+                        'platform': 'Online',
+                        'total_tax_amount': Decimal('0'),
+                        'total_qty_sold': Decimal('0'),
+                        'total_value': Decimal('0'),
+                    }
+
+                aggregated_data[key]['total_qty_sold'] += Decimal(order_product.quantity)
+                aggregated_data[key]['total_tax_amount'] += (
+                    order_product.product.sales_price 
+                    * (order_product.product.tax_category.tax_percentage / 100)
+                    * order_product.quantity
+                )
+                aggregated_data[key]['total_value'] += order_product.product.sales_price * order_product.quantity
+
+        # Process POS transactions
         for transaction in transactions:
-            # Composite key of barcode and sales_price
-            key = (transaction.barcode, transaction.sales_price)
+            key = (transaction.barcode, transaction.sales_price, 'POS')
+            product = Product.objects.filter(vendor=request.user.user, id=transaction.barcode).select_related(
+                'tax_category', 'category'
+                ).first()
+            if not product:
+                product = Product.objects.filter(vendor=request.user.user, barcode=transaction.barcode).select_related(
+                        'tax_category', 'category'
+                    ).first()
+
             if key not in aggregated_data:
                 aggregated_data[key] = {
                     'barcode': transaction.barcode,
-                    'name': transaction.name,   
-                    'department': transaction.department,  
-                    'sales_price': transaction.sales_price, 
-                    'hsn_number': product_finder(request,transaction.barcode).hsn_number if product_finder(request,transaction.barcode) else '',  
-                    'model_number': product_finder(request, transaction.barcode).model_number if product_finder(request,transaction.barcode) else '',  
-                    'unit_type': product_finder(request, transaction.barcode).unit_type if product_finder(request,transaction.barcode) else '',  
-                    'tax_percentage': transaction.tax_percentage,
-                    'tax_category': transaction.tax_category,
-                    'total_tax_amount': 0,
-                    'total_qty_sold': 0,
-                    'total_value': 0,
+                    'name': transaction.name,
+                    'department': str(product.category) if product else '',
+                    'sales_price': transaction.sales_price,
+                    'hsn_number': product.hsn_number if product else '',
+                    'model_number': product.model_number if product else '',
+                    'unit_type': product.unit_type if product else '',
+                    'tax_percentage': float(transaction.tax_percentage),
+                    'tax_category': str(transaction.tax_category),
+                    'platform': 'POS',
+                    'total_tax_amount': Decimal('0'),
+                    'total_qty_sold': Decimal('0'),
+                    'total_value': Decimal('0'),
                 }
-            
-            # Update aggregated data
-            aggregated_data[key]['total_qty_sold'] += transaction.qty
-            aggregated_data[key]['total_tax_amount'] += transaction.tax_amount
-            aggregated_data[key]['total_value'] = aggregated_data[key]['sales_price'] * aggregated_data[key]['total_qty_sold']
 
-        # Format the values in aggregated_data
+            aggregated_data[key]['total_qty_sold'] += Decimal(transaction.qty)
+            aggregated_data[key]['total_tax_amount'] += Decimal(transaction.tax_amount)
+            aggregated_data[key]['total_value'] += transaction.sales_price * Decimal(transaction.qty)
+
+        # Format and serialize the data
         for key, data in aggregated_data.items():
             data['total_qty_sold'] = (
                 int(data['total_qty_sold']) 
                 if data['total_qty_sold'] == int(data['total_qty_sold']) 
                 else round(data['total_qty_sold'], 1)
             )
-            data['total_tax_amount'] = (
-                int(data['total_tax_amount']) 
-                if data['total_tax_amount'] == int(data['total_tax_amount']) 
-                else round(data['total_tax_amount'], 2)
-            )
+            data['total_tax_amount'] = round(data['total_tax_amount'], 2)
             data['total_value'] = round(data['total_value'], 2)
-
-        # Format data for display
-        for key, data in aggregated_data.items():
-            data['total_value'] = f"₹{float(data['total_value']):.2f}"
-            data['total_tax_amount'] = f"₹{(data['total_tax_amount'])} ({data['tax_category']} {(data['tax_percentage']):.0f}%)"
             data['sales_price'] = f"₹{float(data['sales_price']):.2f}"
+            data['total_tax_amount'] = f"₹{data['total_tax_amount']} ({data['tax_category']} {data['tax_percentage']}%)"
+            data['total_value'] = f"₹{data['total_value']:.2f}"
 
-            
         # Create an Excel workbook and sheet
         workbook = openpyxl.Workbook()
         sheet = workbook.active
@@ -558,8 +745,8 @@ def product_sales_report_download(request):
 
         # Add column headers
         columns = [
-            'Name', 'Department', 'HSN Number','Model Number',
-            'Sales Price', 'Total Quantity Sold','Unit Type', 'Tax','Total Value'
+            'Name', 'Department', 'HSN Number', 'Model Number',
+            'Sales Price', 'Total Quantity Sold', 'Unit Type', 'Sale Source', 'Tax', 'Total Value'
         ]
         sheet.append(columns)
 
@@ -573,6 +760,7 @@ def product_sales_report_download(request):
                 data['sales_price'],
                 data['total_qty_sold'],
                 data['unit_type'],
+                data['platform'],
                 data['total_tax_amount'],
                 data['total_value'],
             ]

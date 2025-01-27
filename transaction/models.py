@@ -89,9 +89,10 @@ class productTransaction(models.Model):
     payment_type            = models.CharField(max_length=32, null=False,editable=False)
 
     def save(self,*args,**kwargs):
-        if product.objects.filter(barcode=self.barcode).exists():
-            product.objects.filter(barcode=self.barcode).update(qty= F('qty')-self.qty)
+        if product.objects.filter(id=self.barcode).exists():
+            product.objects.filter(id=self.barcode).update(qty= F('qty')-self.qty)
         return super().save(*args, **kwargs)
+    
     
     def __str__(self) -> str:
         return self.transaction_id_num + "_"+ self.barcode
