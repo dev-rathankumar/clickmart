@@ -222,9 +222,26 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
     c.setFont("Helvetica", 11)
     c.drawString(400, height - 65, f"{order.name},")
     c.setFont("Helvetica", 10)
-    c.drawString(400, height - 80, f"Address: {order.address}")
-    c.drawString(400, height - 95, f"Email: {order.email}")
-    c.drawString(400, height - 110, f"Phone: {order.phone}")
+    x_pos = 400
+    y_pos = height - 80
+    # Function to wrap and draw text
+    def draw_wrapped_text(canvas, text, x, y, x_pluse,width, label):
+        if text:
+            wrapped_lines = textwrap.wrap(text, width=width)
+            canvas.drawString(x, y, f"{label}")  # Draw label
+            # y -= 15  # Move down for text
+            for line in wrapped_lines:
+                canvas.drawString(x + x_pluse, y, line)  # Indent text
+                y -= 15  # Adjust line spacing
+        return y  # Return the new Y position
+
+    # Draw Address
+    y_pos = draw_wrapped_text(c, order.address, x_pos, y_pos,40, 30, "Address:")
+
+    # Draw Email
+    y_pos = draw_wrapped_text(c, order.email, x_pos, y_pos,30, 30, "Email:")
+    c.drawString(x_pos, y_pos, f"Phone: {order.phone}")
+
 
 
     # Product Table Header
@@ -242,9 +259,15 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
         item_total_price+=price
         item_total_qty+=quantity
         # Wrap product name if it exceeds 20 characters
-        wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
-        wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
-        wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
+        wrapped_product_name=''
+        wrapped_product_model_number=''
+        wrapped_product_hsn_number=''
+        if product_name:
+            wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
+        if  product_hsn_number: 
+             wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
+        if product_model_number:
+            wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
         # Calculate GST from tax_data
         gst_value = 0
         for single_tax_dict in tax_data:
@@ -257,7 +280,7 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
         data.append([str(idx), wrapped_product_name,wrapped_product_hsn_number,wrapped_product_model_number, str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"])
     # Add totals
     # data.append(["", "","","","", "", "Total GST", f"INR {total_gst:.2f}"])
-    data.append(["","", "","Total", f"{item_total_qty}",f"INR{item_total_price}", f"INR{total_gst}", f"INR {order.total:.2f}"])
+    data.append(["","", "","Total", f"{item_total_qty}",f"INR {item_total_price:.2f}", f"INR {total_gst:.2f}", f"INR {order.total:.2f}"])
 
     # Create and style the table
     table = Table(data, colWidths=[30, 120, 70,70,50, 70, 65, 90])

@@ -39,67 +39,37 @@ def generate_invoice_pdf(transaction, transNo):
 
     # Customer Info
     customer_info = transaction.customer_info
+    def draw_wrapped_text(canvas, text, x, y, max_width=35, font="Helvetica", font_size=10, line_height=15):
+        """Draws wrapped text on the PDF canvas."""
+        canvas.setFont(font, font_size)
+        lines = textwrap.wrap(text, width=max_width)  # Split text into lines
+        for line in lines:
+            canvas.drawString(x, y, line)
+            y -= line_height  # Move to next line
+        return y  # Return new y-position after text is drawn
+
+    # Start position
+    y_position = height - 50  
+
     c.setFont("Helvetica", 11)
-    c.drawString(400, height - 50, "Billed To:")
+    c.drawString(400, y_position, "Billed To:")
 
-    if customer_info and customer_info.name: 
-        # Name
-        c.setFont("Helvetica", 11)
-        c.drawString(400, height - 65, f"Name: {customer_info.name}")
+    if customer_info and customer_info.name:
+        y_position = draw_wrapped_text(c, f"Name: {customer_info.name}", 400, y_position - 15)
     else:
-        c.setFont("Helvetica", 11)
-        c.drawString(400, height - 65, f"Name: Walk-In Customer")
-    # Email (conditionally displayed)
+        y_position = draw_wrapped_text(c, "Name: Walk-In Customer", 400, y_position - 15)
+
     if customer_info and customer_info.email:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 80, f"Email: {customer_info.email}")
+        y_position = draw_wrapped_text(c, f"Email: {customer_info.email}", 400, y_position)
 
-    # Phone (conditionally displayed)
-    if customer_info and customer_info.phone_number and customer_info.email == None:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 80, f"Phone: {customer_info.phone_number}")
-    elif customer_info and customer_info.phone_number and customer_info.email:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 95, f"Phone: {customer_info.phone_number}")
+    if customer_info and customer_info.phone_number:
+        y_position = draw_wrapped_text(c, f"Phone: {customer_info.phone_number}", 400, y_position)
 
-    # Address (conditionally displayed)
-    if customer_info and customer_info.phone_number and customer_info.email and customer_info.address:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 110, f"Address: {customer_info.address}")
-    elif customer_info and customer_info.phone_number == None and customer_info.email == None and customer_info.address:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 80, f"Address: {customer_info.address}")
-    elif customer_info and customer_info.phone_number == None and customer_info.email and customer_info.address:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 95, f"Address: {customer_info.address}")
-    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 95, f"Address: {customer_info.address}")
+    if customer_info and customer_info.address:
+        y_position = draw_wrapped_text(c, f"Address: {customer_info.address}", 400, y_position)
 
-    # GSTIN (conditionally displayed)
-    if customer_info and customer_info.phone_number and customer_info.email and customer_info.address and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 125, f"GSTIN. {customer_info.gstin}")
-    elif customer_info and customer_info.phone_number == None and customer_info.email == None and customer_info.address == None and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 80,  f"GSTIN. {customer_info.gstin}")
-    elif customer_info and customer_info.phone_number == None and customer_info.email and customer_info.address and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
-    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
-    
-    elif customer_info and customer_info.phone_number and customer_info.email == None and customer_info.address ==None and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
-    
-    elif customer_info and customer_info.phone_number==None and customer_info.email  and customer_info.address== None and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 95,  f"GSTIN. {customer_info.gstin}")
-    elif customer_info and customer_info.phone_number and customer_info.email  and customer_info.address== None and customer_info.gstin:
-        c.setFont("Helvetica", 10)
-        c.drawString(400, height - 110,  f"GSTIN. {customer_info.gstin}")
+    if customer_info and customer_info.gstin:
+        y_position = draw_wrapped_text(c, f"GSTIN: {customer_info.gstin}", 400, y_position)
    
     # Code block
     data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Sales Price", "Tax", "Total"]]
@@ -130,9 +100,16 @@ def generate_invoice_pdf(transaction, transNo):
             unit_type = 'm²'
         
         # Wrap 
-        wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
-        wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
-        wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
+        # Wrap product name if it exceeds 20 characters
+        wrapped_product_name=''
+        wrapped_product_model_number=''
+        wrapped_product_hsn_number=''
+        if product_name:
+            wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
+        if  product_hsn_number: 
+             wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
+        if product_model_number:
+            wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
         # Define styles
         styles = getSampleStyleSheet()
         regular_style = styles['Normal']

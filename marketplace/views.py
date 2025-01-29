@@ -370,6 +370,8 @@ def add_product_to_cart(request, product_id):
             try:
                 data = json.loads(request.body)
                 quantity = int(data.get('quantity'))
+                if quantity <= 0:
+                    return JsonResponse({'success': False, 'message': 'Select a valid quantity'})
             except (json.JSONDecodeError, ValueError) as e:
                 return JsonResponse({'success': False, 'message': 'Invalid data.'})
             

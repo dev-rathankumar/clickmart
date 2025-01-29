@@ -68,7 +68,7 @@
 
         {% for food in ordered_food %}
         <tr>
-            <td><img src="http://{{domain}}{{ food.product.image.url }}" alt="Food Image" width="60"></td>
+            <td><img src="http://{{domain}}{{ food.product.image.url }}" alt="Product Image" width="60"></td>
             <td><p style="margin: 0;">{{ food.product }}</p>
             <small><a href="http://{{ domain }}{% url 'vendor_detail' food.product.vendor.vendor_slug %}" style="color:#ccc;">{{ food.product.vendor.vendor_name }}</a></small>
             </td>
