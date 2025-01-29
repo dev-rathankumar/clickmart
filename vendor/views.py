@@ -597,8 +597,10 @@ def edit_product(request, product_id):
             # Process gallery formset
             for form in formset:
                 if form.cleaned_data.get('DELETE'):
-                    # Delete the image if marked for deletion
-                    form.instance.delete()
+                    instance = form.instance
+                    # Ensure instance exists and has an ID before deleting
+                    if instance and instance.id:
+                        instance.delete()
                 elif form.cleaned_data.get('image'):
                     # Save new or updated image
                     gallery = form.save(commit=False)

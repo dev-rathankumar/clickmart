@@ -25,7 +25,9 @@
                                             <div><b>{{ order.name }}</b></div>
                                             <div>{{ order.address }}</div>
                                             <div>{{ order.city }} - {{ order.pin_code }}</div>
-                                            <div>{{ order.state }}, {{ order.country }}</div>
+                                            {% if  order.state or order.country  %}
+                                            <div>{{ order.state }} {{ order.country }}</div>
+                                            {% endif %}                                                
                                             <div><b>Phone: </b>{{ order.phone }}</div>
                                             <div><b>Email: </b>{{ order.email }}</div>
                                             <div><b>Payment: </b>{{ order.payment_method }}</div>
