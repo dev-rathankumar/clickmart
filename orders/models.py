@@ -30,7 +30,7 @@ class Payment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=100)
     payment_method = models.CharField(choices=PAYMENT_METHOD, max_length=100)
-    amount = models.CharField(max_length=10)
+    amount = models.CharField(max_length=50)
     status = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
