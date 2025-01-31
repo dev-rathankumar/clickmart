@@ -120,12 +120,6 @@
                                             {% if order.payment_method == 'PayPal' %}
                                             <!-- PayPal Checkout Button -->
                                             <div id="paypal-button-container"></div>
-
-                                            {% elif order.payment_method == 'RazorPay' %}
-                                            <div id="rzp_payment_button">
-                                                <button class="btn btn-danger w-100 p-2" id="rzp-button1">Pay with RazorPay</button>
-                                                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-                                            </div>
                                             {% elif order.payment_method == 'COD' %}
                                             <button id="placeOrderBtn" type="submit" class="btn btn-danger w-100 p-2 mt-3" onclick="placeOrder()">Place Order</button>
                                             <div id="pay-loading" class="my-4"style="display:none;"></div>

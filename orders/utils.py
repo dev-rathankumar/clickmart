@@ -90,7 +90,7 @@ def order_total_by_vendor(order, vendor_id):
                         tax += float(decimal_to_float(amount))
 
     # Compile the final context
-    grand_total = float(subtotal) + float(tax)
+    grand_total = float(subtotal)
     
     context = {
         'subtotal': subtotal,
