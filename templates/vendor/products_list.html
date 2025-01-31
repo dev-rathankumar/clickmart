@@ -33,6 +33,7 @@
                                             <table class="table table-hover" id="myProductsTable">
                                                 <thead>
                                                   <tr>
+                                                    <th scope="col" style="display: none !important;">id</th>
                                                     <th scope="col">Barcode/ID</th>
                                                     <th scope="col">Product Name</th>
                                                     <th scope="col">Category</th>
@@ -46,6 +47,7 @@
                                                 <tbody style="padding:5px 5px">
                                                     {% for product in products %}
                                                   <tr>
+                                                    <td style="display: none !important;">{{ product.id }}</td>
                                                     <td style="padding:5px 5px">{{ product.barcode }}</td>
                                                     <td style="padding:5px 5px">{{ product.product_name }}</td>
                                                     <td style="padding:5px 5px">{{ product.category.category_name }}</td>

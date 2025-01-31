@@ -22,6 +22,9 @@ import openpyxl
 from django.http import HttpResponse
 from datetime import datetime
 from orders.models import Order,OrderedFood
+from datetime import datetime
+from django.http import JsonResponse
+from decimal import Decimal
 
 timezone = pytz.timezone("Asia/Kolkata")
 from django.http import JsonResponse
@@ -498,10 +501,6 @@ def user_logout(request):
 #     # Return the result as JSON
 #     return JsonResponse({'data': data}, safe=False)
 
-from datetime import datetime
-from django.http import JsonResponse
-from decimal import Decimal
-
 
 def product_sales_report(request):
     # Helper function to parse dates
@@ -519,19 +518,23 @@ def product_sales_report(request):
     order_transactions = Order.objects.filter(
         vendors=request.user.user, 
         is_ordered=True
-    ).select_related('user')  # Use select_related to optimize DB calls
+    ).select_related('user').order_by('-created_at')
     
     transactions = productTransaction.objects.filter(
         transaction__vendor=request.user.user
-    ).select_related('transaction')  # Optimize with select_related
+    ).select_related('transaction').order_by('-transaction_date_time')
     
+    # Apply date filters
     if min_date:
+        # Include transactions on or after min_date
         transactions = transactions.filter(transaction_date_time__gte=min_date)
         order_transactions = order_transactions.filter(created_at__gte=min_date)
+    
     if max_date:
-        transactions = transactions.filter(transaction_date_time__lte=max_date)
-        order_transactions = order_transactions.filter(created_at__lte=max_date)
-
+        # Extend max_date to end of the day and use __lt to include all of max_date's transactions
+        max_date_end = max_date + timedelta(days=1)
+        transactions = transactions.filter(transaction_date_time__lt=max_date_end)
+        order_transactions = order_transactions.filter(created_at__lt=max_date_end)
     # Dictionary to store aggregated data
     aggregated_data = {}
 
@@ -554,6 +557,7 @@ def product_sales_report(request):
                     'tax_percentage': float(order_product.product.tax_category.tax_percentage),
                     'tax_category': str(order_product.product.tax_category.tax_category),
                     'platform':'Online',
+                    'transaction_date_time':order_product.created_at,
                     'total_tax_amount': Decimal('0'),
                     'total_qty_sold': Decimal('0'),
                     'total_value': Decimal('0'),
@@ -590,6 +594,7 @@ def product_sales_report(request):
                 'tax_percentage': float(transaction.tax_percentage),
                 'tax_category': str(transaction.tax_category),
                 'platform':'POS',
+                'transaction_date_time':transaction.transaction_date_time ,
                 'total_tax_amount': Decimal('0'),
                 'total_qty_sold': Decimal('0'),
                 'total_value': Decimal('0'),
@@ -640,24 +645,27 @@ def product_sales_report_download(request):
         parsed_min_date = parse_date(min_date)
         parsed_max_date = parse_date(max_date)
 
-        # Query related data
+            # Query related data
         order_transactions = Order.objects.filter(
             vendors=request.user.user, 
             is_ordered=True
-        ).select_related('user')  # Use select_related to optimize DB calls
-
+        ).select_related('user').order_by('-created_at')
+        
         transactions = productTransaction.objects.filter(
             transaction__vendor=request.user.user
-        ).select_related('transaction')  # Optimize with select_related
-
-        if min_date:
+        ).select_related('transaction').order_by('-transaction_date_time')
+        
+        # Apply date filters
+        if parsed_min_date:
+            # Include transactions on or after min_date
             transactions = transactions.filter(transaction_date_time__gte=parsed_min_date)
             order_transactions = order_transactions.filter(created_at__gte=parsed_min_date)
-
-        if max_date:
-            transactions = transactions.filter(transaction_date_time__lte=parsed_max_date)
-            order_transactions = order_transactions.filter(created_at__lte=parsed_max_date)
-
+        
+        if parsed_max_date:
+            # Extend max_date to end of the day and use __lt to include all of max_date's transactions
+            max_date_end = parsed_max_date + timedelta(days=1)
+            transactions = transactions.filter(transaction_date_time__lt=max_date_end)
+            order_transactions = order_transactions.filter(created_at__lt=max_date_end)
         # Dictionary to store aggregated data
         aggregated_data = {}
 

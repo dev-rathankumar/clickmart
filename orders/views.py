@@ -10,16 +10,11 @@ import simplejson as json
 from .utils import generate_order_number, order_total_by_vendor
 from accounts.utils import send_notification,generate_receipt_pdf
 from django.contrib.auth.decorators import login_required
-import razorpay
-from foodOnline_main.settings import RZP_KEY_ID, RZP_KEY_SECRET,PAYPAL_CLIENT_ID,PAYPAL_CLIENT_SECRET,PAYPAL_BASE_URL
 from django.contrib.sites.shortcuts import get_current_site
 from django.views.decorators.csrf import csrf_exempt 
 from inventory.models import tax
-import base64
-import requests
 
 
-client = razorpay.Client(auth=(RZP_KEY_ID, RZP_KEY_SECRET))
 
 
 
@@ -106,27 +101,11 @@ def place_order(request):
             order.order_number = generate_order_number(order.id)
             order.vendors.add(*vendors_ids)
             order.save()
-            
-            # RazorPay Payment
-            DATA = {
-                "amount": int(order.total) * 100,
-                "currency": "INR",
-                "receipt": "receipt #"+order.order_number,
-                "notes": {
-                    "key1": "value3",
-                    "key2": "value2"
-                }
-            }
-            rzp_order = client.order.create(data=DATA)
-            rzp_order_id = rzp_order['id']
-
+    
             context = {
                 'items_count':items_count,
                 'order': order,
                 'cart_items': cart_items,
-                'rzp_order_id': rzp_order_id,
-                'RZP_KEY_ID': RZP_KEY_ID,
-                'rzp_amount': float(order.total) * 100,
             }
             return render(request, 'orders/place_order.html', context)
 
@@ -264,102 +243,6 @@ def order_complete(request):
     except:
         return redirect('home')
     
-
-
-
-# Paypal new way 
-
-
-
-@csrf_exempt 
-def create_order(request):
-        
-    if request.method == 'POST':
-        try:
-            # Generate PayPal access token (similar to generateAccessToken in server.js)
-
-            access_token = generate_paypal_access_token() 
-            grand_total = get_cart_amounts(request)['grand_total']
-
-            # Prepare payload for PayPal order creation
-            payload = {
-                "intent": "CAPTURE",
-                "purchase_units": [
-                    {
-                        "amount": {
-                            "currency_code": "USD",  # Adjust currency as needed
-                            "value": str(grand_total), # Assuming 'order' object is available in this view
-                        },
-                    }
-                ],
-            }
-
-            # Make the API call to create the order
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {access_token}",
-            }
-            response = requests.post("https://api-m.sandbox.paypal.com/v2/checkout/orders", headers=headers, json=payload)
-
-            # Handle the response and return appropriate status and data
-            return JsonResponse(response.json(), status=response.status_code) 
-
-        except Exception as e:
-            return JsonResponse({"error": "Failed to create order."}, status=500)
-
-    return JsonResponse({"error": "Invalid request method."}, status=405)  # Handle non-POST requests
-
-
-@csrf_exempt 
-def capture_order(request, order_id):
-    if request.method == 'POST':
-        try:
-
-            # Generate PayPal access token
-            access_token = generate_paypal_access_token()
-
-            # Make the API call to capture the order
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {access_token}",
-            }
-            response = requests.post(f"https://api-m.sandbox.paypal.com/v2/checkout/orders/{order_id}/capture", headers=headers)
-
-
-            # Handle the response and return appropriate status and data
-            return JsonResponse(response.json(), status=response.status_code)
-        
-
-        except Exception as e:
-            return JsonResponse({"error": "Failed to capture order."}, status=500)
-
-    return JsonResponse({"error": "Invalid request method."}, status=405) 
-
-
-
-
-def generate_paypal_access_token():
-    if not PAYPAL_CLIENT_ID or not PAYPAL_CLIENT_SECRET:
-        raise ValueError("MISSING_API_CREDENTIALS")
-
-    auth = base64.b64encode(f"{PAYPAL_CLIENT_ID}:{PAYPAL_CLIENT_SECRET}".encode()).decode()
-    
-    headers = {
-        "Authorization": f"Basic {auth}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-
-    data = {
-        "grant_type": "client_credentials"
-    }
-
-    response = requests.post(f"{PAYPAL_BASE_URL}/v1/oauth2/token", headers=headers, data=data)
-
-    if response.status_code == 200:
-        return response.json().get("access_token")
-    else:
-        print(f"Failed to generate Access Token: {response.status_code} - {response.text}")
-        return None
 
 
 def generate(request):

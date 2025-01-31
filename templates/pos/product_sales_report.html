@@ -69,7 +69,12 @@
                 { data: 'platform' },
                 { data: 'total_tax_amount' },
                 { data: 'total_value' },
-            ]
+                // Add hidden date column (e.g., transaction_date_time)
+                { 
+                    data: 'transaction_date_time',
+                    visible: false // Hide this column
+                }
+            ],order: [[10, 'desc']]
         });
 
         // Refilter the table on date change

@@ -517,7 +517,7 @@ def delete_subcategory(request, pk=None):
 #*  ================ Prouduct section =============== 
 def product_list_view(request):
     vendor = get_vendor(request)
-    products = Product.objects.filter(vendor=vendor).order_by('-modified_date')
+    products = Product.objects.filter(vendor=vendor).order_by('-id')
     context = {
         'products': products,
     }
@@ -583,46 +583,49 @@ def edit_product(request, product_id):
         extra=1,  # Allow one extra form for uploading a new image
         can_delete=True  # Allow existing images to be deleted
     )
-    
-    if request.method == 'POST':
-        form = EditProductForm(request.POST, request.FILES, instance=product,vendor_id = vendor.id)
-        formset = ProductGalleryFormSet(
-            request.POST, request.FILES, queryset=ProductGallery.objects.filter(product=product)
-        )
-        if form.is_valid() and formset.is_valid():
-            product = form.save(commit=False)
-            product.slug = slugify(product.product_name)
-            product.save()
+    try :
+        if request.method == 'POST':
+            form = EditProductForm(request.POST, request.FILES, instance=product,vendor_id = vendor.id)
+            formset = ProductGalleryFormSet(
+                request.POST, request.FILES, queryset=ProductGallery.objects.filter(product=product)
+            )
+            if form.is_valid() and formset.is_valid():
+                product = form.save(commit=False)
+                product.slug = slugify(product.product_name)
+                product.save()
 
-            # Process gallery formset
-            for form in formset:
-                if form.cleaned_data.get('DELETE'):
-                    instance = form.instance
-                    # Ensure instance exists and has an ID before deleting
-                    if instance and instance.id:
-                        instance.delete()
-                elif form.cleaned_data.get('image'):
-                    # Save new or updated image
-                    gallery = form.save(commit=False)
-                    gallery.product = product
-                    gallery.save()
-            messages.success(request, 'Product updated successfully!')
-            return redirect('vendor_products_list')
+                # Process gallery formset
+                for form in formset:
+                    if form.cleaned_data.get('DELETE'):
+                        instance = form.instance
+                        # Ensure instance exists and has an ID before deleting
+                        if instance and instance.id:
+                            instance.delete()
+                    elif form.cleaned_data.get('image'):
+                        # Save new or updated image
+                        gallery = form.save(commit=False)
+                        gallery.product = product
+                        gallery.save()
+                messages.success(request, 'Product updated successfully!')
+                return redirect('vendor_products_list')
+            else:
+                print('error')
+                print(formset.errors)
         else:
-            print('error')
-            print(formset.errors)
-    else:
-        form = EditProductForm(instance=product,vendor_id = vendor.id)
-        formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
+            form = EditProductForm(instance=product,vendor_id = vendor.id)
+            formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
 
-    categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
-    context = {
-        'form': form,
-        'categories': categories,
-        'product': product,
-        'formset': formset,
-    }
-    return render(request, 'vendor/edit_product.html', context)
+        categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
+        context = {
+            'form': form,
+            'categories': categories,
+            'product': product,
+            'formset': formset,
+        }
+        return render(request, 'vendor/edit_product.html', context)
+    except Exception as e:
+        messages.error(request, f"An error occurred: {e}")
+        return redirect('vendor_products_list')
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
