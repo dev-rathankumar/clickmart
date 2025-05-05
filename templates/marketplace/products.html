@@ -2,90 +2,162 @@
 {% load static %}
 {% block content %}
 <div class="container my-4">
-    <div class="row">
-        <!-- Sidebar for Categories -->
-        {% comment %} <div class="col-md-3">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 sticky-sidebar p-0 mb-4">
-                <div class="user-account-nav user-account-sidebar">
-                    <div class="categories-menu">
-                        <h3 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i id="categoryIcon" class="fa fa-list-alt me-2"></i> Categories</h3>
-                        <ul class="menu-list" id="category-ul">
-                            <!-- Link to show all products when clicking "All Products" -->
-                            <li>
-                                <h6>
-                                    <a href="{% url 'all_products' %}" class="menu-category-link font-weight-bold">All Products</a>
-                                </h6>
-                            </li>
-                            {% for category in categories %}
-                            <li>
-                                <!-- Link to filter by category -->
-                                <h6>
-                                    <a href="{% url 'filter_by_category' category.id %}" class="menu-category-link font-weight-bold">{{ category.category_name }}</a>
-                                </h6>
-                                
-                                {% if category.subcategories.all %}
-                                    <ul class="submenu-list">
-                                        {% for subcategory in category.subcategories.all %}
-                                        <li>
-                                            <!-- Link to filter by subcategory -->
-                                            <a href="{% url 'filter_by_subcategory' subcategory.id %}" class="submenu-category-link font-weight-light font-italic">{{ subcategory.category_name }}</a>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endif %}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div> {% endcomment %}
-
-        <!-- Product Grid -->
-        <div class="col-md-12">
-            <div class="mb-3 mt-4">
-                <!-- Search Form -->
-                   <form method="get" class="d-flex">
-                       <input 
-                           type="text" 
-                           name="search" 
-                           placeholder="Search products..." 
-                           class="form-control"
-                           value="{{ search_query|default:'' }}" 
-                       />
-                       <button type="submit" class="btn btn-danger ml-2">Search</button>
-                   </form>
-               </div>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                {% if products %}
-                    <h3>Items found: <strong class="text-danger">{{ products|length }}</strong></h3>
-                {% else %}
-                    <h5>Items found: <strong class="text-danger">0</strong></h5>
-                {% endif %}
-            </div>
-
-            <div class="row">
-                {% for product in products %}
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body text-center" style="padding: 0.5rem;">
-                            <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
-                                <img src="{{ product.image.url }}" class="card-img-top mx-auto w-50" alt="product_image">
-                            </a>
-                            <h6 class="card-title mt-0">{{ product.product_name }}</h6>
-                            {% if product.sales_price %}
-                                <p class="card-text mb-0">₹ {{ product.sales_price }}</p>
-                            {% else %}
-                                <p class="card-text mb-0">₹ {{ product.regular_price }}</p>
-                            {% endif %}
-                            <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="btn btn-danger w-100 mt-3">View Details</a>
+    <main class="main">
+        <div class="page-header mt-30 mb-50">
+            <div class="container">
+                <div class="archive-header">
+                    <div class="row align-items-center">
+                        <div class="col-xl-3">
+                            <h1 class="mb-15">Products</h1>
                         </div>
+                        <div class="col-xl-9 text-end d-none d-xl-block">
+                            <div class="flex-grow-1">
+                                <div class="search-style-2">
+                                    <form action="#" class="d-flex">
+                                        <input type="text" class="form-control" placeholder="Search products..." />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                       
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
-    </div>
+        <div class="container mb-30">
+            <div class="row flex-row-reverse">
+                <div class="col-lg-4-5">
+                    <div class="shop-product-fillter">
+                        <div class="totall-product">
+                            <p>We found <strong class="text-brand">29</strong> items for you!</p>
+                        </div>
+                        <div class="sort-by-product-area">
+                            <div class="sort-by-cover mr-10">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps"></i>Show:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span> 50 <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown">
+                                    <ul>
+                                        <li><a class="active" href="#">50</a></li>
+                                        <li><a href="#">100</a></li>
+                                        <li><a href="#">150</a></li>
+                                        <li><a href="#">200</a></li>
+                                        <li><a href="#">All</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="sort-by-cover">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span> Featured <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown">
+                                    <ul>
+                                        <li><a class="active" href="#">Featured</a></li>
+                                        <li><a href="#">Price: Low to High</a></li>
+                                        <li><a href="#">Price: High to Low</a></li>
+                                        <li><a href="#">Release Date</a></li>
+                                        <li><a href="#">Avg. Rating</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row product-grid">
+                        {% for product in products %}
+                        <div class="col-lg-1-5 col-md-4 col-12 col-sm-6">
+                            <div class="product-cart-wrap mb-30">
+                                <div class="product-img-action-wrap">
+                                    <div class="product-img product-img-zoom">
+                                        <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                                            <img class="default-img" src="{{ product.image.url }}" alt="{{ product.product_name }}" />
+                                        </a>
+                                    </div>
+                                    <div class="product-badges product-badges-position product-badges-mrg">
+                                        <span class="hot">Hot</span>
+                                    </div>
+                                </div>
+                                <div class="product-content-wrap">
+                                    <div class="product-category">
+                                        <a href="shop-grid-right.html">{{ product.category }}</a>
+                                    </div>
+                                    <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name }}</a></h2>
+                                    <div>
+                                        <span class="font-small text-muted">By <a href="vendor-details-1.html">{{ product.vendor.vendor_name }}</a></span>
+                                    </div>
+                                    <div class="product-card-bottom d-block">
+                                        <div class="product-price">
+                                            <span>₹{{ product.sales_price }}</span>
+                                            <span class="old-price">₹{{ product.regular_price }}</span>
+                                        </div>
+                                        <div class="add-cart">
+                                            <a class="add w-100 text-center" href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">View Product </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!--product grid-->
+                    <div class="pagination-area mt-20 mb-20">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-start">
+                                <li class="page-item">
+                                    <a class="page-link" href="#"><i class="fi-rs-arrow-small-left"></i></a>
+                                </li>
+                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item active"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                                <li class="page-item"><a class="page-link" href="#">6</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#"><i class="fi-rs-arrow-small-right"></i></a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                   
+                </div>
+                <div class="col-lg-1-5 primary-sidebar sticky-sidebar">
+                    <div class="sidebar-widget widget-category-2 mb-30">
+                        <h5 class="section-title style-1 mb-30">Category</h5>
+                        <ul>
+                            <li>
+                                <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-1.svg" alt="" />Milks & Dairies</a><span class="count">30</span>
+                            </li>
+                            <li>
+                                <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-2.svg" alt="" />Clothing</a><span class="count">35</span>
+                            </li>
+                            <li>
+                                <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-3.svg" alt="" />Pet Foods </a><span class="count">42</span>
+                            </li>
+                            <li>
+                                <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-4.svg" alt="" />Baking material</a><span class="count">68</span>
+                            </li>
+                            <li>
+                                <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-5.svg" alt="" />Fresh Fruit</a><span class="count">87</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Filter By Price -->
+                    
+                    <!-- Product sidebar Widget -->
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </main>
 </div>
 <script>
     function toggleCategories(event) {

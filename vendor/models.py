@@ -3,6 +3,15 @@ from django.db import models
 from accounts.models import User, UserProfile
 from accounts.utils import send_notification
 from datetime import time, date, datetime
+from django.urls import reverse
+
+
+class StoreType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Vendor(models.Model):
@@ -11,6 +20,7 @@ class Vendor(models.Model):
     vendor_name = models.CharField(max_length=50)
     vendor_slug = models.SlugField(max_length=100, unique=True)
     vendor_license = models.ImageField(upload_to='vendor/license')
+    store_type = models.ForeignKey(StoreType, on_delete=models.SET_NULL, null=True, blank=True)
     gst_number = models.CharField(max_length=15, blank=True, null=True)
     fssai_number = models.CharField(max_length=14, blank=True, null=True)
     delivery_radius = models.CharField(max_length=10, blank=True, null=True)
@@ -88,3 +98,19 @@ class OpeningHour(models.Model):
 
     def __str__(self):
         return self.get_day_display()
+    
+
+class AdBanner(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='ad_banners')
+    image = models.ImageField(upload_to='store/ad_banners/')
+    clickmall_top_collection = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.vendor.vendor_name} Ad Banner"
+    
+    def get_redirect_url(self):
+        return reverse('vendor_detail', kwargs={'slug': self.vendor.vendor_slug})
+

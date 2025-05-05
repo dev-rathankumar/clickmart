@@ -12,6 +12,7 @@ Django==5.1.2
 django-admin-interface==0.29.2
 django-admin-logs==1.0.2
 django-admin-rangefilter==0.8.6
+django-admin-sortable2==2.2.6
 django-admin-thumbnails==0.2.9
 django-ckeditor-5==0.2.15
 django-colorfield==0.11.0
@@ -21,12 +22,14 @@ django-jquery==3.1.0
 django-js-asset==2.2.0
 django-mathfilters==1.0.0
 django-polymorphic==3.1.0
+docopt==0.6.2
 easy-thumbnails==2.10
 et_xmlfile==2.0.0
 gunicorn==23.0.0
 idna==3.10
 import-export==0.2.67.dev6
 lxml==5.3.0
+num2words==0.5.14
 numpy==2.1.3
 odfpy==1.4.1
 openpyxl==3.1.5
@@ -63,6 +66,3 @@ urllib3==2.2.3
 webencodings==0.5.1
 xlrd==2.0.1
 xlwt==1.3.0
-gunicorn
-docopt==0.6.2
-num2words==0.5.14

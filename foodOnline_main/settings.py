@@ -16,7 +16,7 @@ import os, socket
 from django import conf
 import platform
 
-ip_address = socket.gethostbyname(socket.gethostname())
+ip_address = socket.gethostbyname('localhost')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,6 +71,9 @@ INSTALLED_APPS = [
     'django_ckeditor_5',
     'easy_thumbnails',
     'filer',
+    'homepage',
+    'adminsortable2',
+    
 ]
 
 MIDDLEWARE = [

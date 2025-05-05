@@ -71,10 +71,224 @@
 }
 </style>
 
+<header class="header-area header-style-1 header-height-2">
+	<div class="header-middle d-none d-lg-block" style="border-bottom: 1px solid #ececec;">
+		<!-- <div class="container-fluid">
+			<div class="header-wrap">
+                <div class="header-left" style="display: flex; width: 40%; align-items: center;">
+                    <div class="logo logo-width-1">
+                        <a href="/"><img src="{% static 'logo/clickmall-logo.svg' %}" alt="logo" /></a>
+                    </div>
+    
+                    <div class="main-categori-wrap d-none d-lg-block">
+                        <a class="categories-button-active" href="#">
+                            <span class="fi-rs-apps"></span> Browse All Categories
+                            <i class="fi-rs-angle-down"></i>
+                        </a>
+                        <div class="categories-dropdown-wrap categories-dropdown-active-large font-heading">
+                            <div class="d-flex categori-dropdown-inner">
+                                <ul>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="{% static 'assets/imgs/theme/icons/category-1.svg' %}" alt="" />Milks and Dairies</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="{% static 'assets/imgs/theme/icons/category-2.svg' %}" alt="" />Clothing & beauty</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-3.svg" alt="" />Pet Foods & Toy</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-4.svg" alt="" />Baking material</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-5.svg" alt="" />Fresh Fruit</a>
+                                    </li>
+                                </ul>
+                                <ul class="end">
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-6.svg" alt="" />Wines & Drinks</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-7.svg" alt="" />Fresh Seafood</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-8.svg" alt="" />Fast food</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-9.svg" alt="" />Vegetables</a>
+                                    </li>
+                                    <li>
+                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-10.svg" alt="" />Bread and Juice</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="more_slide_open" style="display: none">
+                                <div class="d-flex categori-dropdown-inner">
+                                    <ul>
+                                        <li>
+                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-1.svg" alt="" />Milks and Dairies</a>
+                                        </li>
+                                        <li>
+                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-2.svg" alt="" />Clothing & beauty</a>
+                                        </li>
+                                    </ul>
+                                    <ul class="end">
+                                        <li>
+                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-3.svg" alt="" />Wines & Drinks</a>
+                                        </li>
+                                        <li>
+                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-4.svg" alt="" />Fresh Seafood</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="more_categories"><span class="icon"></span> <span class="heading-sm-1">Show more...</span></div>
+                        </div>
+                    </div>
+                </div>
+				
+
+
+				<div class="header-right" style="width: 60%;">
+					<div class="search-style-2">
+						<form action="#">
+							<select class="select-active">
+								<option>All Categories</option>
+								<option>Milks and Dairies</option>
+								<option>Wines & Alcohol</option>
+								<option>Clothing & Beauty</option>
+								<option>Pet Foods & Toy</option>
+								<option>Fast food</option>
+								<option>Baking material</option>
+								<option>Vegetables</option>
+								<option>Fresh Seafood</option>
+								<option>Noodles & Rice</option>
+								<option>Ice cream</option>
+							</select>
+							<input type="text" placeholder="Search for items..." />
+						</form>
+					</div>
+					<div class="header-action-right">
+						<div class="header-action-2">
+							<div class="search-location">
+								<form action="#">
+									<select class="select-active">
+										<option>Your Location</option>
+										<option>Alabama</option>
+										<option>Alaska</option>
+										<option>Arizona</option>
+										<option>Delaware</option>
+										<option>Florida</option>
+										<option>Georgia</option>
+										<option>Hawaii</option>
+										<option>Indiana</option>
+										<option>Maryland</option>
+										<option>Nevada</option>
+										<option>New Jersey</option>
+										<option>New Mexico</option>
+										<option>New York</option>
+									</select>
+								</form>
+							</div>
+							
+							
+							
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> -->
+	
+        <div class="container-fluid py-2">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        
+                <!-- Left Side: Logo + Categories -->
+                <div class="d-flex align-items-center gap-4 flex-shrink-0">
+                    <!-- Logo -->
+                    <div class="logo logo-width-1">
+                        <a href="/"><img src="{% static 'logo/clickmall-logo.svg' %}" alt="logo" style="height: 75px;" /></a>
+                    </div>
+        
+                    <!-- Categories Dropdown -->
+                    <div class="main-categori-wrap d-none d-lg-block">
+                        <a class="categories-button-active" href="#" data-bs-toggle="modal" data-bs-target="#locationModal">
+                            <span class="fi-rs-marker"></span> Select Location
+                        </a>
+                    </div>
+                    
+                </div>
+
+                <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="locationModalLabel">Select Your Location</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>You can list location options here...</p>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+        
+                <!-- Middle: Search Bar -->
+                <div class="flex-grow-1">
+                    <div class="search-style-2">
+                        <form action="#" class="d-flex">
+                            <select class="select-active me-2" style="min-width: 150px;">
+                                <option>All Categories</option>
+                                <option>Milks and Dairies</option>
+                                <option>Wines & Alcohol</option>
+                                <option>Clothing & Beauty</option>
+                                <option>Pet Foods & Toy</option>
+                                <option>Fast Food</option>
+                                <option>Baking Material</option>
+                                <option>Vegetables</option>
+                                <option>Fresh Seafood</option>
+                                <option>Noodles & Rice</option>
+                                <option>Ice Cream</option>
+                            </select>
+                            <input type="text" class="form-control" placeholder="What are you looking for?" />
+                        </form>
+                    </div>
+                </div>
+        
+                <!-- Right Side: Location -->
+
+                <div class="d-flex align-items-center gap-3 flex-shrink-0">
+                    <a href="{% url 'login' %}" class="text-danger" style="font-size: 1rem; font-weight: 600;">
+                        <i class="fa fa-sign-in" aria-hidden="true"></i> Login
+                    </a>
+
+                    <a href="{% url 'cart' %}" class="text-dark position-relative me-5" style="font-size: 1.2rem;">
+                        <i class="fa fa-shopping-cart"></i>
+                        <!-- Optional: Cart item count badge -->
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            2
+                            <span class="visually-hidden">cart items</span>
+                        </span>
+                    </a>
+
+                    <div class="main-categori-wrap d-none d-lg-block">
+                        <a class="categories-button-active" href="#" style="background-color: #DC3545; color: #fff;">
+                            Become a Seller
+                        </a>
+                    </div>
+                </div>
+        
+            </div>
+        </div>
+        
+    </div>
+	
+</header>
+
 <!--Main Wrapper-->
 <div class="wrapper">
     <!-- Header Start -->
-    <header id="header">
+    <!-- <header id="header">
         <div class="main-header">
             <div class="container-fluid">
                 <div class="row">
@@ -139,7 +353,7 @@
                 </div>
             </div>
         </div>
-    </header>
+    </header> -->
     <!-- Header End -->
 
     <script>

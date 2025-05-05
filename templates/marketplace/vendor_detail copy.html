@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Main Section Start -->
+<div class="main-section">
+    <div class="page-section restaurant-detail-image-section" style="background: url({% if vendor.user_profile.cover_photo %} {{ vendor.user_profile.cover_photo.url }} {% else %} {% static 'images/default-cover-new.png' %} {% endif %}) no-repeat scroll 0 0 / cover;">
+        <!-- Container Start -->
+        <div class="container">
+            <!-- Row Start -->
+            <div class="row">
+                <!-- Column Start -->
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="company-info-detail row">
+                        <div class="company-info col-lg-6 col-md-6 col-ms-12 col-xs-12">
+                            <div class="img-holder">
+                                <figure>
+                                    {% if vendor.user_profile.profile_picture %}
+                                    <img src="{{ vendor.user_profile.profile_picture.url }}" alt="">
+                                    {% else %}
+                                    <img src="{% static 'images/default-profile-new.png' %}" alt="">
+                                    {% endif %}
+                                </figure>
+                            </div>
+                            <div class="text-holder">
+                                <span class="restaurant-title">{{ vendor.vendor_name }} {% if not vendor.is_open %}[Closed]{% endif %}</span>
+                                <div class="text-white"style="font-size: 12px;line-height: 22px;">
+                                    {% if vendor.user_profile.address %}
+                                    <div>
+                                        <span class="text-white">Location: </span>
+                                        <span class="text-white">{{vendor.user_profile.address}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.gst_number %}
+                                    <div>                                        
+                                        <span>GST Number: </span>
+                                        <span>{{vendor.gst_number}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.fssai_number %}
+                                    <div>
+                                        <span>FSSAI Number: </span>
+                                        <span>{{vendor.fssai_number}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.user.phone_number %}
+                                    <div>
+                                        <span>Phone Number: </span>
+                                        <span>{{vendor.user.phone_number}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if vendor.delivery_radius %}
+                                    <div>
+                                        <span>Delivery radius: </span>
+                                        <span>{{vendor.delivery_radius}}KM.</span>
+                                    </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+                        {% if opening_hours %}
+                        <div class="delivery-timing reviews-sortby col-lg-6 col-md-6 col-ms-12 col-xs-12 mt-5">
+                            <ul>
+                                <li>
+                                    <a href="#" class="reviews-sortby-active">
+                                        <span>Today :</span>
+                                        {% for i in current_opening_hours %}
+                                        <span>{% if i.is_closed %}Closed{% else %}{{ i.from_hour }} - {{ i.to_hour }}{% endif %}</span>
+                                        {% endfor %}
+                                        <i class="icon-chevron-small-down"></i>
+                                    </a>
+                                    <ul class="delivery-dropdown">
+                                        {% for hour in opening_hours %}
+                                        <li><a href="#"><span class="opend-day">{{ hour }}</span> <span class="opend-time"><small>:</small>{% if hour.is_closed %}Closed{% else %}{{ hour.from_hour }} - {{ hour.to_hour }}{% endif %}</span></a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Column End -->
+            </div>
+            <!-- Row End -->
+        </div>
+        <!-- Container End -->
+    </div>
+
+    <div class="page-section">
+        <div class="container m-xl-5 m-lg-5 m-md-5 m-sm-0 m-xs-0">
+            <div class="row mx-3 mt-5 m-xl-0 m-lg-0 m-md-0">
+                <div class="col-lg-3 col-md-3 col-sm-9 col-xs-9">
+                    <div class="user-account-nav user-account-sidebar">
+                        <div class="categories-menu">
+                            <h6 onclick="toggleCategories(event)" class="btn btn-link p-0 m-0"><i id="categoryIcon" class="icon-restaurant_menu"></i>Categories</h6>
+                            <ul class="menu-list" id="category-ul">
+                                <li class="active"><a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="menu-category-link font-weight-bold">All Products</a></li>
+
+                                {% for category in categories %}
+                            <li class="active">
+                                <a href="{% url 'vendor_detail_filter_by_category' vendor.vendor_slug category.id %}"class="menu-category-link font-weight-bold">{{ category.category_name }}</a>
+                                {% if category.subcategories.all %}
+                                    <ul class="submenu-list">
+                                        {% for subcategory in category.subcategories.all %}
+                                        <li>
+                                            <a href="{% url 'vendor_detail_filter_by_subcategory' vendor.vendor_slug subcategory.id %}" class="submenu-category-link font-weight-light font-italic">{{ subcategory.category_name }}</a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 ">
+                    <div class="mb-3 mt-4">
+                     <!-- Search Form -->
+                        <form method="get" class="d-flex">
+                            <input 
+                                type="text" 
+                                name="search" 
+                                placeholder="Search products..." 
+                                class="form-control"
+                                value="{{ search_query|default:'' }}" 
+                            />
+                            <button type="submit" class="btn btn-danger ml-2">Search</button>
+                        </form>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        {% if products %}
+                            <h3>Items found: <strong class="text-danger">{{ products|length }}</strong></h3>
+                        {% else %}
+                            <h5>Items found: <strong class="text-danger">0</strong></h5>
+                        {% endif %}
+                    </div>
+        
+                    <div class="row">
+                        {% for product in products %}
+                        <div class="col-lg-3 col-md-6 mb-4 d-flex col-sm-12 col-xs-12 flex-wrap">
+                            <div class="card">
+                                <img src="{{ product.image.url }}" class="card-img-top w-75 m-auto" alt="product_image">
+                                <div class="card-body text-start">
+                                    <h6 class="card-title font-weight-normal">{{ product.product_name }}</h6>
+                                    {% if product.sales_price != product.regular_price %}
+                                    <span class="text-dark"><span style="text-decoration: line-through;">₹{{ product.regular_price }}</span> &nbsp; ₹{{ product.sales_price }}</span>
+                                {% else %}
+                                    <span class="text-dark">₹ {{ product.regular_price }}</span>
+                                {% endif %}
+                                    <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="btn btn-danger w-100 m-auto text-center py-2">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+<script>
+    function toggleCategories(event) {
+        event.preventDefault(); // Prevent default behavior of the button/link
+        const category = document.getElementById('category-ul');
+        // Toggle the display property between 'none' and 'block'
+        if (category.style.display === 'none' || category.style.display === '') {
+            category.style.display = 'block';
+        } else {
+            category.style.display = 'none';
+        }
+    }
+    
+    function updateCategoryIcon() {
+        const icon = document.getElementById("categoryIcon");
+        const category = document.getElementById('category-ul'); 
+        
+        if (window.innerWidth <= 990) {
+            category.style.display = 'none';
+            icon.classList.remove("icon-restaurant_menu");
+            icon.classList.add("fa", "fa-bars");
+        } else {
+            category.style.display = 'block';
+            icon.classList.remove("fa", "fa-bars");
+            icon.classList.add("icon-restaurant_menu");
+        }
+    }
+
+    // Run on initial load
+    updateCategoryIcon();
+
+    // Add event listener to handle window resize
+    window.addEventListener("resize", updateCategoryIcon);
+
+
+
+</script>
+
+{% endblock %}

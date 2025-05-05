@@ -10,8 +10,8 @@ class Category(models.Model):
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories'
     )
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     category_name = models.CharField(max_length=50)
+    category_code = models.CharField(max_length=50, unique=True)  # e.g. 'GROC', 'BEV'
     slug = models.SlugField(max_length=100)
     category_image = models.ImageField(upload_to='store/categories/uploads', null=True, blank=True)
     description = models.TextField(max_length=250, blank=True)
@@ -24,7 +24,7 @@ class Category(models.Model):
         verbose_name_plural = 'categories'
         # Ensure combination of vendor and slug is unique
         constraints = [
-            models.UniqueConstraint(fields=['vendor', 'slug'], name='unique_vendor_slug_category')
+            models.UniqueConstraint(fields=['category_code'], name='unique_category_code')
         ]
 
     def clean(self):
@@ -35,7 +35,7 @@ class Category(models.Model):
         self.clean()
 
         # Generate the slug using the combination of category name and ID
-        self.slug = slugify(f"{self.category_name}-{self.id}")
+        self.slug = slugify(f"{self.category_name}")
         
         # Save again to store the generated slug
         super().save(*args, **kwargs)
@@ -141,6 +141,18 @@ class Product(models.Model):
             # ("Deposit Category", self.deposit_category.deposit_category),
             # ("Deposit Value", self.deposit_category.deposit_value),
         ]
+    
+    def get_discount_percentage(self):
+        try:
+            if self.sales_price and self.regular_price and self.sales_price < self.regular_price:
+                discount = (self.regular_price - self.sales_price) / self.regular_price * 100
+                discount = float(discount)  # Make sure it's a float
+                if discount == int(discount):
+                    return int(discount)
+                return round(discount, 1)
+            return 0
+        except (TypeError, ZeroDivisionError):
+            return 0
     
 
 class ProductGallery(models.Model):

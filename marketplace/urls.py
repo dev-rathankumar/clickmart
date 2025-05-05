@@ -6,7 +6,7 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
     
     # All Products
-    path('all-products/', views.All_products, name='all_products'),
+    path('products/', views.All_products, name='all_products'),
     path('products/category/<int:category_id>/', views.All_products, name='filter_by_category'),
     path('products/subcategory/<int:subcategory_id>/', views.All_products, name='filter_by_subcategory'),
     

@@ -11,6 +11,11 @@ from import_export import resources
 from django.utils.html import format_html
 
 
+class ProductGalleryInline(admin.TabularInline):
+    model = ProductGallery
+    extra = 1
+
+
 class UnifieldProductResource(resources.ModelResource):
     class Meta:
         model = UnifieldProduct
@@ -73,14 +78,27 @@ class UnifieldProductResource(resources.ModelResource):
 
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('category_name',)}
-    list_display = ('category_name', 'vendor', 'updated_at')
-    search_fields = ('category_name', 'vendor__vendor_name')
+    list_display = ('thumbnail', 'category_name', 'category_code', 'updated_at', 'is_active')
+    search_fields = ('category_name', 'category_code')
 
+    def thumbnail(self, obj):
+        if obj.category_image:
+            return format_html('<img src="{}" style="width: 50px; height: 50px; object-fit: cover;" />', obj.category_image.url)
+        return "No Image"
+    thumbnail.short_description = 'Thumbnail'
 
 class UnifieldProductAdmin(ImportExportModelAdmin):
-    list_display = ['vendor', 'barcode', 'product_name', 'slug', 'sales_price', 'qty', 'is_popular']
+    list_display = ['thumbnail', 'product_name', 'vendor', 'barcode', 'category', 'regular_price', 'sales_price', 'qty', 'is_popular']
     resource_class = UnifieldProductResource
     list_editable = ('is_popular',)
+    list_display_links = ('product_name', 'thumbnail')
+    inlines = [ProductGalleryInline]
+
+    def thumbnail(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="width: 50px; height: 50px; object-fit: cover;" />', obj.image.url)
+        return "No Image"
+    thumbnail.short_description = 'Thumbnail'
 
 
 @admin_thumbnails.thumbnail('image')

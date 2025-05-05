@@ -43,14 +43,14 @@ def marketplace(request):
 
 def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
-    categories = Category.objects.filter(is_active=True, parent=None, vendor=vendor).prefetch_related('subcategories')
+    categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
 
     # Handle search query
     search_query = request.GET.get('search', None)
 
     if subcategory_id:
         # Filter by subcategory
-        selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True, vendor=vendor)
+        selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
         products = Product.objects.filter(
             subcategory=selected_subcategory, 
             is_available=True, 
