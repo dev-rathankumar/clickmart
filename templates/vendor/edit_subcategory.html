@@ -23,7 +23,7 @@
                             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
                             <br><br>
                             <h6>Modify Subcategory</h6>
-                            <form action="{% url 'edit_subcategory' subcategory.parent.id subcategory.id %}" method="POST">
+                            <form action="{% url 'edit_subcategory' subcategory.parent.id subcategory.id %}" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="form-fields-set">
                                     <div class="row">
@@ -40,6 +40,9 @@
                                             <div class="field-holder">
                                                 <label>Subcategory Name *</label>
                                                 {{ form.category_name }}
+                                                {% for error in form.category_name.errors %}
+                                                <p style="color: red;">{{ error }}</p>
+                                                {% endfor %}
                                             </div>
                                         </div>
 
@@ -48,6 +51,18 @@
                                             <div class="field-holder">
                                                 <label>Description</label>
                                                 {{ form.description }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Image</label>
+                                                <img
+                                                id="image-preview"
+                                                class="thumbnail"
+                                                src="{% if subcategory.category_image %}{{ subcategory.category_image.url }}{% else %}{% static 'images/default_image_add_product.png' %}{% endif %}"
+                                                alt="Product Image Preview"
+                                                style="width: 100px; display: inline; margin-right:30px; margin-bottom:15px;">
+                                                {{ form.category_image }}
                                             </div>
                                         </div>
                                     </div>
@@ -61,7 +76,14 @@
                                         {% endfor %}
                                     {% endif %}
                                 {% endfor %}
-
+                                {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {% for error in form.non_field_errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
                                 <!-- Action Buttons -->
                                 <button type="submit" class="btn btn-info mb-3"><i class="fa fa-check" aria-hidden="true"></i> Update</button>
                                 <a href="{% url 'delete_subcategory' subcategory.id %}" onclick="return confirm('Are you sure you want to delete this subcategory?')" class="btn btn-danger mb-3"><i class="fa fa-trash" aria-hidden="true"></i> Delete</a>

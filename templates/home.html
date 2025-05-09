@@ -18,9 +18,9 @@
 				{% for cat in categories_home %}
 				<div class="card-2 bg-{{forloop.counter}} wow animate__animated animate__fadeInUp" data-wow-delay=".1s">
 					<figure class="img-hover-scale overflow-hidden">
-						<a href="shop-grid-right.html"><img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" /></a>
+						<a href="{% url 'filter_by_category' category_id=cat.id %}"><img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" /></a>
 					</figure>
-					<h6><a href="shop-grid-right.html">{{ cat.category_name }}</a></h6>
+					<h6><a href="{% url 'filter_by_category' category_id=cat.id %}">{{ cat.category_name }}</a></h6>
 				</div>
 				{% endfor %}
 			</div>

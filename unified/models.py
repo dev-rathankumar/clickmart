@@ -1,6 +1,6 @@
 from django.db import models
 # from menu.models import Category
-from vendor.models import Vendor
+from vendor.models import Vendor, StoreType
 from django.template.defaultfilters import slugify
 from inventory.models import tax as TaxCategory
 from inventory.models import deposit as DepositCategory
@@ -10,8 +10,10 @@ class Category(models.Model):
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories'
     )
+    store_type = models.ForeignKey(StoreType, on_delete=models.CASCADE, null=True, blank=True)
     category_name = models.CharField(max_length=50)
     category_code = models.CharField(max_length=50, unique=True)  # e.g. 'GROC', 'BEV'
+    vendor_subcategory_reference_id  = models.IntegerField(null=True, blank=True) # This field only for subcategory use to track the vendor's subcategory we will store his id here (This is a indirect connection withn venodr) 
     slug = models.SlugField(max_length=100)
     category_image = models.ImageField(upload_to='store/categories/uploads', null=True, blank=True)
     description = models.TextField(max_length=250, blank=True)
@@ -30,15 +32,6 @@ class Category(models.Model):
     def clean(self):
         self.category_name = self.category_name.capitalize()
         
-    def save(self, *args, **kwargs):
-        # Capitalize the category name before saving
-        self.clean()
-
-        # Generate the slug using the combination of category name and ID
-        self.slug = slugify(f"{self.category_name}")
-        
-        # Save again to store the generated slug
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.category_name

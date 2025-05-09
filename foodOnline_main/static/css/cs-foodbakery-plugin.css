@@ -2021,12 +2021,12 @@ border-color:#c33332 !important;
 {
 border-top-color:#c33332 !important;
 }   
-body{
-background:#ebedf3 !important;	    }
+/* body{
+  background:#ebedf3 !important;	    } */
 .cs-main-nav {
 position: relative !important;
 }
-body,
+/* body, */
 .main-section p,
 .mce-content-body p
 {

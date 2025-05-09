@@ -4,10 +4,24 @@ from accounts.validators import allow_only_images_validator
 
 
 class VendorForm(forms.ModelForm):
-    vendor_license = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info'}), validators=[allow_only_images_validator])
+    vendor_license = forms.FileField(widget=forms.FileInput(), validators=[allow_only_images_validator])
+
     class Meta:
         model = Vendor
-        fields = ['vendor_name', 'store_type', 'vendor_license', 'gst_number', 'fssai_number','delivery_radius']
+        fields = ['vendor_name', 'store_type', 'vendor_license', 'gst_number', 'fssai_number', 'delivery_radius']
+
+    def __init__(self, *args, **kwargs):
+        super(VendorForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            # Disable the store_type field if updating an existing vendor
+            self.fields['store_type'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance and self.instance.pk:
+            # Ensure store_type can't be changed via form manipulation
+            cleaned_data['store_type'] = self.instance.store_type
+        return cleaned_data
 
 
 class OpeningHourForm(forms.ModelForm):

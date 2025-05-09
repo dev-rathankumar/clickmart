@@ -107,6 +107,7 @@ TEMPLATES = [
                 'accounts.context_processors.get_user_profile',
                 'accounts.context_processors.get_paypal_client_id',
                 'marketplace.context_processors.categories_processor',
+                'marketplace.context_processors.store_type_processor',
             ],
         },
     },

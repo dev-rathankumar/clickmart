@@ -20,7 +20,7 @@
                             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
                             <br><br>
                             <h6>Add New SubCategory</h6>
-                            <form action="{% url 'add_sub_category' main_category.id %}" method="POST">
+                            <form action="{% url 'add_sub_category' main_category.id %}" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="form-fields-set">
                                     <div class="row">
@@ -47,6 +47,18 @@
                                             <div class="field-holder">
                                                 <label>Description</label>
                                                 {{ form.description }}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <div class="field-holder">
+                                                <label>Image</label>
+                                                <img
+                                                id="image-preview"
+                                                class="thumbnail"
+                                                src="{% static 'images/default_image_add_product.png' %}"
+                                                alt="Product Image Preview"
+                                                style="width: 100px; display: inline; margin-right:30px; margin-bottom:15px;">
+                                                {{ form.category_image }}
                                             </div>
                                         </div>
                                     </div>

@@ -30,7 +30,8 @@ from django.db.models import Sum
 
 from django.db import models
 
-
+from django.db.models import Count, OuterRef, Subquery
+from django.core.paginator import Paginator
 
 def marketplace(request):
     vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
@@ -43,10 +44,19 @@ def marketplace(request):
 
 def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
-    categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
+    categories = Category.objects.filter(is_active=True, parent=None, store_type=vendor.store_type).prefetch_related('subcategories')
 
     # Handle search query
     search_query = request.GET.get('search', None)
+    # Annotate product count for each category
+    for cat in categories:
+        subcat_ids = cat.subcategories.filter(is_active=True,vendor_subcategory_reference_id=vendor.id).values_list('id', flat=True)
+        cat.product_count = Product.objects.filter(
+            subcategory__in=subcat_ids,
+            is_available=True,
+            vendor=vendor,
+            is_active=True
+        ).count()
 
     if subcategory_id:
         # Filter by subcategory
@@ -59,8 +69,8 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         )
     elif category_id:
         # Filter by category
-        selected_category = get_object_or_404(Category, id=category_id, is_active=True, vendor=vendor)
-        subcategories = selected_category.subcategories.all()
+        selected_category = get_object_or_404(Category, id=category_id, is_active=True, store_type=vendor.store_type)
+        subcategories = selected_category.subcategories.filter(vendor_subcategory_reference_id=vendor.id)
         products = Product.objects.filter(
             subcategory__in=subcategories, 
             is_available=True, 
@@ -83,14 +93,18 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     current_opening_hours = OpeningHour.objects.filter(vendor=vendor, day=today)
     
     cart_items = Cart.objects.filter(user=request.user) if request.user.is_authenticated else None
-    
+      # Implement pagination
+    paginator = Paginator(products, 12)  # Show 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'vendor': vendor,
         'categories': categories,
         'cart_items': cart_items,
         'opening_hours': opening_hours,
         'current_opening_hours': current_opening_hours,
-        'products': products,
+        'products': page_obj,
         'search_query': search_query  # Pass the search query to template
     }
     return render(request, 'marketplace/vendor_detail.html', context)
@@ -318,36 +332,57 @@ def checkout(request):
     }
     return render(request, 'marketplace/checkout.html', context)
 
+
 def All_products(request, category_id=None, subcategory_id=None):
+    # Base categories (parent=None)
     categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
-    # Handle search query
+
+    # Annotate product count for each category
+    for cat in categories:
+        subcat_ids = cat.subcategories.filter(is_active=True).values_list('id', flat=True)
+        cat.product_count = Product.objects.filter(
+            subcategory__in=subcat_ids,
+            is_available=True,
+            is_active=True
+        ).count()
+
+    # Handle product filtering logic
     search_query = request.GET.get('search', None)
+    store_type = request.GET.get('store_type', None)
+    print(search_query)
+    print(store_type)
 
     if subcategory_id:
-        # Filter by subcategory
         selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
-        print("selecterd category", selected_subcategory)
         products = Product.objects.filter(subcategory=selected_subcategory, is_available=True, is_active=True)
-        print(products)
 
     elif category_id:
-        # Filter by category
         selected_category = get_object_or_404(Category, id=category_id, is_active=True)
         subcategories = selected_category.subcategories.all()
         products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
     else:
-        # Show all products if no filter is selected
         products = Product.objects.filter(is_available=True, is_active=True)
-    # Apply search filter
+
+    # Filter by store type if provided
+    if store_type:
+        # Get all vendors with the selected store type
+        vendors = Vendor.objects.filter(store_type__slug=store_type, is_approved=True)
+        # Filter products by the vendors with the selected store type
+        products = products.filter(vendor__in=vendors)
+
     if search_query:
         products = products.filter(
             models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
         )
-        
-    print(products)
+
+    # Implement pagination
+    paginator = Paginator(products, 12)  # Show 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'categories': categories,
-        'products': products,
+        'products': page_obj,  # Pass the paginated products
     }
     return render(request, 'marketplace/products.html', context)
 
