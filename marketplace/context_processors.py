@@ -1,7 +1,7 @@
 from .models import Cart
 from menu.models import Product,Category
 from inventory.models import tax
-
+from vendor.models import StoreType
 def get_cart_counter(request):
     cart_count = 0
     if request.user.is_authenticated:
@@ -66,3 +66,7 @@ def get_cart_amounts(request):
 def categories_processor(request):
     categories = Category.objects.filter(parent__isnull=True, is_active=True).prefetch_related('subcategories').distinct()[:5]
     return {'categories': categories}
+
+def store_type_processor(request):
+    store_types = StoreType.objects.all()
+    return{'store_types':store_types}

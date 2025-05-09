@@ -65,8 +65,8 @@
                 <div class="col-lg-5 mx-auto">
                     <div class="sidebar-widget-2 widget_search mb-50">
                         <div class="search-form">
-                            <form action="#">
-                                <input type="text" placeholder="Search in this store..." />
+                            <form method="get" class="d-flex">
+                                <input type="text" name=search placeholder="Search in this store..." />
                                 <button type="submit"><i class="fi-rs-search"></i></button>
                             </form>
                         </div>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="row flex-row-reverse">
-            <div class="col-lg-4-5">
+            <div class="col-lg-9">
                 <div class="shop-product-fillter">
                     <div class="totall-product">
                         {% if products %}
@@ -128,7 +128,7 @@
                 </div>
                 <div class="row product-grid">
                     {% for product in products %}
-                    <div class="col-lg-1-5 col-md-4 col-12 col-sm-6">
+                    <div class="col-lg-3 col-md-4 col-12 col-sm-6">
                         <div class="product-cart-wrap mb-30">
                             <div class="product-img-action-wrap">
                                 <div class="product-img product-img-zoom">
@@ -166,24 +166,48 @@
                 <div class="pagination-area mt-20 mb-20">
                     <nav aria-label="Page navigation example">
                         <ul class="pagination justify-content-start">
-                            <li class="page-item">
-                                <a class="page-link" href="#"><i class="fi-rs-arrow-small-left"></i></a>
-                            </li>
-                            <li class="page-item"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item active"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                            <li class="page-item"><a class="page-link" href="#">6</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#"><i class="fi-rs-arrow-small-right"></i></a>
-                            </li>
+                            {% if products.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ products.previous_page_number }}">
+                                        <i class="fi-rs-arrow-small-left"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link"><i class="fi-rs-arrow-small-left"></i></a>
+                                </li>
+                            {% endif %}
+                
+                            {% for num in products.paginator.page_range %}
+                                {% if products.number == num %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                
+                            {% if products.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ products.next_page_number }}">
+                                        <i class="fi-rs-arrow-small-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link"><i class="fi-rs-arrow-small-right"></i></a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </nav>
                 </div>
-              
+               
                 <!--End Deals-->
             </div>
-            <div class="col-lg-1-5 primary-sidebar sticky-sidebar">
+            <div class="col-lg-3 primary-sidebar sticky-sidebar">
                 <div class="sidebar-widget widget-store-info mb-30 bg-3 border-0">
                     
                     <div class="vendor-info">
@@ -227,21 +251,11 @@
                 <div class="sidebar-widget widget-category-2 mb-30">
                     <h5 class="section-title style-1 mb-30">Category</h5>
                     <ul>
-                        <li>
-                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-1.svg" alt="" />Milks & Dairies</a><span class="count">30</span>
-                        </li>
-                        <li>
-                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-2.svg" alt="" />Clothing</a><span class="count">35</span>
-                        </li>
-                        <li>
-                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-3.svg" alt="" />Pet Foods </a><span class="count">42</span>
-                        </li>
-                        <li>
-                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-4.svg" alt="" />Baking material</a><span class="count">68</span>
-                        </li>
-                        <li>
-                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-5.svg" alt="" />Fresh Fruit</a><span class="count">87</span>
-                        </li>
+                                    {% for cat in categories %}
+                                    <li class="px-0">
+                                        <a href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}"> <img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" />{{ cat.category_name }}</a><span class="count p-0 me-1">{{ cat.product_count }}</span>
+                                    </li>
+                                    {% endfor %}
                     </ul>
                 </div>
                 

@@ -1,7 +1,9 @@
 {% load static %}
+<link rel="stylesheet" href="{% static 'css/cs-foodbakery-plugin.css' %}">
+
 <div class="page-section restaurant-detail-image-section" style=" background: url({% if user_profile.cover_photo %}{{ user_profile.cover_photo.url }} {% else %} {% static 'images/default-cover-new.png' %} {% endif %} ) no-repeat scroll 0 0 / cover;">
     <!-- Container Start -->
-    <div class="container">
+    <div class="container" style="position: relative; z-index: 1000;">
         <!-- Row Start -->
         <div class="row">
             <!-- Column Start -->

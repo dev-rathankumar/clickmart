@@ -2,7 +2,25 @@
 
 {% load static %}
 
+
 {% block content %}
+<style>
+	/* Hide arrow in most modern browsers */
+select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background: none; /* Optional: remove background */
+	background-color: white; /* Optional: set your desired background */
+	padding-right: 1rem; /* Make room for custom icon or no icon */
+  }
+  
+  /* Remove default arrow in Internet Explorer */
+  select::-ms-expand {
+	display: none;
+  }
+  
+</style>
 {% include 'includes/alerts.html' %}
 
 <!-- Main Section Start -->
@@ -138,6 +156,12 @@
 															</div>
 														</div>
 
+														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+															<div class="field-holder">
+																<label>Store Type</label>
+																{{vendor_form.store_type}}
+															</div>
+														</div>
 														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
 															<div class="field-holder">
 																<label>GST Number</label>

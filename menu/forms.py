@@ -4,7 +4,7 @@ from accounts.validators import allow_only_images_validator
 from .models import FoodItem
 from unified.models import Category, Product, ProductGallery
 from django.forms import modelformset_factory
-
+from vendor.models import Vendor
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -15,14 +15,14 @@ class CategoryForm(forms.ModelForm):
 class SubCategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['category_name', 'description', 'parent']
+        fields = ['category_name', 'description', 'parent','category_image']
 
     def __init__(self, *args, vendor=None, **kwargs):
         super().__init__(*args, **kwargs)
-        
+        print("vendor line 22", vendor)
         # Filter the parent field to show only main categories for this vendor
         if vendor:
-            self.fields['parent'].queryset = Category.objects.filter(vendor=vendor, parent=None)
+            self.fields['parent'].queryset = Category.objects.filter(store_type=vendor.store_type, parent=None)
         
         # Set the label for the parent field and make it required
         self.fields['parent'].label = "Main Category"
@@ -31,6 +31,8 @@ class SubCategoryForm(forms.ModelForm):
         # Disable the parent field if it has an initial value
         if 'parent' in self.initial:
             self.fields['parent'].widget = forms.HiddenInput()
+
+
 from django.core.exceptions import ValidationError
 from PIL import Image
 
@@ -47,16 +49,18 @@ class ProductForm(forms.ModelForm):
         
         vendor_id = kwargs.pop('vendor_id', None)
         super(ProductForm, self).__init__(*args, **kwargs)
+        if vendor_id: 
+            vendor = Vendor.objects.get(id=vendor_id)
         
         # Only show main categories (parent categories without any parent)
-        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True, vendor_id=vendor_id)
+        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)
 
         # If a category is selected, filter the subcategories
         self.fields['subcategory'].required = True
         if 'category' in self.data:
             try:
                 category_id = int(self.data.get('category'))
-                self.fields['subcategory'].queryset = Category.objects.filter(parent_id=category_id)
+                self.fields['subcategory'].queryset = Category.objects.filter(parent_id=category_id,vendor_subcategory_reference_id=vendor_id)
             except (ValueError, TypeError):
                 pass  # Handle invalid category ID
         else:
@@ -82,9 +86,10 @@ class EditProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         vendor_id = kwargs.pop('vendor_id', None)
         super(EditProductForm, self).__init__(*args, **kwargs)
-
+        if vendor_id: 
+                vendor = Vendor.objects.get(id=vendor_id)
         # Only show main categories (categories without a parent)
-        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True, vendor_id=vendor_id)
+        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True,store_type=vendor.store_type)
 
         self.fields['subcategory'].required = True
         # If editing an existing product, set subcategory choices based on selected category
@@ -92,12 +97,12 @@ class EditProductForm(forms.ModelForm):
             # When the form is submitted, filter subcategories based on selected category
             try:
                 category_id = int(self.data.get('category'))
-                self.fields['subcategory'].queryset = Category.objects.filter(parent_id=category_id)
+                self.fields['subcategory'].queryset = Category.objects.filter(parent_id=category_id, vendor_subcategory_reference_id=vendor.id)
             except (ValueError, TypeError):
                 self.fields['subcategory'].queryset = Category.objects.none()  # Empty queryset if error occurs
         elif self.instance.pk and self.instance.category:
             # When the form is loaded initially, filter subcategories based on existing category
-            self.fields['subcategory'].queryset = Category.objects.filter(parent_id=self.instance.category.id)
+            self.fields['subcategory'].queryset = Category.objects.filter(parent_id=self.instance.category.id, vendor_subcategory_reference_id=vendor.id)
         else:
             # Set subcategory choices to none initially
             self.fields['subcategory'].queryset = Category.objects.none()

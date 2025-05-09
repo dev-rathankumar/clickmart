@@ -88,7 +88,10 @@ def vprofile(request):
 @user_passes_test(check_role_vendor)
 def category_builder(request):
     vendor = get_vendor(request)
-    categories = Category.objects.filter(vendor=vendor, parent=None).order_by('created_at')
+    if vendor.store_type is None:
+        messages.error(request, "Vendor doesn't have a store type. Please contact the admin.")
+        return redirect("vendor")
+    categories = Category.objects.filter(store_type=vendor.store_type).order_by('created_at')
     context = {
         'categories': categories,
     }
@@ -211,7 +214,7 @@ def import_products(request):
                 gallery_image_1 = row['gallery_image_1']
                 gallery_image_2 = row['gallery_image_2']
                 gallery_image_3 = row['gallery_image_3']
-                category_name = row['category'].strip().replace(" ", "")
+                category_name = row['category'].strip()
                 subcategory_name = row.get('subcategory', "").strip().replace(" ", "")
                 tax_category_name = row['tax_category'].strip().replace(" ", "")
                 tax_percentage = row['tax_percentage'].strip().replace(" ", "")
@@ -227,29 +230,28 @@ def import_products(request):
                     messages.error(request, f"Error processing product '{row.get('product_name', 'Unknown')}': {e}")
 
                 # Handle ForeignKey relationships
+                print('category name==>', category_name)
                 try:
-                    category = Category.objects.get(category_name=category_name, vendor=vendor)
+                    category = Category.objects.get(category_name=category_name, store_type=vendor.store_type)
                 except Category.DoesNotExist:
-                    category = Category.objects.create(
-                        category_name=category_name,
-                        slug=slugify(category_name),
-                        vendor=vendor,
-                        description="",
-                    )
-                    category.save()
-                    print(f"Category '{category_name}' created.")
-
+                    messages.error(request, f"The Category '{category_name}' does not exist. Please ensure the category name matches exactly.")
+                    continue  # Skip this row
                 subcategory = None
+                print(subcategory_name)
                 if subcategory_name:
+                    slug = slugify(f"{subcategory_name}{category_name}{vendor.id}")
+                    print(slug)
                     try:
-                        subcategory = Category.objects.get(category_name=subcategory_name, vendor=vendor)
+                        subcategory = Category.objects.get(category_name=subcategory_name, vendor_subcategory_reference_id=vendor.id,slug=slug )
+                        print(subcategory)
                     except Category.DoesNotExist:
                         # If subcategory doesn't exist, create a new one and link to the parent category
                         subcategory = Category.objects.create(
                             category_name=subcategory_name,
-                            slug=slugify(subcategory_name),
+                            category_code=f"SUB-{subcategory_name.capitalize()}-{category.category_code}-{vendor.id}",
+                            slug=slug,
                             parent=category,  # Setting the main category as parent
-                            vendor=vendor,
+                            vendor_subcategory_reference_id=vendor.id,
                             description="",
                         )
                         subcategory.save()
@@ -340,65 +342,65 @@ def fooditems_by_category(request, pk=None):
     return render(request, 'vendor/fooditems_by_category.html', context)
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def add_category(request):
-    if request.method == 'POST':
-        form = CategoryForm(request.POST,request.FILES)
-        if form.is_valid():
-            category_name = form.cleaned_data['category_name']
-            category = form.save(commit=False)
-            category.vendor = get_vendor(request)
+# @login_required(login_url='login')
+# @user_passes_test(check_role_vendor)
+# def add_category(request):
+#     if request.method == 'POST':
+#         form = CategoryForm(request.POST,request.FILES)
+#         if form.is_valid():
+#             category_name = form.cleaned_data['category_name']
+#             category = form.save(commit=False)
+#             category.vendor = get_vendor(request)
             
-            category.save() # here the category id will be generated
-            category.slug = slugify(category_name)+'-'+str(category.id) # chicken-15
-            category.save()
-            messages.success(request, 'Category added successfully!')
-            return redirect('category_builder')
-        else:
-            print(form.errors)
+#             category.save() # here the category id will be generated
+#             category.slug = slugify(category_name)+'-'+str(category.id) # chicken-15
+#             category.save()
+#             messages.success(request, 'Category added successfully!')
+#             return redirect('category_builder')
+#         else:
+#             print(form.errors)
 
-    else:
-        form = CategoryForm()
-    context = {
-        'form': form,
-    }
-    return render(request, 'vendor/add_category.html', context)
-
-
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def edit_category(request, pk=None):
-    category = get_object_or_404(Category, pk=pk)
-    if request.method == 'POST':
-        form = CategoryForm(request.POST, request.FILES, instance=category)
-        if form.is_valid():
-            category_name = form.cleaned_data['category_name']
-            category = form.save(commit=False)
-            category.vendor = get_vendor(request)
-            category.slug = slugify(category_name)
-            form.save()
-            messages.success(request, 'Category updated successfully!')
-            return redirect('category_builder')
-        else:
-            print(form.errors)
-
-    else:
-        form = CategoryForm(instance=category)
-    context = {
-        'form': form,
-        'category': category,
-    }
-    return render(request, 'vendor/edit_category.html', context)
+#     else:
+#         form = CategoryForm()
+#     context = {
+#         'form': form,
+#     }
+#     return render(request, 'vendor/add_category.html', context)
 
 
-@login_required(login_url='login')
-@user_passes_test(check_role_vendor)
-def delete_category(request, pk=None):
-    category = get_object_or_404(Category, pk=pk)
-    category.delete()
-    messages.success(request, 'Category has been deleted successfully!')
-    return redirect('category_builder')
+# @login_required(login_url='login')
+# @user_passes_test(check_role_vendor)
+# def edit_category(request, pk=None):
+#     category = get_object_or_404(Category, pk=pk)
+#     if request.method == 'POST':
+#         form = CategoryForm(request.POST, request.FILES, instance=category)
+#         if form.is_valid():
+#             category_name = form.cleaned_data['category_name']
+#             category = form.save(commit=False)
+#             category.vendor = get_vendor(request)
+#             category.slug = slugify(category_name)
+#             form.save()
+#             messages.success(request, 'Category updated successfully!')
+#             return redirect('category_builder')
+#         else:
+#             print(form.errors)
+
+#     else:
+#         form = CategoryForm(instance=category)
+#     context = {
+#         'form': form,
+#         'category': category,
+#     }
+#     return render(request, 'vendor/edit_category.html', context)
+
+
+# @login_required(login_url='login')
+# @user_passes_test(check_role_vendor)
+# def delete_category(request, pk=None):
+#     category = get_object_or_404(Category, pk=pk)
+#     category.delete()
+#     messages.success(request, 'Category has been deleted successfully!')
+#     return redirect('category_builder')
 
 
 
@@ -410,9 +412,9 @@ def delete_category(request, pk=None):
 def subcategory_builder(request, pk=None):
     vendor = get_vendor(request)
     # Fetch the main category by primary key (pk) and ensure it belongs to the vendor
-    category = get_object_or_404(Category, pk=pk, vendor=vendor)
+    category = get_object_or_404(Category, pk=pk)
     # Fetch subcategories for the specified category
-    subcategories = Category.objects.filter(vendor=vendor, parent=category).order_by('created_at')
+    subcategories = Category.objects.filter(parent=category, vendor_subcategory_reference_id=vendor.id).order_by('created_at')
     
     context = {
         'category': category,
@@ -426,85 +428,115 @@ def add_sub_category(request, category_id=None):
     vendor = get_vendor(request)
     main_category = None
 
-    # Fetch the main category if a category_id is provided
-    if category_id:
-        main_category = Category.objects.filter(id=category_id, vendor=vendor, parent=None).first()
+    try:
+        # Fetch the main category if a category_id is provided
+        if category_id:
+            main_category = Category.objects.filter(id=category_id, parent=None).first()
+            if not main_category:
+                messages.error(request, "Main category not found.")
+                return redirect('category_builder')
 
-    if request.method == 'POST':
-        form = SubCategoryForm(request.POST, vendor=vendor)
-        if form.is_valid():
-            subcategory = form.save(commit=False)
-            subcategory.vendor = vendor
-            subcategory.parent = main_category  # Set the main category as parent
-            subcategory.slug = slugify(form.cleaned_data['category_name'])  # initial slug
+        if request.method == 'POST':
+            form = SubCategoryForm(request.POST, request.FILES, vendor=vendor)
+            if form.is_valid():
+                try:
+                    subcategory = form.save(commit=False)
+                    subcategory.vendor_subcategory_reference_id = vendor.id
+                    subcategory.parent = main_category
+                    subcategory.category_code = f"SUB-{subcategory.category_name.capitalize()}-{main_category.category_code}-{vendor.id}"
+                    subcategory.slug = slugify(f"{subcategory.category_name}{main_category}{vendor.id}")
+                    subcategory.save()
 
-            subcategory.save()  # Save to generate an ID
-            # Update the slug with the ID appended for uniqueness
-            subcategory.slug = f"{slugify(subcategory.category_name)}-{subcategory.id}"
-            subcategory.save()
+                    messages.success(request, 'Subcategory added successfully!')
+                    return redirect('category_builder')
+                except Exception as e:
+                    print(e)
+                    messages.error(request, "An error occurred while saving the subcategory. Please ensure you're not creating a duplicate, and try again.")
+                    form = SubCategoryForm(vendor=vendor, initial={'parent': main_category})
 
-            messages.success(request, 'Subcategory added successfully!')
-            return redirect('category_builder')
-    else:
-        # Pass main_category as the initial value for the parent field
-        form = SubCategoryForm(vendor=vendor, initial={'parent': main_category})
+
+            else:
+                messages.error(request, "Please correct the errors below.")
+        else:
+            print("line number 458", main_category)
+            print("line number 458")
+            form = SubCategoryForm(vendor=vendor, initial={'parent': main_category})
+
+    except Exception as e:
+        messages.error(request, "An unexpected error occurred. Please ensure you're not creating a duplicate, and try again.")
+        # Optionally log the error: logger.error(str(e))
+        return redirect('category_builder')
 
     context = {
         'form': form,
         'main_category': main_category,
     }
+    print("line number 470")
+
     return render(request, 'vendor/add_sub_category.html', context)
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def edit_subcategory(request, category_id=None, pk=None):
-    subcategory = get_object_or_404(Category, pk=pk)
-    vendor = get_vendor(request)
+    try:
+        subcategory = get_object_or_404(Category, pk=pk)
+        vendor = get_vendor(request)
 
-    # Fetch the main category if a category_id is provided
-    main_category = Category.objects.filter(id=category_id, vendor=vendor, parent=None).first()
+        # Fetch the main category if a category_id is provided
+        main_category = Category.objects.filter(id=category_id, parent=None).first()
 
-    # Ensure it’s a subcategory (has a parent)
-    if not subcategory.parent:
-        messages.error(request, "This is a main category, not a subcategory.")
-        return redirect('category_builder')
-
-    if request.method == 'POST':
-        form = SubCategoryForm(request.POST, instance=subcategory)
-        
-        # Set parent field to be read-only but keep its value
-        form.fields['parent'].initial = subcategory.parent
-        form.fields['parent'].widget.attrs['readonly'] = True
-        
-        if form.is_valid():
-            category_name = form.cleaned_data['category_name']
-            subcategory = form.save(commit=False)
-            subcategory.vendor = vendor
-            subcategory.slug = slugify(category_name)
-            subcategory.parent = main_category  # Ensure parent remains unchanged
-            subcategory.save()
-            messages.success(request, 'Subcategory updated successfully!')
+        # Ensure it’s a subcategory (has a parent)
+        if not subcategory.parent:
+            messages.error(request, "This is a main category, not a subcategory.")
             return redirect('category_builder')
-        else:
-            print(form.errors)
-    else:
-        # Initialize form with current subcategory data
-        form = SubCategoryForm(instance=subcategory, initial={'parent': subcategory.parent})
-        
-        # Set parent field as read-only in the form
-        form.fields['parent'].widget.attrs['readonly'] = True
 
-    context = {
-        'form': form,
-        'subcategory': subcategory,
-    }
-    return render(request, 'vendor/edit_subcategory.html', context)
+        if request.method == 'POST':
+            form = SubCategoryForm(request.POST, request.FILES,instance=subcategory)
+            
+            # Set parent field to be read-only
+            form.fields['parent'].initial = subcategory.parent
+            form.fields['parent'].widget.attrs['readonly'] = True
+
+            if form.is_valid():
+                try:
+                    category_name = form.cleaned_data['category_name']
+                    subcategory = form.save(commit=False)
+                    subcategory.vendor_subcategory_reference_id = vendor.id
+                    subcategory.category_code = f"SUB-{subcategory.category_name.capitalize()}-{main_category.category_code}-{vendor.id}"
+                    subcategory.slug = slugify(f"{subcategory.category_name}{main_category or subcategory.parent}{vendor.id}")
+                    subcategory.parent = main_category or subcategory.parent  # Fallback if main_category is None
+                    subcategory.save()
+
+                    messages.success(request, 'Subcategory updated successfully!')
+                    return redirect('category_builder')
+                except Exception as e:
+                    messages.error(request, "An error occurred while updating the subcategory. Please ensure you're not creating a duplicate, and try again.")
+                    # Optionally log the error: logger.error(str(e))
+            else:
+                messages.error(request, "Please correct the errors in the form.")
+        else:
+            form = SubCategoryForm(instance=subcategory, initial={'parent': subcategory.parent})
+            form.fields['parent'].widget.attrs['readonly'] = True
+
+        context = {
+            'form': form,
+            'subcategory': subcategory,
+        }
+        return render(request, 'vendor/edit_subcategory.html', context)
+
+    except Exception as e:
+        print(e)
+        messages.error(request, "An unexpected error occurred. Please try again.")
+        # Optionally log the error: logger.error(str(e))
+        return redirect('category_builder')
+    
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def delete_subcategory(request, pk=None):
     subcategory = get_object_or_404(Category, pk=pk, parent__isnull=False)  # Ensure it's a subcategory
-    if subcategory.vendor == get_vendor(request):  # Check if the subcategory belongs to the vendor
+    vendor=get_vendor(request)
+    if subcategory.vendor_subcategory_reference_id == vendor.id :  # Check if the subcategory belongs to the vendor
         subcategory.delete()
         messages.success(request, 'Subcategory deleted successfully!')
     else:
@@ -532,6 +564,7 @@ def get_subcategories(request, category_id):
 @user_passes_test(check_role_vendor)
 def add_product(request):
     vendor_id = request.user.user.id
+    vendor = get_vendor(request)
 
     ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)
     try:
@@ -557,7 +590,7 @@ def add_product(request):
             formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
 
         # Pass categories to the template for the dropdown
-        categories = Category.objects.filter(parent__isnull=True, vendor_id=vendor_id)  # Top-level categories
+        categories = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)  # Top-level categories
         context = {
             'form': form,
             'categories': categories,
@@ -615,7 +648,7 @@ def edit_product(request, product_id):
             form = EditProductForm(instance=product,vendor_id = vendor.id)
             formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
 
-        categories = Category.objects.filter(parent__isnull=True)  # Top-level categories
+        categories = Category.objects.filter(parent__isnull=True,store_type=vendor.store_type)  # Top-level categories
         context = {
             'form': form,
             'categories': categories,
