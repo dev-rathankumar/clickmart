@@ -11748,9 +11748,9 @@ footer .hotline img {
 }
 
 @media only screen and (min-width: 1200px) {
-  .container {
+  /* .container {
     max-width: 92%;
-  }
+  } */
   .col-lg-1-5 {
     width: 20%;
   }

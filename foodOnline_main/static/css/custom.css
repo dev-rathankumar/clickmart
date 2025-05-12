@@ -88,3 +88,8 @@ table td, table th{
 .btn-accent{
     background-color: #B92E3A !important;
 }
+
+.buyer-logged-in .col-lg-3.col-md-3.col-sm-12.col-xs-12{
+    background-color: #D1E8F2 !important;
+    border-radius: 10px !important;
+}

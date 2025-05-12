@@ -513,7 +513,7 @@
 .user-dashboard-menu li .no-image-found { width: 35px; height: 35px; background-color: #ccc; border-radius: 50%; display: block; }
 /*user Dashboard Menu Style End*/
 /* User Nav List Styel */
-.user-nav-list { background-color: #fff; margin-bottom: 30px; }
+.user-nav-list { background-color: #D1E8F2; margin-bottom: 30px; }
 .user-nav-list ul { padding: 0px; margin: 0px; }
 .user-nav-list ul li:first-child { border-top: none; }
 .user-nav-list ul li:last-child { padding-bottom: 17px; }
@@ -1132,7 +1132,7 @@ a.add-menu-item:not(.add-menu-item-list) { display: none; }
 .user-info.user-info-sidebar { padding: 0; margin-bottom: 27px; }
 .user-info.user-info-sidebar .img-holder { width: 60px; border: 0; }
 .user-info.user-info-sidebar .text-holder { padding: 0; }
-.user-account-nav.user-account-sidebar { border: 0; background-color: transparent; }
+.user-account-nav.user-account-sidebar { border: 0; background-color: transparent; padding-top: 15px;}
 .user-account-nav.user-account-sidebar ul.dashboard-nav li { display: block; padding: 0; position: relative; }
 .user-account-nav.user-account-sidebar ul.dashboard-nav li b.label { display: inline-block; position: absolute; top: 50%; -webkit-transform: translateY(-50%); -moz-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); right: 0; padding: 2px 8px; background: #e8e8e8; color: #999999; border-radius: 100px; line-height: 14px; font-size: 12px; }
 .user-account-nav.user-account-sidebar ul.dashboard-nav li a i { display: inline-block; vertical-align: middle; text-align: center; line-height: 23px; margin-right: 10px; font-size: 18px; }
