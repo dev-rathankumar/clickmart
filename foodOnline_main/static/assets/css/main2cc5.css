@@ -8335,12 +8335,12 @@ h6.post-title {
 .header-style-1 .search-style-2 form {
   border: 2px solid #FCD6D9;
   border-radius: 4px;
-  max-width: 600px;
+  max-width: 100%;
   background-color: #fff;
 }
 
 .header-style-1 .search-style-2 form input {
-  max-width: 600px;
+  max-width: 100%;
   border-width: 0px;
   border-radius: 0 5px 5px 0;
   margin-left: 0;
