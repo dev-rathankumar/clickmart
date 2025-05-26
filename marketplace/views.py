@@ -48,6 +48,8 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 
     # Handle search query
     search_query = request.GET.get('search', None)
+    sort_type = request.GET.get('sort', None)
+
     # Annotate product count for each category
     for cat in categories:
         subcat_ids = cat.subcategories.filter(is_active=True,vendor_subcategory_reference_id=vendor.id).values_list('id', flat=True)
@@ -86,6 +88,14 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         products = products.filter(
             models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
         )
+        
+    if sort_type == 'dsec':
+        products =  products.order_by('-sales_price')
+    if sort_type == "asec":
+        products =  products.order_by('sales_price')
+
+
+
 
     opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
     today_date = date.today()
@@ -93,10 +103,14 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     current_opening_hours = OpeningHour.objects.filter(vendor=vendor, day=today)
     
     cart_items = Cart.objects.filter(user=request.user) if request.user.is_authenticated else None
+
+
+
       # Implement pagination
-    paginator = Paginator(products, 12)  # Show 12 products per page
+    paginator = Paginator(products, 20)  # Show 20 products per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    show_pagination = paginator.num_pages > 1
 
     context = {
         'vendor': vendor,
@@ -105,7 +119,9 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         'opening_hours': opening_hours,
         'current_opening_hours': current_opening_hours,
         'products': page_obj,
-        'search_query': search_query  # Pass the search query to template
+        'search_query': search_query, 
+        'show_pagination':show_pagination
+
     }
     return render(request, 'marketplace/vendor_detail.html', context)
 
@@ -356,45 +372,67 @@ def All_products(request, category_id=None, subcategory_id=None):
             is_active=True
         ).count()
 
-    # Handle product filtering logic
     search_query = request.GET.get('search', None)
     store_type = request.GET.get('store_type', None)
-    print(search_query)
-    print(store_type)
+    sort_type = request.GET.get('sort', None)
 
+    products = Product.objects.filter(is_available=True, is_active=True)
+
+    # Handle category/subcategory filter
     if subcategory_id:
         selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
-        products = Product.objects.filter(subcategory=selected_subcategory, is_available=True, is_active=True)
-
+        products = products.filter(subcategory=selected_subcategory)
     elif category_id:
         selected_category = get_object_or_404(Category, id=category_id, is_active=True)
         subcategories = selected_category.subcategories.all()
-        products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
-    else:
-        products = Product.objects.filter(is_available=True, is_active=True)
+        products = products.filter(subcategory__in=subcategories)
 
-    # Filter by store type if provided
-    if store_type:
-        # Get all vendors with the selected store type
-        vendors = Vendor.objects.filter(store_type__slug=store_type, is_approved=True)
-        # Filter products by the vendors with the selected store type
-        products = products.filter(vendor__in=vendors)
-
+    # If not category search, filter by product name/desc as usual
     if search_query:
+        print(search_query)
         products = products.filter(
             models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
         )
 
-    # Implement pagination
-    paginator = Paginator(products, 12)  # Show 12 products per page
+    # Handle search by category name
+    if search_query and products.count() <= 0:
+        # Try to find a matching category (case-insensitive, partial match)
+        matching_categories = Category.objects.filter(
+            category_name__icontains=search_query,
+            is_active=True
+        )
+        if matching_categories.exists():
+            # If multiple, take the first for now, or you can show all results for all matched categories
+            matched_category = matching_categories.first()
+            subcategories = matched_category.subcategories.all()
+            products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
+
+
+    # Filter by store type if provided
+    if store_type:
+        vendors = Vendor.objects.filter(store_type__slug=store_type, is_approved=True)
+        products = products.filter(vendor__in=vendors)
+    
+    if sort_type == 'dsec':
+        products =  products.order_by('-sales_price')
+    if sort_type == "asec":
+        products =  products.order_by('sales_price')
+
+
+
+    paginator = Paginator(products, 20)  # Show 12 products per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    show_pagination = paginator.num_pages > 1
+
     context = {
         'categories': categories,
-        'products': page_obj,  # Pass the paginated products
+        'products': page_obj,
+        'show_pagination':show_pagination
     }
     return render(request, 'marketplace/products.html', context)
+
 
 def add_product_to_cart(request, product_id):
     print(request)

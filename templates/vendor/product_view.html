@@ -78,19 +78,32 @@
                                         <div class="short-desc mb-30">
                                             <p class="font-lg">{{ product.product_desc }}</p>
                                         </div>
-                                        
+                                         {% if product.qty <= 0 %}
+                                        <h4 class="text-danger">Out of Stock</h4>
+                                        {% else %}
                                         <div class="detail-extralink mb-50">
                                             <div class="detail-qty border radius">
-                                                <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
-                                                <span class="qty-val">1</span>
-                                                <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
+                                                <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"type="button" id="decrease-quantity" data-mdb-ripple-color="dark"></i></a>
+                                                   <input type="text" id="quantity-input" class="qty-val" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
+                                                <a href="#" class="qty-up" type="button" id="increase-quantity" data-mdb-ripple-color="dark"><i class="fi-rs-angle-small-up"></i></a>
                                             </div>
+                                            {% if check_cart %}
+                                            <p class="text-success" style="font-weight: 600;">
+                                                {{ chkCart_count }} items added to the cart.
+                                            </p>
+                                            {% endif %}
+                                            
                                             <div class="product-extra-link2">
-                                                <button type="submit" class="button button-add-to-cart"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% if check_cart %}
                                                 
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                
+                                                {% else %} 
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ different_vendor_product_exists|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% endif %}
                                             </div>
                                         </div>
-                                        
+                                         {% endif %}
                                     </div>
                                     <!-- Detail Info -->
                                 </div>

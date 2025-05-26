@@ -86,7 +86,7 @@
                         {% endif %}
                     </div>
                     <div class="sort-by-product-area">
-                        <div class="sort-by-cover mr-10">
+                        {% comment %} <div class="sort-by-cover mr-10">
                             <div class="sort-by-product-wrap">
                                 <div class="sort-by">
                                     <span><i class="fi-rs-apps"></i>Show:</span>
@@ -104,7 +104,7 @@
                                     <li><a href="#">All</a></li>
                                 </ul>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
                         <div class="sort-by-cover">
                             <div class="sort-by-product-wrap">
                                 <div class="sort-by">
@@ -117,10 +117,18 @@
                             <div class="sort-by-dropdown">
                                 <ul>
                                     <li><a class="active" href="#">Featured</a></li>
-                                    <li><a href="#">Price: Low to High</a></li>
-                                    <li><a href="#">Price: High to Low</a></li>
-                                    <li><a href="#">Release Date</a></li>
-                                    <li><a href="#">Avg. Rating</a></li>
+                                    <li>
+                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}?sort=asec" style="text-decoration: none; background: none; color: inherit; cursor: pointer;">
+                                                Price: Low to High
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'vendor_detail'  vendor.vendor_slug %}?sort=dsec" style="text-decoration: none; background: none; color: inherit; cursor: pointer;">
+                                                Price: High to Low
+                                            </a>
+                                        </li>
+                                    {% comment %} <li><a href="#">Release Date</a></li> {% endcomment %}
+                                    {% comment %} <li><a href="#">Avg. Rating</a></li> {% endcomment %}
                                 </ul>
                             </div>
                         </div>
@@ -162,49 +170,53 @@
                     </div>
                     {% endfor %}
                 </div>
+                
+                {% if show_pagination %}
+                    
+                
                 <!--product grid-->
                 <div class="pagination-area mt-20 mb-20">
                     <nav aria-label="Page navigation example">
                         <ul class="pagination justify-content-start">
                             {% if products.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ products.previous_page_number }}">
-                                        <i class="fi-rs-arrow-small-left"></i>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ products.previous_page_number }}">
+                                    <i class="fi-rs-arrow-small-left"></i>
                                     </a>
                                 </li>
-                            {% else %}
+                                {% else %}
                                 <li class="page-item disabled">
                                     <a class="page-link"><i class="fi-rs-arrow-small-left"></i></a>
                                 </li>
-                            {% endif %}
-                
+                                {% endif %}
+                                
                             {% for num in products.paginator.page_range %}
                                 {% if products.number == num %}
                                     <li class="page-item active">
                                         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
                                     </li>
-                                {% else %}
+                                    {% else %}
                                     <li class="page-item">
                                         <a class="page-link" href="?page={{ num }}">{{ num }}</a>
                                     </li>
-                                {% endif %}
+                                    {% endif %}
                             {% endfor %}
-                
+                            
                             {% if products.has_next %}
-                                <li class="page-item">
+                            <li class="page-item">
                                     <a class="page-link" href="?page={{ products.next_page_number }}">
                                         <i class="fi-rs-arrow-small-right"></i>
                                     </a>
                                 </li>
                             {% else %}
-                                <li class="page-item disabled">
+                            <li class="page-item disabled">
                                     <a class="page-link"><i class="fi-rs-arrow-small-right"></i></a>
                                 </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                </div>
-               
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
                 <!--End Deals-->
             </div>
             <div class="col-lg-3 primary-sidebar sticky-sidebar">
