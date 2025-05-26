@@ -299,10 +299,20 @@ def search(request):
         return render(request, 'marketplace/listings.html', context)
 
 
+
 @login_required(login_url='login')
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
     cart_count = cart_items.count()
+    for item in cart_items:
+        product = item.product
+        if product.qty == 0:
+            messages.error(request, f"Sorry, the product '{product}' is out of stock. Please order another product.")
+            item.delete()  # delete the cart item that is out of stock
+            return redirect('cart')
+        elif item.quantity > product.qty:
+            messages.error(request, f"Sorry, only {product.qty} quantity of '{product}' is available. You requested {item.quantity}.")
+            return redirect('cart')
     if cart_count <= 0:
         return redirect('marketplace')
     
