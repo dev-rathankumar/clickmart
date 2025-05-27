@@ -5,6 +5,8 @@ from django.db.models.fields.related import ForeignKey, OneToOneField
 from django.contrib.gis.db import models as gismodels
 from django.contrib.gis.geos import Point
 
+from django.core.exceptions import ValidationError
+
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self, first_name, last_name, username, email, password=None):
@@ -116,3 +118,34 @@ class UserProfile(models.Model):
         return super(UserProfile, self).save(*args, **kwargs)
 
 
+
+class DeliveryAddress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery_addresses')
+    full_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15)
+    street_address = models.CharField(max_length=355)
+    apartment_address = models.CharField(max_length=355, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    is_primary = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Delivery Address'
+        verbose_name_plural = 'Delivery Addresses'
+
+    def save(self, *args, **kwargs):
+        # Limit to 5 addresses per user
+        if not self.pk and DeliveryAddress.objects.filter(user=self.user).count() >= 5:
+            raise ValidationError("You can only have up to 5 delivery addresses.")
+
+        # If setting this address as primary, unset all others for this user
+        if self.is_primary:
+            DeliveryAddress.objects.filter(user=self.user, is_primary=True).update(is_primary=False)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.city}, {self.country}"

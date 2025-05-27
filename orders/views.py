@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.views.decorators.csrf import csrf_exempt 
 from inventory.models import tax
+from django.contrib import messages
 
 
 
@@ -142,6 +143,14 @@ def payments(request):
         # MOVE THE CART ITEMS TO ORDERED FOOD MODEL
         cart_items = Cart.objects.filter(user=request.user)
         for item in cart_items:
+            product = Product.objects.get(pk=item.product.id)
+            # if product.qty < item.quantity and len(cart_items) == 1:
+            #      item.delete() 
+            #      return redirect('cart')
+            # elif product.qty < item.quantity : 
+            #     item.delete() 
+            #     continue
+                
             ordered_food = OrderedFood()
             ordered_food.order = order
             ordered_food.payment = payment
@@ -149,7 +158,6 @@ def payments(request):
             ordered_food.product = item.product
             ordered_food.quantity = item.quantity
             # DECREASE THE PRODUCT QUANTITY
-            product = Product.objects.get(pk=item.product.id)
             product.qty -= item.quantity
             product.save()
             if item.product.sales_price is not None:

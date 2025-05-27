@@ -1,7 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from accounts.models import UserProfile
+from accounts.models import UserProfile, DeliveryAddress
 from .context_processors import get_cart_counter, get_cart_amounts
 from unified.models import Category, ProductGallery
 
@@ -32,6 +32,7 @@ from django.db import models
 
 from django.db.models import Count, OuterRef, Subquery
 from django.core.paginator import Paginator
+from foodOnline_main.views import get_or_set_current_location
 
 def marketplace(request):
     vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
@@ -112,6 +113,19 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     page_obj = paginator.get_page(page_number)
     show_pagination = paginator.num_pages > 1
 
+
+    
+    # Vendor distance 
+    if get_or_set_current_location(request) is not None:
+
+        pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
+
+        vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=100000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+        print("vendros ===> ", vendors)
+        for v in vendors:
+            if v.id == vendor.id: 
+                vendor.kms = round(v.distance.km, 1)
+
     context = {
         'vendor': vendor,
         'categories': categories,
@@ -129,7 +143,23 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 def view_Product(request, vendor_slug, product_slug):
     # Get the main product
     product = get_object_or_404(Product, vendor__vendor_slug=vendor_slug, slug=product_slug)
+    if request.user.is_authenticated:
+        address = DeliveryAddress.objects.filter(user=request.user, is_primary=True).first()
+    else:
+        address=None
     vendor = Vendor.objects.get(vendor_slug=vendor_slug)
+    # Vendor distance 
+    if get_or_set_current_location(request) is not None:
+
+        pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
+
+        vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=100000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+        print("vendros ===> ", vendors)
+        for v in vendors:
+            if v.id == vendor.id: 
+                vendor.kms = round(v.distance.km, 1)
+
+
     different_vendor_product_exists=False
     if request.user.is_authenticated:
         chkCart = Cart.objects.filter(product=product, user=request.user)
@@ -149,12 +179,14 @@ def view_Product(request, vendor_slug, product_slug):
     ).exclude(id=product.id)
     
     context = {
+        'vendor':vendor,
         'product': product,
         'similar_products': similar_products,
         'check_cart':chkCart,
         'chkCart_count':chkCart_count,
         'product_gallery':product_gallery,
-        'different_vendor_product_exists':different_vendor_product_exists
+        'different_vendor_product_exists':different_vendor_product_exists,
+        'address':address
     }
     
     return render(request, 'vendor/product_view.html', context)
@@ -332,18 +364,35 @@ def checkout(request):
     if cart_count <= 0:
         return redirect('marketplace')
     
-    user_profile = UserProfile.objects.get(user=request.user)
-    default_values = {
-        'first_name': request.user.first_name,
-        'last_name': request.user.last_name,
-        'phone': request.user.phone_number,
-        'email': request.user.email,
-        'address': user_profile.address,
-        'country': user_profile.country,
-        'state': user_profile.state,
-        'city': user_profile.city,
-        'pin_code': user_profile.pin_code,
-    }
+    if request.user.is_authenticated:
+        delivery_address = DeliveryAddress.objects.filter(user=request.user, is_primary=True).first()
+    else:
+        delivery_address=None
+    if delivery_address:
+        full_name = delivery_address.full_name.strip()
+        # Split by space
+        name_parts = full_name.split()
+
+        if len(name_parts) >= 2:
+            first_name = name_parts[0]
+            last_name = ' '.join(name_parts[1:])  # supports middle names too
+        else:
+            first_name = name_parts[0]
+            last_name = request.user.last_name  # fallback to user's last name
+        default_values = {
+            'first_name': first_name,
+            'last_name':last_name,
+            'phone': delivery_address.phone_number,
+            'email': request.user.email,
+            'address': f"{delivery_address.street_address} {delivery_address.apartment_address if delivery_address.apartment_address else ''}",
+            'country': delivery_address.country,
+            'state': delivery_address.state,
+            'city': delivery_address.city,
+            'pin_code': delivery_address.postal_code,
+        }
+    else:
+        messages.warning(request, "Please set an address to proceed to the next step.")
+        return redirect("address_book")
     form = OrderForm(initial=default_values)
     RZP_KEY_ID = settings.RZP_KEY_ID
     RZP_KEY_SECRET = settings.RZP_KEY_SECRET

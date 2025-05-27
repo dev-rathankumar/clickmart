@@ -43,15 +43,30 @@
                         </div>
 
                         <div class="col-lg-6">
-                            <div class="vendor-des">
-                                <p class="font-sm text-white">GST Number: {{ vendor.gst_number }}</p>
+                           <div class="vendor-des">
+                                {% if vendor.gst_number %}
+                                    <p class="font-sm text-white">GST Number: {{ vendor.gst_number }}</p>
+                                {% endif %}
                             </div>
+
                             <div class="vendor-des">
-                                <p class="font-sm text-white">FSSAI Number: {{vendor.fssai_number}}</p>
+                                {% if vendor.fssai_number %}
+                                    <p class="font-sm text-white">FSSAI Number: {{ vendor.fssai_number }}</p>
+                                {% endif %}
                             </div>
+
+                            <div class="vendor-des">
+                                {% if vendor.delivery_radius %}
+                                    <p class="font-sm text-white">Delivery Radius: {{ vendor.delivery_radius }} KM.</p>
+                                {% endif %}
+                            </div>
+
                             <div class="vendor-des mb-15">
-                                <p class="font-sm text-white">Delivery Radius: {{vendor.delivery_radius}}KM.</p>
+                                {% if vendor.kms %}
+                                    <p class="font-sm text-white">Distance: {{ vendor.kms }} KM.</p>
+                                {% endif %}
                             </div>
+
                         </div>
                         
                         
@@ -111,12 +126,11 @@
                                     <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
                                 </div>
                                 <div class="sort-by-dropdown-wrap">
-                                    <span> Featured <i class="fi-rs-angle-small-down"></i></span>
+                                    <span> Price: Low to High <i class="fi-rs-angle-small-down"></i></span>
                                 </div>
                             </div>
                             <div class="sort-by-dropdown">
                                 <ul>
-                                    <li><a class="active" href="#">Featured</a></li>
                                     <li>
                                             <a href="{% url 'vendor_detail' vendor.vendor_slug %}?sort=asec" style="text-decoration: none; background: none; color: inherit; cursor: pointer;">
                                                 Price: Low to High
@@ -220,12 +234,12 @@
                 <!--End Deals-->
             </div>
             <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                {% if opening_hours %}
                 <div class="sidebar-widget widget-store-info mb-30 bg-3 border-0">
                     
                     <div class="vendor-info">
                         <h4 class="mb-5 text-heading">Opening Hours</h4>
                         <div class="vendor-des mb-30">
-                            {% if opening_hours %}
                             <div class="delivery-timing reviews-sortby col-12 mt-5">
                                 <ul class="list-unstyled">
                                     <li>
@@ -254,12 +268,12 @@
                                     </li>
                                 </ul>
                             </div>
-                            {% endif %}
-
-
+                            
+                            
                         </div>
                     </div>
                 </div>
+                {% endif %}
                 <div class="sidebar-widget widget-category-2 mb-30">
                     <h5 class="section-title style-1 mb-30">Category</h5>
                     <ul>

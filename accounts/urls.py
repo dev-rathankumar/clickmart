@@ -22,4 +22,11 @@ urlpatterns = [
     path('vendor/', include('vendor.urls')),
     path('customer/', include('customers.urls')),
 
+    path('addresses/address_book/', views.get_user_addresses, name='address_book'),
+    path('addresses/add/', views.add_address, name='add_address'),
+    path('addresses/edit/<int:address_id>/', views.edit_address, name='edit_address'),
+    path('addresses/delete/<int:address_id>/', views.delete_address, name='delete_address'),  # AJAX POST
+    path('set-primary-address/', views.set_primary_address, name='set_primary_address'), # AJAX POST
+
+
 ]

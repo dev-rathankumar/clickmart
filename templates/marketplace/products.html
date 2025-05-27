@@ -65,14 +65,14 @@
                                 </div>
                                 <div class="sort-by-dropdown">
                                     <ul>
-                                        <li><a class="active" href="#">All Products</a></li>
+                                        <li><a href="{% url 'all_products' %}">All Products</a></li>
                                         <li>
-                                            <a href="{% url 'all_products' %}?sort=asec" style="margin-left: 28px; text-decoration: none; background: none; color: inherit; cursor: pointer;">
+                                            <a href="{% url 'all_products' %}?sort=asec">
                                                 Price: Low to High
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="{% url 'all_products' %}?sort=dsec" style="margin-left: 28px; text-decoration: none; background: none; color: inherit; cursor: pointer;">
+                                            <a href="{% url 'all_products' %}?sort=dsec">
                                                 Price: High to Low
                                             </a>
                                         </li>

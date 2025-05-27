@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'includes/alerts.html' %}
+
+
+<style>
+    input {
+    border: 1px solid #ececec !important;
+    border-radius: 4px !important;
+    height: 40px !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+    padding-left: 20px !important;
+    font-size: 13px !important;
+    width: 100% !important;
+}
+#id_is_primary{
+    width: 10px !important;
+    height: 20px !important;
+    margin-right: 10px;
+}
+</style>
+<!-- Main Section Start -->
+<div class="main-section">
+    
+    {% include 'customers/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <!-- Load the sidebar here -->
+                    {% include 'includes/c_sidebar.html' %}
+                </div>
+                 <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder shadow-lg">
+                        <div class="user-holder">
+                            <h4 class="mb-3">Edit Address</h4>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label>Full Name</label>
+                                            {{ form.full_name }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>Province / Region</label>
+                                            {{ form.state }}
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Phone Number</label>
+                                            {{ form.phone_number }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>City</label>
+                                            {{ form.city }}
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Apartment Address (Optional)</label>
+                                            {{ form.apartment_address }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>Zone / Postal Code</label>
+                                            {{ form.postal_code }}
+                                        </div>
+
+                                        <div class="col-md-12 mb-3">
+                                            <label>Address</label>
+                                            {{ form.street_address }}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label>Country</label>
+                                            {{ form.country }}
+                                        </div>
+
+                                        <div class="col-md-12 mb-4">
+                                            <div class="form-check">
+                                                {{ form.is_primary }}
+                                                <label class="form-check-label" for="{{ form.is_primary.id_for_label }}">
+                                                    Make this my primary address
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 text-start d-flex">
+                                            <a href="{% url 'address_book' %}" type="button" class="btn btn-sm btn-danger text-center pt-4"style="width: 150px !important;height: 40px;">Cancel</a>
+                                            <input type="submit" class="btn btn-sm btn-danger mx-2" style="width: 150px !important;height: 40px;"></input>
+                                        </div>
+                                    </div>
+                                </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+
+
+{% endblock %}

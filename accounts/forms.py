@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, UserProfile
+from .models import User, UserProfile,DeliveryAddress
 from .validators import allow_only_images_validator
 
 
@@ -44,3 +44,25 @@ class UserInfoForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'phone_number']
+
+
+
+class DeliveryAddressForm(forms.ModelForm):
+    class Meta:
+        model = DeliveryAddress
+        fields = [
+            'full_name', 'phone_number', 'apartment_address',
+            'state', 'city', 'postal_code', 'street_address',
+            'country', 'is_primary'
+        ]
+        widgets = {
+            'full_name': forms.TextInput(attrs={'placeholder': 'First Last'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Please enter your phone number'}),
+            'apartment_address': forms.TextInput(attrs={'placeholder': 'E.g. beside train station (optional)'}),
+            'state': forms.TextInput(attrs={'placeholder': 'Please enter your province / region'}),
+            'city': forms.TextInput(attrs={'placeholder': 'Please enter your city'}),
+            'postal_code': forms.TextInput(attrs={'placeholder': 'Please enter your postal code'}),
+            'street_address': forms.TextInput(attrs={'placeholder': 'Please enter your address'}),
+            'country': forms.TextInput(attrs={'placeholder': 'Please enter your country'}),
+            'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

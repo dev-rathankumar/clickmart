@@ -6,8 +6,8 @@ from django.shortcuts import redirect, render
 from django.utils.http import urlsafe_base64_decode
 
 from vendor.forms import VendorForm
-from .forms import UserForm
-from .models import User, UserProfile
+from .forms import UserForm, DeliveryAddressForm
+from .models import User, UserProfile, DeliveryAddress
 from django.contrib import messages, auth
 from .utils import detectUser, send_verification_email
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -18,6 +18,10 @@ from django.template.defaultfilters import slugify
 from orders.models import Order
 import datetime
 
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
 
 # Restrict the vendor from accessing the customer page
 def check_role_vendor(user):
@@ -283,3 +287,68 @@ def reset_password(request):
             messages.error(request, 'Password do not match!')
             return redirect('reset_password')
     return render(request, 'accounts/reset_password.html')
+
+
+
+
+
+@login_required
+def get_user_addresses(request):
+    addresses = DeliveryAddress.objects.filter(user=request.user).order_by('-is_primary', '-created_at')
+    return render(request, 'customers/address_book.html', {'addresses': addresses})
+
+@login_required
+def add_address(request):
+    if request.method == 'POST':
+        form = DeliveryAddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            try:
+                address.save()
+                messages.success(request, 'Successfully added address!')
+                return redirect('address_book')
+            except ValidationError as e:
+                messages.error(request, e.message or str(e))  # Show the validation error
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = DeliveryAddressForm()
+
+    return render(request, 'customers/add_address.html', {'form': form})
+
+@login_required
+def edit_address(request, address_id):
+    address = get_object_or_404(DeliveryAddress, id=address_id, user=request.user)
+
+    if request.method == 'POST':
+        form = DeliveryAddressForm(request.POST, instance=address)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Successfully address Edited!')
+            return redirect('address_book')
+    else:
+        form = DeliveryAddressForm(instance=address)
+
+    return render(request, 'customers/edit_address.html', {'form': form})
+
+
+@login_required
+@require_POST
+def delete_address(request, address_id):
+    address = get_object_or_404(DeliveryAddress, id=address_id, user=request.user)
+    address.delete()
+    messages.success(request, 'Successfully address deleted!')
+    return redirect('address_book')
+
+
+
+@login_required
+def set_primary_address(request):
+    if request.method == 'POST':
+        address_id = request.POST.get('address_id')
+        if address_id:
+            DeliveryAddress.objects.filter(user=request.user).update(is_primary=False)
+            DeliveryAddress.objects.filter(user=request.user, id=address_id).update(is_primary=True)
+            return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
