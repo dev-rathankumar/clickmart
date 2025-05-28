@@ -53,35 +53,38 @@
                         <div class="user-holder">
                             <h5 class="text-uppercase">Media Library</h5>
 							<hr>
-                            <button type="button" class="btn btn-accent text-light float-right" data-toggle="modal" data-target="#mediaUpload">
+                            <button type="button" class="btn btn-accent text-light float-end" data-bs-toggle="modal" data-bs-target="#mediaUpload">
                                 <i class="fa fa-upload"></i> Upload Images
                             </button>
                             <br><br>
 
                             <div class="row g-3 media-gallery">
                                 {% if images %}
-                                <button type="button" class="btn btn-outline-secondary mb-3" id="select-all">
+                                <button type="button" class="btn btn-accent text-light float-start w-25" id="select-all">
                                     <i class="fa fa-check-square"></i> Select All
                                 </button>
                                 {% endif %}
                                 <form method="post" id="delete-images-form">
                                     {% csrf_token %}
+                                    <div class="row">
                                     {% for image in images %}
-                                    <div class="col-6 col-md-2 col-lg-2 mb-2 pr-1 pl-1">
-                                        <div class="card media-gallery-item shadow-sm">
-                                            <input type="checkbox" name="images"  value="{{ image.id }}" class="image-checkbox">
-                                            <img src="{{ image.absolute_url }}" class="card-img-top" alt="Uploaded Image" />
-                                            <div class="card-body text-center p-1">
-                                                <a class="copy-button" onclick="copyToClipboard(this, '{{ image.absolute_url }}')" style="cursor: pointer;">
-                                                    Copy URL
-                                                </a>
+
+                                        <div class="col-6 col-md-2 col-lg-2 mb-2 px-1">
+                                            <div class="card media-gallery-item shadow-sm">
+                                                <input type="checkbox" name="images" value="{{ image.id }}" class="image-checkbox">
+                                                <img src="{{ image.absolute_url }}" class="card-img-top" alt="Uploaded Image" />
+                                                <div class="card-body text-center p-1">
+                                                    <a class="copy-button" onclick="copyToClipboard(this, '{{ image.absolute_url }}')" style="cursor: pointer;">
+                                                        Copy URL
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
                                     {% if images %}
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-danger float-right mt-3 mb-3"><i class="fa fa-trash"></i> Delete Selected Images</button>
+                                        <button type="submit" class="btn btn-sm btn-danger float-end mt-3 mb-3"><i class="fa fa-trash"></i> Delete Selected Images</button>
                                     </div>
                                     {% else %}
                                     <div class="text-center">
@@ -104,28 +107,26 @@
 <!-- Main Section End -->
 
 <!-- Modal -->
-<div class="modal fade" id="mediaUpload" tabindex="-1" role="dialog" aria-labelledby="mediaUploadTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 70% !important;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLongTitle">Upload Bulk Images</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+<!-- Modal -->
+<div class="modal fade" id="mediaUpload" tabindex="-1" aria-labelledby="mediaUploadTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 70% !important;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mediaUploadTitle">Upload Bulk Images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'media_upload' %}" class="dropzone" id="my-dropzone" enctype="multipart/form-data">
+                    {% csrf_token %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'media_library' %}" class="btn btn-secondary">Close</a>
+            </div>
         </div>
-        <div class="modal-body">
-            <form action="{% url 'media_upload' %}" class="dropzone" id="my-dropzone" enctype="multipart/form-data">
-                {% csrf_token %}
-            </form>
-        </div>
-        <div class="modal-footer">
-            <a class="btn btn-secondary" href="{% url 'media_library' %}" >Close</a>
-          <!-- <button type="button"  data-dismiss="modal">Close</button> -->
-        </div>
-      </div>
     </div>
-  </div>
- 
+</div>
+
 
 
 <script>

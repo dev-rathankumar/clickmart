@@ -3,7 +3,12 @@
 
 {% block content %}
 {% include 'includes/alerts.html' %}
-
+<style>
+     .vendor-image-up-btn{
+		width: 250px !important;
+		height: 32px !important;
+	}
+</style>
 <div class="main-section">
     {% include 'includes/cover.html' %}
     <div class="page-section account-header buyer-logged-in">
@@ -57,7 +62,7 @@
                                                 class="thumbnail"
                                                 src="{% static 'images/default_image_add_product.png' %}"
                                                 alt="Product Image Preview"
-                                                style="width: 100px; display: inline; margin-right:30px; margin-bottom:15px;">
+                                                style="width: 100px; display: block; margin-right:30px; margin-bottom:15px;">
                                                 {{ form.category_image }}
                                             </div>
                                         </div>

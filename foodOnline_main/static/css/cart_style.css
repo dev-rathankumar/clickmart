@@ -1,0 +1,243 @@
+/* Main Section */
+.user-holder .user-message p, .user-message p, .main-section .user-message p, .main-section .user-message.alert p { color: #fff !important; margin: 0; }
+.wp-foodbakery.woocommerce-page .main-section:after { content: ""; display: block; clear: both; }
+/* body, */
+.main-section p,
+.mce-content-body p
+{
+font:Normal  14px/24px "Open Sans", sans-serif;letter-spacing: 0px;text-transform: none;color: #515151 !important;	    }
+
+
+.transparent-header + .main-section .company-info-detail { margin-top: 0; }
+.woocommerce-cart .main-section, .woocommerce-account .main-section { min-height: 400px; }
+
+.wp-foodbakery.woocommerce-page .main-section:after {content: ""; display: block; clear: both;}
+
+
+
+/* page-section */
+.page-section.cs-nomargin {margin: 0;}
+.woocommerce-page .place-order .page-section {display:none;}
+
+
+/* Listing Detail  style tabs */
+.tabs-holder { text-align: left; margin: 0 0 50px 0; }
+.tabs-holder .tab-content { background-color: #fff; }
+.tabs-holder .nav-tabs { border-bottom: 0; padding: 0; margin: 0; }
+.tabs-holder .nav-tabs li { display: inline-block; float: none; padding: 0; margin: 0 0 0 -4px; position: relative; }
+.tabs-holder .nav.nav-tabs li:after {content: ""; height: 10px; position: absolute; right: 0; top: 17px; width: 1px; }
+.tabs-holder .nav-tabs li:first-child { margin: 0; }
+.tabs-holder .nav-tabs li:last-child:after { display: none; }
+.tabs-holder .nav-tabs li.active:first-child a, .nav-tabs li.active:first-child a:hover, .nav-tabs li.active:first-child a:focus { border-top-left-radius: 5px; -webkit-box-shadow: 0 -5px 4px -2px rgba(0, 0, 0, 0.1); box-shadow: 0 -5px 4px -2px rgba(0, 0, 0, 0.1); }
+.tabs-holder .nav li:first-child a:hover, .nav li:first-child a:focus { border-top-left-radius: 5px; }
+.tabs-holder .nav-tabs li.active:after, .tabs-holder .nav-tabs li:hover:after { display: none; }
+.tabs-holder .nav-tabs li a { color: #454751; background-color: none; border: none; margin: 0; border-radius: 0; padding: 12px 30px; line-height: normal; display: inline-block; position: relative; font-size: 14px; font-weight: 600; }
+.tabs-holder .nav-tabs li a i { margin-right: 8px; vertical-align: middle; font-size: 14px; }
+.tabs-holder .nav-tabs li a i.icon-room_service { font-size: 18px; position: relative; top: -2px; }
+.tabs-holder .nav li a:hover, .nav li a:focus { background-color: inherit; }
+.tabs-holder .nav-tabs li.active a, .nav-tabs li.active a:hover, .nav-tabs li.active a:focus { background-color: #fff; border: none; -webkit-box-shadow: 0 -5px 4px -2px rgba(0, 0, 0, 0.1); box-shadow: 0 -5px 4px -2px rgba(0, 0, 0, 0.1); }
+
+/* COLOR START */
+/* assets/css/color.css */
+
+.text-color, .listing .post-title:hover h5 a, .pagination > li > a:hover, .pagination > li > span:hover, .pagination > li > a:focus, .pagination > li > span:focus,
+.pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus, .pagination > .active > span > a,
+.order-sort-results ul li:hover a, .tabs-holder .nav li a:hover, .nav li  a:focus, .tabs-holder .nav-tabs li.active a, .nav-tabs li.active a:hover, .nav-tabs li.active a:focus, 
+.sub-header .breadcrumbs ul li:hover a, .sub-header .breadcrumbs ul li:hover:before, .widget-popular-cities ul li a:hover, .widget-popular-cuisines ul li a:hover, .widget-menu ul li a:hover, .widget-connect ul li p a:hover,
+.news-letter .news-letter-form form .btn-holder input[type="submit"]:hover, .widget-recent-blog-post li:hover .post-title h6 a, .widget-categories ul li a:hover, .widget-categories ul li a:hover:before, .widget-cloud ul li a:hover,
+.panel-group .panel-heading a , .categories-menu li a:hover, .user-order .error-message, .delivery-timing > ul > li > a span, .delivery-timing ul li ul.delivery-dropdown li a:hover, .blog-detail .blockquote-hloder::before, .blog-detail .tags-list li a:hover,
+.blog-detail .swiper-button-prev:hover, .blog-detail .swiper-button-next:hover, .blog .post-title h3 a:hover, .blog .post-title h4 a:hover, .blog-large .author-info p a, .delivery-list .button a:hover, .user-nav-list ul li a:hover, .user-nav-list ul li a:hover i,
+.company-holder .swiper-button-next:hover i, .company-holder .swiper-button-prev:hover i, .user-holder .add-btn a, .user-holder .order-list .author-info .text-holder span.price, .user-holder .order-list .order-btn a, .main-header.transparent .main-location ul li ul li a:hover, 
+.main-header.transparent .main-location ul li ul li .has-child li a:hover, .order-sort-results ul li.active a, .listing-filter .expand, #footer .footer-widget .widget a:hover, .order-sort-results ul li.active a, ul.dashboard-nav li a:hover, .upload-file button[type='button'], .user-dashboard-menu > ul > li > ul li.user-add-restaurant > a, .widget_tag_cloud .tagcloud a:hover, .page-not-found .cs-text span.cs-error, .widget.widget_nav_menu ul li a:hover, .widget.widget-categories li a:hover, .widget.widget_categories li a:hover, .widget.widget_pages ul li a:hover, .widget.widget_archive li a:hover,
+.widget.widget_meta li a:hover, .widget.widget_nav_menu ul li a:hover:before, .widget.widget-categories li a:hover:before, .widget.widget-archives ul li a:hover,
+.widget.widget_categories li:hover:before, .widget.widget_pages ul li:hover:before, .widget.widget_archive li:hover:before,.site-maps-links ul li:hover a, .widget.widget-archives ul li:hover a:before, .widget.twitter-post li p a, .widget.widget_recent_comments li a:hover, .widget.widget_rss li .rsswidget:hover, .cs-construction .time-box h4, .listing .list-option .viewmenu-btn, .restaurant-menu-nav.nav-tabs > li.active a, .user-nav-list ul li.active a, .user-nav-list ul li.active i, .categories-order li li:after, .listing.fancy-simple .delivery-potions i, .listing.grid-listing .min-order, .listing.grid-listing .listing-footer .text-holder p.deliver-time span, .listing.grid-listing .listing-footer .text-holder p.pickup-time span, .transparent-header .main-header .login-option a.login-popup, .copy-right p a, .blog-medium .read-more i, .related-post .read-more, .user-suggest-list > .element-title > h5 + span em, .listing.grid-listing h4 a:hover, .listing.grid-listing .listing-footer a.ordernow-btn:hover, .transparent-header .main-header .login-option a.get-start-btn:hover, .categories-menu li.active a,
+.company-holder.fancy .rating-star .rating-box:before, .company-holder.fancy .fancy-button-prev:hover i, .company-holder.fancy .fancy-button-next:hover i, .company-rating .list-option .shortlist-btn i, .wp-foodbakery .listing.grid-slider:hover .restaurant-status, #footer.footer-style-4 .widget-connect ul li span i,
+.wp-foodbakery .listing.grid-slider .rating-star .rating-box:before, .location-holder.modern a.more-btn, .grid-slider .swiper-button-prev:hover i, .grid-slider .swiper-button-next:hover i,
+.company-holder.simple .company-logo .text-holder .post-title h6 a:hover
+{
+color:#c33332 !important;
+}
+
+.tabs-holder .nav-tabs li a { padding: 12px 15px; }
+.tabs-holder .nav-tabs li.active:first-child a,
+.nav-tabs li.active:first-child a:hover,
+.nav-tabs li.active:first-child a:focus { border-radius: 0; }
+.tabs-holder .nav-tabs li a { padding: 12px; }
+.tabs-holder .nav-tabs li a i { margin-right: 5px; }
+.tabs-holder .nav.nav-tabs li:after { display: none; }
+
+.tabs-holder .nav-tabs li a { display: block; }
+.tabs-holder .nav-tabs li { display: block; margin: 0; }
+.tabs-holder .nav-tabs li.active:first-child a,
+.nav-tabs li.active:first-child a:hover,
+.nav-tabs li.active:first-child a:focus { border-radius: 0; }
+
+
+/* horizontal  */
+.main-search.classic .select-location .slider.slider-horizontal { width: 85%; }
+.select-location .slider.slider-horizontal { width: 60%; }
+.widget_price_filter .ui-slider-horizontal { height: .5em; }
+.widget_price_filter .ui-slider-horizontal .ui-slider-range { top: 0; height: 100%; }
+.widget_price_filter .ui-slider-horizontal .ui-slider-range-min { left: -1px; }
+.widget_price_filter .ui-slider-horizontal .ui-slider-range-max { right: -1px; }
+.main-search.classic .select-location .slider.slider-horizontal { width: 85%; }
+
+
+/* stickynav-tabs */
+.stickynav-tabs.nav.nav-tabs { z-index: 2; position: relative; }
+.stickynav-tabs.nav.nav-tabs:before { position: absolute; top: -30px; z-index: 0; width: 100%; height: 30px; }
+.stickynav-tabs.nav.nav-tabs:before { display: none; }
+
+/* menu-itam-holder */
+.menu-itam-holder { background-color: #fff; padding: 8px 30px 0; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; }
+.menu-itam-holder:after { content: ''; display: block; clear: both; }
+.menu-itam-holder .field-holder { position: relative; margin-bottom: 35px; }
+.menu-itam-holder .field-holder.sticky-search { z-index: 1; }
+.menu-itam-holder .field-holder input[type="text"] { border: none; text-transform: initial; color: #aaaaaa; font-weight: 600; letter-spacing: 1px; border-bottom: 1px solid #ebedf3; padding: 0; font-size: 12px; height: 43px; line-height: 43px; -webkit-box-shadow: none; box-shadow: none; width: 100%; }
+.menu-itam-holder .field-holder:after { position: absolute; top: 10px; right: 2px; content: '\f002'; font-family: "icomoon"; color: #b0b1bd; font-size: 14px; }
+.menu-itam-holder .menu-itam-list { margin-bottom: 37px; }
+.menu-itam-holder .menu-itam-list:last-child { margin-bottom: 0; }
+.menu-itam-holder .element-title { display: block; margin-bottom: 22px; }
+.menu-itam-holder .element-title h5 { margin: 0 0 4px 0; font-weight: normal; text-decoration: underline; }
+.menu-itam-holder .element-title span { font-size: 12px; color: #a9a9a9; line-height: 16px; display: block; }
+.menu-itam-holder .menu-itam-list { display: block; }
+.menu-itam-holder .menu-itam-list ul { padding: 0; margin: 0; }
+.menu-itam-holder .menu-itam-list ul li { display: flex;flex-direction: row;flex-wrap: nowrap; list-style: none; border-bottom: 1px solid #ebedf3; padding-bottom: 15px; margin-bottom: 15px; width: 100%; position: relative; }
+.menu-itam-holder .menu-itam-list ul:last-child li:last-child { border-bottom: 0; padding-bottom: 0; }
+.menu-itam-holder .menu-itam-list.delight ul li:last-child { border: none; padding-bottom: 0; margin-bottom: 0; }
+.menu-itam-holder .menu-itam-list .image-holder { display: inline-block; width: 100px; height: 100px; vertical-align: top; }
+.menu-itam-holder .menu-itam-list .image-holder a { display: block; position: relative; }
+.menu-itam-holder .menu-itam-list .image-holder a:before { opacity: 0; -webkit-transition: all 0.3s ease-in-out; -moz-transition: all 0.3s ease-in-out; transition: all 0.3s ease-in-out; content: ''; position: absolute; left: 0; top: 0; background: rgba(0, 0, 0, 0.3); width: 100%; height: 100%; -webkit-transform: scale(0); -moz-transform: scale(0); -ms-transform: scale(0); transform: scale(0); }
+.menu-itam-holder .menu-itam-list .image-holder:hover a:before { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); transform: scale(1); opacity: 1; }
+.menu-itam-holder .menu-itam-list .image-holder a:after { opacity: 0; font-size: 20px; -webkit-transition: all 0.3s ease-in-out; -moz-transition: all 0.3s ease-in-out; transition: all 0.3s ease-in-out; content: '\ea0b'; font-family: 'icomoon'; position: absolute; left: 20px; top: 20px; -webkit-transform: scale(0); -moz-transform: scale(0); -ms-transform: scale(0); transform: scale(0); color: #fff; }
+.menu-itam-holder .menu-itam-list .image-holder:hover a:after { -webkit-transform: scale(1); -moz-transform: scale(1); -ms-transform: scale(1); transform: scale(1); opacity: 1; }
+.menu-itam-holder .menu-itam-list .image-holder img { max-width: 100%; }
+.menu-itam-holder .menu-itam-list .image-holder + .text-holder { padding-left: 10px; width: -webkit-calc(100% - 170px); width: -moz-calc(100% - 170px); width: calc(100% - 170px); }
+.menu-itam-holder .menu-itam-list .nutri-icons li { width: auto; max-width: 16px; margin-right: 5px; margin-bottom: 0; padding-bottom: 0; border-bottom: 0; margin-bottom: 5px; }
+.menu-itam-holder .menu-itam-list .nutri-icons li img { height: 16px; }
+.tooltip { white-space: nowrap; }
+.menu-itam-holder .menu-itam-list .text-holder { display: inline-block; width: -webkit-calc(100% - 150px); width: -moz-calc(75% - 150px); width: -moz-calc(100% - 150px); width: calc(100% - 150px); }
+.menu-itam-holder .menu-itam-list .text-holder h6 { margin: 0; font-weight: 800; }
+.menu-itam-holder .menu-itam-list .text-holder span { font-size: 12px; color: #a9a9a9; display: block; line-height: 16px; }
+.menu-itam-holder .menu-itam-list .price-holder { top: 50%; position: absolute; right: 0; -webkit-transform: translateY(-50%); -moz-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); line-height: 0; display: block; margin-top: -10px; }
+.menu-itam-holder .menu-itam-list .price-holder span.price { font-size: 14px; color: #2f313a; font-family: 'Montserrat', sans-serif; vertical-align: middle; }
+.menu-itam-holder .menu-itam-list .price-holder a { position: relative; display: inline-block; outline: none; text-decoration: none; -webkit-box-shadow: none; box-shadow: none; }
+.menu-itam-holder .menu-itam-list .price-holder a .foodbakery-button-loader { width: 22px; right: 0; left: auto; border-radius: 50%; }
+.menu-itam-holder .menu-itam-list .price-holder a .foodbakery-button-loader .double-bounce1, .menu-itam-holder .menu-itam-list .price-holder a .foodbakery-button-loader .double-bounce2 { left: -1px; }
+.menu-itam-holder .menu-itam-list .price-holder a i { font-size: 14px; vertical-align: middle; margin: 0 0 0 28px; border: 1px solid; border-radius: 50%; height: 22px; width: 22px; text-align: center; line-height: 21px; display: inline-block; }
+.menu-itam-holder .menu-itam-list .price-holder a + span { position: absolute; top: 4px; right: -20px; }
+.menu-itam-holder .menu-itam-list .price-holder a .foodbakery-button-loader .double-bounce2, .menu-itam-holder .menu-itam-list .price-holder a .foodbakery-button-loader .double-bounce1 { position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: auto; width: 20px; height: 20px; -webkit-animation: sk-bounce-small 1.0s infinite ease-in-out; -moz-animation: sk-bounce-small 1.0s infinite ease-in-out; animation: sk-bounce-small 1.0s infinite ease-in-out; }
+.menu-itam-holder .menu-itam-list .price-holder a .foodbakery-button-loader .spinner { width: 20px; }
+.menu-itam-holder .menu-itam-list .price-holder { top: 15px; transform: none; margin-top: 0; }
+.menu-itam-holder .menu-itam-list .text-holder { display: block; }
+.menu-itam-holder .menu-itam-list .price-holder a i { margin-left: 15px; }
+.menu-itam-holder .menu-itam-list .text-holder { padding-right: 0 !important; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
+.menu-itam-holder .menu-itam-list .image-holder + .text-holder { display: inline-block; }
+.menu-itam-holder .menu-itam-list .image-holder { margin-bottom: 15px; }
+.menu-itam-holder .menu-itam-list .image-holder + .text-holder { display: block; padding-left: 0; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
+.company-info-detail .company-info .text-holder span.restaurant-title { font-size: 18px !important; line-height: 20px !important; }
+.menu-itam-holder .menu-itam-list .text-holder h6 { font-size: 12px !important; }
+.menu-itam-holder { padding: 8px 0 0; }
+.image-holder + .text-holder + .price-holder { margin-top: 0; top: 80px; right: 15px; }
+.company-info-detail .company-info .text-holder { display: block; padding: 0 0 0 18px; float: left; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
+.company-info-detail .company-info .text-holder .rating-star { display: inline-block; position: relative; line-height: normal; width: 80px; margin: 0 0 9px 0; }
+.company-info-detail .company-info .text-holder .rating-star:before { color: #cccfd5; content: "\f005\f005\f005\f005\f005"; font-family: "icomoon"; font-size: 14px; letter-spacing: 3px; }
+.company-info-detail .company-info .text-holder .rating-star .rating-box { height: 16px; left: 0; overflow: hidden; position: absolute; top: 0; }
+.company-info-detail .company-info .text-holder .rating-star .rating-box:before { color: #ff981a; content: "\f005\f005\f005\f005\f005"; font-family: "icomoon"; font-size: 14px; letter-spacing: 3px; }
+.company-info-detail .company-info .text-holder span.reviews { color: #fff; display: inline-block; font: 300 14px/22px 'Open Sans', sans-serif; letter-spacing: 0; word-spacing: 0; text-transform: none; vertical-align: top; margin: 0 0 0 3px; }
+.company-info-detail .company-info .text-holder span.restaurant-title { color: #fff; font: 400 32px/34px 'Montserrat', sans-serif; letter-spacing: 0; word-spacing: 0; text-transform: none; margin: 0 0 9px 0; display: block; }
+.company-info-detail .company-info .text-holder .text { position: relative; padding: 0 0 0 20px; }
+.company-info-detail .company-info .text-holder .text i { position: absolute; left: 0; color: #fff; line-height: 26px; }
+.company-info-detail .company-info .text-holder .text p { color: #fff !important; font: 400 14px/24px 'Open Sans', sans-serif; letter-spacing: 0; word-spacing: 0; text-transform: none; margin: 0 0 3px 0; }
+.company-info-detail .company-info .text-holder ul.user-info-contact li { list-style: none; display: block; -webkit-box-shadow: none; box-shadow: none; position: relative; padding: 0 0 0 20px; margin: 0; }
+.company-info-detail .company-info .text-holder ul.user-info-contact li i { position: absolute; left: 0; color: #fff; line-height: 26px; top: 0; }
+.company-info-detail .company-info .text-holder ul.user-info-contact li a { color: #fff; font: 400 14px/24px 'Open Sans', sans-serif; letter-spacing: 0; word-spacing: 0; text-transform: none; margin: 0 0 3px 0; }
+.listing.fancy .text-holder { width: 75%; width: -webkit-calc(100% - 74px); width: -moz-calc(100% - 74px); width: calc(100% - 74px); margin-right: -4px; padding-left: 26px; vertical-align: middle; position: relative; }
+.listing.fancy .text-holder .list-rating { line-height: 24px; }
+.listing.fancy .img-holder, .listing.fancy .text-holder { display: table-cell; vertical-align: middle; }
+.listing.classic-grid ul li .list-post .text-holder { padding: 55px 40px 0; position: relative; display: block; }
+.listing.classic-grid ul li .list-post .text-holder .list-option { display: inline-block; position: absolute; left: 15px; top: -30px; right: auto; }
+.listing.classic-grid ul li .list-post .text-holder .list-option .shortlist-btn { display: inline-block; width: 30px; height: 30px; line-height: 32px; text-align: center; border-radius: 3px; vertical-align: top; margin-right: 6px; position: relative; background: none; border: 0; }
+.listing.classic-grid ul li .list-post .text-holder .list-option .shortlist-btn i { font-size: 20px; color: #fff; }
+.listing.classic-grid ul li .list-post .text-holder .restaurant-status { position: relative; top: auto; left: auto; margin: 0 -41px; display: block; padding: 13px 0; font-size: 15px; font-weight: 600; }
+.listing.classic-grid ul li .list-post .text-holder .restaurant-status:before { display: none; }
+.listing.classic-grid ul li .list-post .text-holder .list-rating { margin-bottom: 15px; }
+.listing.classic-grid ul li .list-post .text-holder .location { position: relative; padding: 0 0 0 22px; display: inline-block; margin: 5px 0 0 0; }
+.listing.classic-grid ul li .list-post .text-holder .location:after { content: '\ea03'; position: absolute; left: 0; top: 0; font-family: 'icomoon'; font-size: 20px; color: #c9ccd0; }
+.listing.classic-grid ul li .list-post .text-holder address { margin-bottom: 15px; }
+.listing.classic-grid ul li .list-post .text-holder .post-time .time-tooltip { z-index: 10; }
+.listing.classic-grid ul li .list-post .text-holder .post-time { margin: 0 3px; }
+.listing.classic-grid ul li .list-post .text-holder .post-time i { width: 34px; height: 34px; line-height: 34px; }
+
+.listing.simple ul li .text-holder { display: inline-block; width: -webkit-calc(100% - 95px); width: calc(100% - 95px); width: -moz-calc(100% - 95px); margin-right: -4px; padding-left: 14px; vertical-align: middle; padding-right: 150px; position: relative; }
+.listing.simple ul li .text-holder:first-child { width: 100%; }
+.user-dashboard .order-list .author-info .text-holder { text-align: left; overflow: hidden; position: relative; padding: 5px 0 0 15px; width: -webkit-calc(100% - 53px); width: -moz-calc(100% - 53px); width: calc(100% - 53px); }
+.user-dashboard .order-list .author-info .text-holder h6 { margin: 0; padding-right: 55px; }
+.user-dashboard .order-list .author-info .text-holder address { font-size: 12px; color: #a9aab1; text-transform: uppercase; margin: 0; display: inline-block; }
+.user-dashboard .order-list .author-info .text-holder span.price { position: absolute; top: 4px; right: 0; font-size: 16px; font-weight: 600; display: inline-block; }
+.user-info.user-info-sidebar .text-holder { padding: 0; }
+.reviews-alert .text-holder { display: inline-block; padding-top: 0; vertical-align: middle; }
+.restaurant-info .text-holder { float: left; width: 60%; width: -webkit-calc(100% - 155px); width: -moz-calc(75% - 155px); width: -moz-calc(100% - 155px); width: calc(100% - 155px); }
+.restaurant-info .text-holder .upload-gallery { margin-bottom: 15px; }
+.restaurant-info .text-holder .upload-gallery .upload-btn { border-radius: 3px; color: #fff; font-size: 13px; line-height: normal; padding: 8px 20px; position: static; right: 0; top: -48px; }
+.restaurant-info .text-holder strong { font-size: 20px; line-height: 26px; font-weight: 600; color: #2f313a; display: block; text-transform: capitalize; margin-bottom: 15px; }
+.restaurant-info .text-holder span { font-size: 10px; line-height: 16px; font-weight: 600; color: #9a9a9a; display: block; }
+.restricted-message .text-holder strong { font-size: 24px; font-weight: 600; display: block; color: #333333; line-height: 30px; margin-bottom: 2px; }
+.restricted-message .text-holder span { font-size: 14px; color: #999999; display: block; line-height: 20px; }
+.activation-tab-message .text-holder strong { color: #31cd75; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 45px; display: block; margin-bottom: 15px; }
+.activation-tab-message .text-holder span { color: #999999; display: block; font-size: 16px; font-family: 'Montserrat', sans-serif; }
+.activation-tab-message .media-holder { margin-bottom: 25px; }
+.activation-tab-message .text-holder span atop: 30px; right: 3px; { color: #4a95d2; }
+.activation-tab-message .thankyou-contacts { text-align: center; }
+.activation-tab-message .text-holder { max-width: 80%; margin: 0 auto 70px auto; }
+.listing.grid-listing .grid-listing-col > .text-holder { border: 1px solid #e5e5e5; border-top: 0; }
+.listing.grid-listing .listing-footer .text-holder { display: inline-block; width: -webkit-calc(100% - 49px); width: -moz-calc(75% - 49px); width: -moz-calc(100% - 49px); width: calc(100% - 49px); padding: 6px 100px 0 10px; position: relative; vertical-align: middle; }
+.listing.grid-listing .listing-footer .text-holder p { line-height: 15px; color: #999999; font-size: 12px; margin-bottom: 4px; }
+.listing.grid-listing .listing-footer .text-holder p.deliver-time, .listing.grid-listing .listing-footer .text-holder p.pickup-time { display: inline-block; }
+.listing.grid-listing .listing-footer .text-holder p.deliver-time span, .listing.grid-listing .listing-footer .text-holder p.pickup-time span { display: inline-block; margin-right: 5px; color: #eb6825; font-size: 14px; vertical-align: middle; line-height: 17px; }
+.listing.fancy-simple .text-holder { width: -webkit-calc(100% - 150px); width: -moz-calc(75% - 150px); width: -moz-calc(100% - 150px); width: calc(100% - 150px); }
+.listing.fancy-simple .text-holder:first-child { width: 100%; padding-left: 0; }
+.image-frame.fancy .text-holder h2 { font-size: 18px !important; line-height: 26px !important; margin-bottom: 15px; }
+.image-frame.fancy .text-holder br + br { display: none; }
+.image-frame.fancy .text-holder .default-btn { display: block; margin-top: 15px; }
+.image-frame.fancy .text-holder h2 { margin-top: 20px; }
+.counter-sec .text-holder { margin-bottom: 15px; }
+.counter-holder .text-holder span { display: block; }
+.counter-holder .text-holder i { margin-right: 8px; }
+.listing.grid-listing .listing-footer .text-holder { padding-right: 85px; }
+.listing.fancy-simple .text-holder { width: -webkit-calc(100% - 115px); width: -moz-calc(100% - 115px); width: calc(100% - 115px); }
+.user-dashboard .listing.simple .shortlists-list li .text-holder { padding-right: 145px; }
+.testimonial .text-holder p{ padding:0 50px 0 28px; }
+.contact-info ul li .text-holder strong { font-size: 18px; line-height: 22px; }
+.company-info-detail .company-info .text-holder:first-child { padding-left: 0; }
+.listing.fancy .text-holder { padding-left: 15px; }
+.testimonial .text-holder p{ padding: 20px; }
+.listing.simple ul li .text-holder { padding-right: 0; }
+.menu-itam-holder .menu-itam-list .text-holder { display: block; }
+.user-dashboard .listing.simple .shortlists-list li .text-holder { padding-right: 0px; }
+.menu-itam-holder .menu-itam-list .text-holder { padding-right: 0 !important; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
+.listing.fancy-simple .list-post { display: block; }
+.menu-itam-holder .menu-itam-list .image-holder + .text-holder { display: inline-block; }
+.listing.simple ul li .text-holder { padding-right: 0; width: 100%; margin-top: 15px; padding-left: 0; }
+.company-info-detail .company-info .text-holder span.restaurant-title { font-size: 22px !important; line-height: 22px !important; }
+.listing.fancy-simple .text-holder { width: 100%; padding: 0; }.comments ul li .thumb-list .text-holder h6 { display: block; margin-bottom: 15px; }
+.comments ul li .thumb-list .text-holder .reply-btn { float: none; margin-bottom: 15px; }
+.restaurant-info .text-holder { width: 100%; }
+.menu-itam-holder .menu-itam-list .image-holder + .text-holder { padding-left: 0; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
+.image-holder + .text-holder + .price-holder { margin-top: 0; top: 86px; right: 15px; }
+.counter-holder .text-holder i { margin-right: 10px; }
+.counter-holder .text-holder strong { font-size: 18px; }
+.menu-itam-holder .menu-itam-list .text-holder h6 { font-size: 14px !important; }
+.counter-holder .text-holder span { font-size: 15px; }
+.company-info-detail .company-info .text-holder span.restaurant-title { font-size: 18px !important; line-height: 20px !important; }
+.company-info-detail .company-info .text-holder ul.user-info-contact li a { line-height: 22px; display: block; font-size: 12px; }
+.company-info-detail .company-info .img-holder { width: 50px; }
+.company-info-detail .company-info .text-holder { -webkit-width: calc(100% - 50px); -moz-width: calc(100% - 50px); width: calc(100% - 50px); }
+.user-dashboard .order-list .author-info .text-holder span.price { position: static; display: block; }
+.activation-tab-message .text-holder strong { font-size: 35px; }
+.listing.fancy .text-holder { width: 100%; padding-left: 0; display: block; }
+.woocommerce ul.products li.product .product-action-button .add_to_cart_button { font-size: 12px; font-weight: 800; text-transform: capitalize; border: 0; padding: 8px 15px 8px 20px; height: auto; line-height: normal; position: relative; border-radius: 3px; display: inline-block; }
+.woocommerce ul.products li.product .product-action-button .add_to_cart_button i { top: 4px; }
+
+.activation-tab-message .text-holder strong { font-size: 35px; }
+.listing.fancy .text-holder { width: 100%; padding-left: 0; display: block; }

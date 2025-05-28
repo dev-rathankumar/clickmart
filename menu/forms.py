@@ -13,6 +13,8 @@ class CategoryForm(forms.ModelForm):
 
 
 class SubCategoryForm(forms.ModelForm):
+    category_image = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info vendor-image-up-btn'}), validators=[allow_only_images_validator],required=False)
+
     class Meta:
         model = Category
         fields = ['category_name', 'description', 'parent','category_image']
@@ -35,8 +37,11 @@ class SubCategoryForm(forms.ModelForm):
 
 from django.core.exceptions import ValidationError
 from PIL import Image
+from accounts.validators import allow_only_images_validator
 
 class ProductForm(forms.ModelForm):
+    image = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-sm vendor-image-up-btn'}), validators=[allow_only_images_validator])
+
     class Meta:
         model = Product
         fields = [
@@ -75,6 +80,8 @@ class ProductForm(forms.ModelForm):
     #     return image
     
 class EditProductForm(forms.ModelForm):
+    image = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-sm vendor-image-up-btn'}), validators=[allow_only_images_validator])
+
     class Meta:
         model = Product 
         fields = [
@@ -116,6 +123,8 @@ class FoodItemForm(forms.ModelForm):
 
 
 class ProductGalleryForm(forms.ModelForm):
+    image = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-sm vendor-image-up-btn'}), validators=[allow_only_images_validator])
+
     class Meta:
         model = ProductGallery
         fields = ['id','image']

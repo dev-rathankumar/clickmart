@@ -34,11 +34,26 @@ from django.db.models import Count, OuterRef, Subquery
 from django.core.paginator import Paginator
 from foodOnline_main.views import get_or_set_current_location
 
+
 def marketplace(request):
     vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
     vendor_count = vendors.count()
+
+    search_query = request.GET.get('search', None)
+    
+    if search_query:
+        vendors = vendors.filter(
+            Q(vendor_name__icontains=search_query) |
+            Q(vendor_slug__icontains=search_query) |
+            Q(store_type__name__icontains=search_query)
+        )
+
+    paginator = Paginator(vendors, 10)
+    page_number = request.GET.get('page')
+    page_vendors = paginator.get_page(page_number)
+
     context = {
-        'vendors': vendors,
+        'vendors': page_vendors,
         'vendor_count': vendor_count,
     }
     return render(request, 'marketplace/listings.html', context)
@@ -551,7 +566,7 @@ def add_product_to_cart(request, product_id):
         return JsonResponse({'success': False, 'status':'invalid_method','message': 'Invalid request method.'})
            
     else:
-        return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+        return JsonResponse({'success': False, 'status': 'login_required', 'message': 'Please login to continue'})
 
 
 def categories(request):

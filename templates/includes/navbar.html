@@ -222,7 +222,7 @@
                     <!-- Categories Dropdown -->
                     <div class="main-categori-wrap d-none d-lg-block">
                         <a class="categories-button-active" href="#" data-bs-toggle="modal" data-bs-target="#locationModal">
-                            <span class="fi-rs-marker"></span> Select Location
+                            <span class="fi-rs-marker"></span> <span  id="location-selector">Select Location</span>
                         </a>
                     </div>
                     
@@ -454,11 +454,71 @@ window.onclick = function(event) {
                 type: "GET",
                 success: function(response) {
                     var current_location = response.results[0].formatted_address;
+                    var addressComponents = response.results[0].address_components;
+                    var city = "";
+                    var pincode = "";
+                    // Loop through address components to find city and pincode
+                addressComponents.forEach(function(component) {
+                    if (component.types.includes("locality")) {
+                        city = component.long_name;
+                    }
+                    if (component.types.includes("postal_code")) {
+                        pincode = component.long_name;
+                    }
+                });
+                    console.log(addressComponents)
+                    console.log(city)
+                    console.log(pincode)
+
                     x.value = current_location;
                     sessionStorage.setItem("current_location", current_location);
+                    sessionStorage.setItem("city", city);
+                    sessionStorage.setItem("pincode", pincode);
+
+                    var location = "";
+                    if (city && pincode) {
+                        location = city + " - " + pincode;
+                    } else if (city) {
+                        location = city;
+                    } else if (pincode) {
+                        location = pincode;
+                    }
+
+                    updateNavbarLocation(location);
                     window.location = '?lat=' + lat + '&lng=' + lng;
+                    console.log(current_location);
                 }
             });
         }
+
+     // Function to update navbar location text
+function updateNavbarLocation(location) {
+    var navLoc = document.getElementById("location-selector");
+    if (location && location.trim() !== "") {
+        navLoc.textContent = location;
+    } else {
+        navLoc.textContent = "";
+        navLoc.textContent = "Select Location";
+    }
+}
+
+// On page load, update navbar with stored city and pincode
+document.addEventListener("DOMContentLoaded", function () {
+    var city = sessionStorage.getItem("city");
+    var pincode = sessionStorage.getItem("pincode");
+
+    // Combine city and pincode if available
+    var location = "";
+    if (city && pincode) {
+        location = city + " - " + pincode;
+    } else if (city) {
+        location = city;
+    } else if (pincode) {
+        location = pincode;
+    }
+
+    updateNavbarLocation(location);
+});
+
     </script>
 </div>

@@ -4,7 +4,7 @@ from accounts.validators import allow_only_images_validator
 
 
 class VendorForm(forms.ModelForm):
-    vendor_license = forms.FileField(widget=forms.FileInput(), validators=[allow_only_images_validator])
+    vendor_license = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-info vendor-image-up-btn'}), validators=[allow_only_images_validator])
 
     class Meta:
         model = Vendor

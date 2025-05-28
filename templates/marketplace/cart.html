@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-
+	<link href="{% static 'css/cart_style.css' %}" rel="stylesheet">
 <!-- Main Section Start -->
-<div class="main-section pt-5">
+<div class="main-section pt-5 ">
     <div class="page-section">
         <div class="container">
             <div class="row">
                 
-                <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 shadow-sm mb-30">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger"></i>Cart Items</a></li>
@@ -29,8 +30,9 @@
                                                 {% for item in cart_items %}
                                                 <li id="cart-item-{{item.id}}">
                                                     <div class="image-holder"> <img src="{{ item.product.image.url }}" alt=""></div>
-                                                    <div class="text-holder">
+                                                    <div class="text-holder mt-3" style="width: 390px;">
                                                         <h6>{{ item.product }}</h6>
+                                                        <span>{{item.product.product_desc | truncatewords:25}}</span>
                                                         <a href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product.vendor }}</a>
                                                     </div>
                                                     <div class="price-holder">
@@ -74,7 +76,7 @@
                 </div>
 
                 <!-- Your order section -->
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 shadow-sm">
                     <div class="tabs-holder horizontal">
                         <ul class="stickynav-tabs nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a></li>
@@ -86,7 +88,7 @@
                                     
                                     <div>
                                         <ul>
-                                            <li style="list-style-type: none;">
+                                            <li style="list-style-type: none; margin-left: 15px;">
                                                 Subtotal
                                                 <span class="price float-right">
                                                     <span class="currency">₹</span>
@@ -97,7 +99,7 @@
                                         {% for single_tax_dict in tax_dict %}
                                             {% for key, value in single_tax_dict.tax_info.items %}
                                                 {% if value %}  
-                                                    <li style="list-style-type: none;">
+                                                    <li style="list-style-type: none; margin-left: 15px;">
                                                         {{ single_tax_dict.tax_category }} 
                                                         <small>({{ key }}%)</small>
                                                         {% for item in cart_items %}
@@ -117,7 +119,7 @@
                                         {% endfor %}
 
 
-                                            <li style="list-style-type: none; font-weight: 600;">
+                                            <li style="list-style-type: none; font-weight: 600; margin-left: 15px;">
                                                 TOTAL
                                                 <span class="price float-right">
                                                     <span class="currency">₹</span>

@@ -3,7 +3,18 @@
 
 {% block content %}
 {% include 'includes/alerts.html' %}
-
+    <style>
+    input{
+    border:unset;
+    border-radius:unset;
+    height: unset !important;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    padding-left: 20px;
+    font-size: 12px;
+    width: unset !important;
+    }
+</style>
 <!-- Main Section Start -->
 <div class="main-section">
     {% include 'includes/cover.html' %}
@@ -58,7 +69,7 @@
                                                 class="thumbnail"
                                                 src="{% static 'images/default_image_add_product.png' %}"
                                                 alt="Product Image Preview"
-                                                style="width: 100px; display: inline; margin-right:30px; margin-bottom:15px;">
+                                                style="width: 100px; display: block; margin-right:30px; margin-bottom:15px;">
                                                 {{ form.image }}
                                             </div>
                                         </div>
