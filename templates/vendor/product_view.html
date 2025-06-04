@@ -179,7 +179,7 @@
                         
                         
                         
-                        <div class="sidebar-widget widget-delivery mb-30 bg-grey-9 box-shadow-none">
+                        {% comment %} <div class="sidebar-widget widget-delivery mb-30 bg-grey-9 box-shadow-none">
                             {% if user.is_authenticated %}
                             <h5 class="section-title style-3 mb-10">Delivery</h5>
                             
@@ -240,7 +240,7 @@
                             {% else %}
                             <h6><a href="{% url 'login' %}">Login</a> to see your address</h6>
                             {% endif %}
-                        </div>
+                        </div> {% endcomment %}
 
                         <div class="sidebar-widget widget-vendor mb-30 bg-grey-9 box-shadow-none">
                             <h5 class="section-title style-3 mb-20">Seller</h5>
@@ -340,7 +340,7 @@ function addProductToCart(url, productId, quantity) {
       if (data.success) {
           window.location.href = data.redirect_url; // Redirect to cart if needed
       } else {
-          swal("Error", data.message || "Something went wrong!", "error");
+          swal("Info", data.message || "Something went wrong!", "info");
       }
   })
   .catch(error => {
