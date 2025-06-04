@@ -378,36 +378,46 @@ def checkout(request):
             return redirect('cart')
     if cart_count <= 0:
         return redirect('marketplace')
-    
-    if request.user.is_authenticated:
-        delivery_address = DeliveryAddress.objects.filter(user=request.user, is_primary=True).first()
-    else:
-        delivery_address=None
-    if delivery_address:
-        full_name = delivery_address.full_name.strip()
-        # Split by space
-        name_parts = full_name.split()
 
-        if len(name_parts) >= 2:
-            first_name = name_parts[0]
-            last_name = ' '.join(name_parts[1:])  # supports middle names too
-        else:
-            first_name = name_parts[0]
-            last_name = request.user.last_name  # fallback to user's last name
-        default_values = {
-            'first_name': first_name,
-            'last_name':last_name,
-            'phone': delivery_address.phone_number,
-            'email': request.user.email,
-            'address': f"{delivery_address.street_address} {delivery_address.apartment_address if delivery_address.apartment_address else ''}",
-            'country': delivery_address.country,
-            'state': delivery_address.state,
-            'city': delivery_address.city,
-            'pin_code': delivery_address.postal_code,
-        }
-    else:
-        messages.warning(request, "Please set an address to proceed to the next step.")
-        return redirect("address_book")
+    user_profile = UserProfile.objects.get(user=request.user)
+    default_values = {
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'phone': request.user.phone_number,
+        'email': request.user.email,
+        'address': user_profile.address,
+        'country': user_profile.country,
+        'state': user_profile.state,
+        'city': user_profile.city,
+        'pin_code': user_profile.pin_code,
+    }
+    # else:
+    #     delivery_address=None
+    # if delivery_address:
+    #     full_name = delivery_address.full_name.strip()
+    #     # Split by space
+    #     name_parts = full_name.split()
+
+    #     if len(name_parts) >= 2:
+    #         first_name = name_parts[0]
+    #         last_name = ' '.join(name_parts[1:])  # supports middle names too
+    #     else:
+    #         first_name = name_parts[0]
+    #         last_name = request.user.last_name  # fallback to user's last name
+    #     default_values = {
+    #         'first_name': first_name,
+    #         'last_name':last_name,
+    #         'phone': delivery_address.phone_number,
+    #         'email': request.user.email,
+    #         'address': f"{delivery_address.street_address} {delivery_address.apartment_address if delivery_address.apartment_address else ''}",
+    #         'country': delivery_address.country,
+    #         'state': delivery_address.state,
+    #         'city': delivery_address.city,
+    #         'pin_code': delivery_address.postal_code,
+    #     }
+    # else:
+    #     messages.warning(request, "Please set an address to proceed to the next step.")
+    #     return redirect("address_book")
     form = OrderForm(initial=default_values)
     RZP_KEY_ID = settings.RZP_KEY_ID
     RZP_KEY_SECRET = settings.RZP_KEY_SECRET
