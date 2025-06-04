@@ -886,3 +886,15 @@ class FileUploadView(View):
         for f in files:
             MediaUpload.objects.create(image=f, vendor=vendor)
         return JsonResponse({'message': 'Files uploaded successfully!'})
+    
+
+def import_your_data(request):
+    return render(request, 'vendor/import_your_data.html')
+
+
+def connect_erp(request):
+    source = request.GET.get('source')
+    context = {
+        'source': source,
+    }
+    return render(request, 'vendor/connect_erp.html', context)

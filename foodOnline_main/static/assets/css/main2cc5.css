@@ -1061,20 +1061,20 @@ h5.widget-title {
 button.submit, button[type='submit'] {
   font-size: 16px;
   font-weight: 500;
-  padding: 15px 40px;
+  padding: 8px 30px;
   color: #ffffff;
   border: none;
   background-color: #DC3545;
-  border: 1px solid #29A56C;
-  border-radius: 10px;
+  border: 1px solid #DC3545;
+  border-radius: 5px;
 }
 
 button.submit:hover, button[type='submit']:hover {
-  background-color: #29A56C !important;
+  background-color: #DC3545 !important;
 }
 
 .btn-brand:hover {
-  background-color: #29A56C !important;
+  background-color: #DC3545 !important;
 }
 
 .btn-login {

@@ -48,6 +48,8 @@ urlpatterns = [
     path('media-library/', views.media_library, name='media_library'),
 
     path('media-library/upload/', views.FileUploadView.as_view(), name='media_upload'),
+    path('import-your-data/source/', views.import_your_data, name='import_your_data'),
+    path('import-your-data/connect/', views.connect_erp, name='connect_erp'),
 
 
 ]

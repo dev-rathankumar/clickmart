@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/alerts.html' %}
+
+<style>
+    .card.btn {
+        border: 2px solid transparent; /* Always present, avoids resizing */
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-check:checked + .card {
+        border-color: #DC3545;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+
+<!-- Main Section Start -->
+<div class="main-section">
+    {% include 'includes/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <!-- Load the sidebar here -->
+                    {% include 'includes/v_sidebar.html' %}
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder">
+                        <div class="user-holder">
+                            <h5 class="text-uppercase">Select your data source</h5>
+							<hr>
+                            
+
+                            <form method="get" action="{% url 'connect_erp' %}" >
+                                <div class="row text-center">
+                                  <div class="col-12 col-md-4 mb-4">
+                                    <input type="radio" class="btn-check" name="source" id="tally" value="Tally" autocomplete="off" required >
+                                    <label class="card h-100 shadow-sm btn" for="tally">
+                                      <div class="card-body">
+                                        <img src="{% static 'images/tally.jpg' %}" alt="Tally" class="mb-3 img-fluid" style="height: 80px;">
+                                        <h5 class="card-title">Tally</h5>
+                                        <p class="card-text">Connect to your Tally account and import data automatically.</p>
+                                      </div>
+                                    </label>
+                                  </div>
+
+                                  <div class="col-12 col-md-4 mb-4">
+                                    <input type="radio" class="btn-check" name="source" id="marg" value="Marg ERP" autocomplete="off" style="width: unset;">
+                                    <label class="card h-100 shadow-sm btn" for="marg">
+                                      <div class="card-body">
+                                        <img src="{% static 'images/marg-erp.jpg' %}" alt="Marg ERP" class="mb-3 img-fluid" style="height: 80px;">
+                                        <h5 class="card-title">Marg ERP</h5>
+                                        <p class="card-text">Connect with Marg ERP to fetch your data automatically.</p>
+                                      </div>
+                                    </label>
+                                  </div>
+
+                                  <div class="col-12 col-md-4 mb-4">
+                                    <input type="radio" class="btn-check" name="source" id="custom" value="Custom" autocomplete="off" style="width: unset;">
+                                    <label class="card h-100 shadow-sm btn" for="custom">
+                                      <div class="card-body">
+                                        <img src="{% static 'images/custom-erp.jpg' %}" alt="Custom Import" class="mb-3 img-fluid" style="height: 80px;">
+                                        <h5 class="card-title">Custom Import</h5>
+                                        <p class="card-text">Upload a CSV exported from your software. We'll help validate it.</p>
+                                      </div>
+                                    </label>
+                                  </div>
+
+                                  
+
+                                </div>
+
+                                
+
+                                
+                              
+                                <!-- Continue Button -->
+                                <div class="text-end mt-4">
+                                  <button type="submit" class="btn btn-primary px-5">Continue</button>
+                                </div>
+                              </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+
+{% endblock %}
