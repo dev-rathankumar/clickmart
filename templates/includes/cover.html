@@ -32,15 +32,24 @@
                     </div>
 
                     <div class="col-lg-6">
-                        <div class="vendor-des">
-                            <p class="font-sm" style="color: #fff !important;">GST Number: {{ vendor.gst_number }}</p>
-                        </div>
-                        <div class="vendor-des">
-                            <p class="font-sm" style="color: #fff !important;">FSSAI Number: {{vendor.fssai_number}}</p>
-                        </div>
-                        <div class="vendor-des mb-15">
-                            <p class="font-sm" style="color: #fff !important;">Delivery Radius: {{vendor.delivery_radius}}KM.</p>
-                        </div>
+                       {% if vendor.gst_number %}
+                            <div class="vendor-des">
+                                <p class="font-sm" style="color: #fff !important;">GST Number: {{ vendor.gst_number }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if vendor.fssai_number %}
+                            <div class="vendor-des">
+                                <p class="font-sm" style="color: #fff !important;">FSSAI Number: {{ vendor.fssai_number }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if vendor.delivery_radius %}
+                            <div class="vendor-des mb-15">
+                                <p class="font-sm" style="color: #fff !important;">Delivery Radius: {{ vendor.delivery_radius }} KM.</p>
+                            </div>
+                            {% endif %}
+
                     </div>
                 </div>
             </div>

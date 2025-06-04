@@ -36,6 +36,18 @@
             height: 20px;  /* Increase the height */
             cursor: pointer;  /* Change the cursor to pointer */
         }
+
+.modal-dialog {
+    width: 800px !important;
+    max-width: 95%; /* Prevents overflow on small screens */
+}
+
+@media (max-width: 768px) {
+    .modal-dialog {
+        width: 95% !important;
+    }
+}
+
     </style>
 
 <!-- Main Section Start -->
@@ -109,7 +121,7 @@
 <!-- Modal -->
 <!-- Modal -->
 <div class="modal fade" id="mediaUpload" tabindex="-1" aria-labelledby="mediaUploadTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 70% !important;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:800px !important;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="mediaUploadTitle">Upload Bulk Images</h5>
