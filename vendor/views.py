@@ -16,7 +16,7 @@ from .forms import VendorForm, OpeningHourForm, CategoryImportForm, ProductImpor
 from accounts.forms import UserInfoForm, UserProfileForm
 
 from accounts.models import UserProfile
-from .models import OpeningHour, Vendor
+from .models import OpeningHour, StoreType, Vendor
 from django.contrib import messages
 
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -88,12 +88,14 @@ def vprofile(request):
 @user_passes_test(check_role_vendor)
 def category_builder(request):
     vendor = get_vendor(request)
+    store_type = vendor.store_type
     if vendor.store_type is None:
         messages.error(request, "Vendor doesn't have a store type. Please contact the admin.")
         return redirect("vendor")
-    categories = Category.objects.filter(store_type=vendor.store_type).order_by('created_at')
+    categories = Category.objects.filter(store_type=vendor.store_type, parent__isnull=True).order_by('created_at')
     context = {
         'categories': categories,
+        'store_type': store_type,
     }
     return render(request, 'vendor/menu_builder.html', context)
 
@@ -443,7 +445,7 @@ def add_sub_category(request, category_id=None):
                     subcategory = form.save(commit=False)
                     subcategory.vendor_subcategory_reference_id = vendor.id
                     subcategory.parent = main_category
-                    subcategory.category_code = f"SUB-{subcategory.category_name.capitalize()}-{main_category.category_code}-{vendor.id}"
+                    subcategory.category_code = f"SUB-{slugify(subcategory.category_name)}-{main_category.category_code}-{vendor.id}"
                     subcategory.slug = slugify(f"{subcategory.category_name}{main_category}{vendor.id}")
                     subcategory.save()
 
@@ -458,8 +460,6 @@ def add_sub_category(request, category_id=None):
             else:
                 messages.error(request, "Please correct the errors below.")
         else:
-            print("line number 458", main_category)
-            print("line number 458")
             form = SubCategoryForm(vendor=vendor, initial={'parent': main_category})
 
     except Exception as e:
@@ -502,7 +502,8 @@ def edit_subcategory(request, category_id=None, pk=None):
                     category_name = form.cleaned_data['category_name']
                     subcategory = form.save(commit=False)
                     subcategory.vendor_subcategory_reference_id = vendor.id
-                    subcategory.category_code = f"SUB-{subcategory.category_name.capitalize()}-{main_category.category_code}-{vendor.id}"
+                    subcategory.category_code = f"SUB-{slugify(subcategory.category_name)}-{main_category.category_code}-{vendor.id}"
+                    subcategory.store_type = StoreType.objects.get(name=vendor.store_type)
                     subcategory.slug = slugify(f"{subcategory.category_name}{main_category or subcategory.parent}{vendor.id}")
                     subcategory.parent = main_category or subcategory.parent  # Fallback if main_category is None
                     subcategory.save()

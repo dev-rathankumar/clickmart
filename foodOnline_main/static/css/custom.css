@@ -99,3 +99,6 @@ table td, table th{
 		width: 250px !important;
 		height: 32px !important;
     }
+.text-accent{
+    color: #B92E3A !important;
+}

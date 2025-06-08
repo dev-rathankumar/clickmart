@@ -3,25 +3,29 @@
 {% block content %}
 
 <!-- Main Section Start -->
-<div class="main-section pt-5">
-    <div class="page-section">
-        <div class="container">
+<main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> Shop
+                    <span></span> Checkout
+                </div>
+            </div>
+        </div>
+        <div class="container mb-80 mt-50">
             <div class="row">
-                
-                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                    <div class="tabs-holder horizontal">
-                        <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger"></i>Shipping Address</a></li>
-                            
-                        </ul>
-                        <div class="tab-content">
-                            <div id="home" class="tab-pane in active">
-                                <div class="menu-itam-holder">
-                                    
-                                
-                                    <div id="menu-item-list-6272" class="menu-itam-list">
-                                        
-                                        <form action="{% url 'place_order' %}" method="POST">
+                <div class="col-lg-8 mb-40">
+                    <h1 class="heading-2 mb-10">Checkout</h1>
+                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    
+                    <div class="row">
+                        <h4 class="mb-30">Billing Details</h4>
+                        <form action="{% url 'place_order' %}" method="POST">
                                             {% csrf_token %}
 
                                             <div class="row">
@@ -65,150 +69,71 @@
                                                     Pin Code: {{ form.pin_code }}
                                                 </div>
                                             </div>
-
-                                        
-                                        
-                                        
-                                    </div>
-
-                                  
-                                </div>
-                            </div>
-                            
-                        </div>
+                            </form>
                     </div>
                 </div>
-
-                <!-- Your order section -->
-                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                    <div class="tabs-holder horizontal">
-                        <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a></li>
-                            
-                        </ul>
-                        <div class="tab-content">
-                            <div id="home" class="tab-pane in active">
-                                <div class="menu-itam-holder">
-
-                                    <div id="menu-item-list-6272" class="menu-itam-list">
-                                        
-                                        <ul>
+                <div class="col-lg-6">
+                    <div class="border p-40 cart-totals ml-30 mb-50">
+                        <div class="d-flex align-items-end justify-content-between mb-30">
+                            <h4>Your Order</h4>
+                            <h6 class="text-muted">Subtotal</h6>
+                        </div>
+                        <div class="divider-2 mb-30"></div>
+                        <div class="table-responsive order_table checkout">
+                            <table class="table no-border">
+                                <tbody>
+                                    {% for item in cart_items %}
+                                    <tr>
+                                        <td class="image product-thumbnail"><img src="{{ item.product.image.url }}" alt="#"></td>
+                                        <td>
+                                            <p class="w-160 mb-5 text-heading" style="font-size: 14px;">{{ item.product }}</p>
                                             
-                                                {% for item in cart_items %}
-                                                <li id="cart-item-{{item.id}}">
-                                                    <div class="image-holder"> <img src="{{ item.product.image.url }}" alt=""></div>
-                                                    <div class="text-holder">
-                                                        <h6>{{ item.product }}</h6>
-                                                        <a href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}" class="badge badge-warning">{{ item.product.vendor }}</a>
-                                                    </div>
-
-                                                    <div class="quantity" style="display: inline-block; position: absolute; top: 50%; transform: translateY(-50%); margin-top: -10px;">
-                                                        <span>{{ item.quantity }} QTY</span>
-                                                    </div>
-                                                    <div class="price-holder">
-                                                        
-                                                        {% if item.product.sales_price %}
-                                                        <span class="currency">₹{{ item.product.sales_price }}</span>
-                                                        {% else %}
-                                                        <span class="currency">₹{{ item.product.regular_price }}</span>
-                                                        {% endif %}   
-                                                    </div>
-                                                    
-                                                    <div>
-                                                        <span class="text-dark float-right">{{item.product.tax_category}}</span>
-                                                    </div>  
-                                            </li>
-                                                {% endfor %}
-                                            
-                                        </ul>
-                                        
-                                        
-                                        
-                                    </div>
-                                    
-                                    <div>
-                                        <ul>
-                                            <li style="list-style-type: none;">
-                                                Subtotal
-                                                <span class="price float-right">
-                                                    <span class="currency">₹</span>
-                                                    <span id="subtotal">{{ subtotal }}</span>
-                                                </span>
-                                            </li>
-                                           
-                                        {% for single_tax_dict in tax_dict %}
-                                        {% for key, value in single_tax_dict.tax_info.items %}
-                                            {% if value %}  
-                                                <li style="list-style-type: none;">
-                                                    {{ single_tax_dict.tax_category }} 
-                                                    <small>({{ key }}%)</small>
-                                                    {% for item in cart_items %}
-                                                    
-                                                    {% if item.product.id == single_tax_dict.product_id %}
-                                                    <small>{{item.product}}</small>
-                                                    {% endif %}
-                                                    {% endfor %}
-
-                                                    <span class="price float-right">
-                                                        <span class="currency">₹</span>
-                                                        <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
-                                                    </span>
-                                                </li>
-                                            {% endif %}
-                                        {% endfor %}
+                                        </td>
+                                        <td>
+                                            <p class="pl-20 pr-20" style="font-size: 14px;">x {{ item.quantity }}</p>
+                                        </td>
+                                        <td>
+                                            {% if item.product.sales_price %}
+                                                <span class="currency">₹{{ item.product.sales_price }}</span>
+                                            {% else %}
+                                                <span class="currency">₹{{ item.product.regular_price }}</span>
+                                            {% endif %}   
+                                            <!-- <h4 class="text-brand">$13.3</h4> -->
+                                        </td>
+                                    </tr>
                                     {% endfor %}
-
-
-                                            <li style="list-style-type: none; font-weight: 600;">
-                                                TOTAL
-                                                <span class="price float-right">
-                                                    <span class="currency">₹</span>
-                                                    <span id="total">{{ grand_total }}</span>
-                                                </span>
-                                            </li>
-
-                                            <!-- Select payment method -->
-                                            <h5>PAYMENT METHOD</h5>
-                                            <div class="payment-method">
-                                                <label>
-                                                    <input type="radio" checked name="payment_method" value="COD">
-                                                    <img src="{% static 'images/cod.svg' %}" alt="COD" width="100">
-                                                </label>
-
-                                                <!-- <label>
-                                                    <input type="radio" name="payment_method" value="PayPal">
-                                                    <img src="{% static 'images/PayPal.png' %}" alt="PayPal" width="100">
-                                                </label>
-                                                &emsp; -->
-                                                <!-- {% if RZP_LOAD %}
-                                                <label>
-                                                    <input type="radio" name="payment_method" value="RazorPay">
-                                                    <img src="{% static 'images/razorpay_logo.png' %}" alt="RazorPay" width="100">
-                                                </label>
-                                                {% endif %} -->
-                                            </div>
-                                            <span class="text-danger" id="payment-method-error"></span>
-                                            <!-- Select payment method -->
-
-                                            <button onclick="return payMethodConfirm();" type="submit" class="btn btn-danger w-100 p-2 mt-3">PLACE ORDER</button>
-                                        </ul>
-
-
-                                        <!-- end the form -->
-                                    </form>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                            
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                    <div class="payment ml-30">
+                        <h4 class="mb-30">Payment</h4>
+                        <div class="payment_option">
+                            <div class="custome-radio">
+                                <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios3" checked="">
+                                <label class="form-check-label" for="exampleRadios3" data-bs-toggle="collapse" data-target="#bankTranfer" aria-controls="bankTranfer">Direct Bank Transfer</label>
+                            </div>
+                            <div class="custome-radio">
+                                <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios4" checked="">
+                                <label class="form-check-label" for="exampleRadios4" data-bs-toggle="collapse" data-target="#checkPayment" aria-controls="checkPayment">Cash on delivery</label>
+                            </div>
+                            <div class="custome-radio">
+                                <input class="form-check-input" required="" type="radio" name="payment_option" id="exampleRadios5" checked="">
+                                <label class="form-check-label" for="exampleRadios5" data-bs-toggle="collapse" data-target="#paypal" aria-controls="paypal">Online Getway</label>
+                            </div>
+                        </div>
+                        <div class="payment-logo d-flex">
+                            <img class="mr-15" src="assets/imgs/theme/icons/payment-paypal.svg" alt="">
+                            <img class="mr-15" src="assets/imgs/theme/icons/payment-visa.svg" alt="">
+                            <img class="mr-15" src="assets/imgs/theme/icons/payment-master.svg" alt="">
+                            <img src="assets/imgs/theme/icons/payment-zapper.svg" alt="">
+                        </div>
+                        <a href="#" class="btn btn-fill-out btn-block mt-30">Place an Order<i class="fi-rs-sign-out ml-15"></i></a>
+                    </div>
                 </div>
-                
             </div>
         </div>
-    </div>
-</div>
+    </main>
 <!-- Main Section End -->
 
 

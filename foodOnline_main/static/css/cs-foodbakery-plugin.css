@@ -2042,27 +2042,27 @@ margin-left:0px;
 {
 font:800 Normal  13px/19px "Open Sans", sans-serif !important;text-transform: uppercase !important;	    }
 h1, h1 a{
-font:700 Normal  30px/36px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;}
+font:700 Normal  30px/36px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;}
 h2, h2 a{
-font:700 Normal  24px/30px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  24px/30px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 h3, h3 a{ 
-font:700 Normal  20px/26px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  20px/26px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 h4, h4 a{
-font:700 Normal  18px/24px "Quicksand", sans-serif !important;letter-spacing: 1px !important;color: #000000 !important;	    }
+font:700 Normal  18px/24px "Quicksand", sans-serif !important;color: #000000 !important;	    }
 h5, h5 a{
-font:700 Normal  16px/22px "Quicksand", sans-serif !important;letter-spacing: 0px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  16px/22px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 h6, h6 a{
-font:700 Normal  14px/20px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  14px/20px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 .cs-section-title h2{
-font:700 Normal  18px/26px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  18px/26px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 .post-title h3 a{
-font:700 Normal  20px/26px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: uppercase !important;color: #000000 !important;	    }
+font:700 Normal  20px/26px "Quicksand", sans-serif !important;text-transform: uppercase !important;color: #000000 !important;	    }
 .cs-page-title h1 {
-font:700 Normal  30px/36px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  30px/36px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 .page-sidebar .widget .widget-title h5{
-font:700 Normal  16px/20px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #000000 !important;	    }
+font:700 Normal  16px/20px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #000000 !important;	    }
 #footer .widget-title h5{
-font:700 Normal  16px/20px "Quicksand", sans-serif !important;letter-spacing: 1px !important;text-transform: capitalize !important;color: #adb0b6 !important;	    }
+font:700 Normal  16px/20px "Quicksand", sans-serif !important;text-transform: capitalize !important;color: #adb0b6 !important;	    }
 #header .main-header
 {
 background-color:#ffffff !important;

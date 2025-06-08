@@ -5670,7 +5670,7 @@ table.no-border td, table.no-border th, table.no-border thead {
 }
 
 .order_table table .product-thumbnail img {
-  max-width: 120px;
+  max-width: 75px;
   border-radius: 15px;
   border: 1px solid #ececec;
   padding: 5px;
