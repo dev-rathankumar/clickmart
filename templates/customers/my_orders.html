@@ -30,8 +30,8 @@
                                                     <th scope="col">Order #</th>
                                                     <th scope="col">Name</th>
                                                     <th scope="col">Total</th>
-                                                    <th scope="col">Status</th>
-                                                    <th scope="col">Date</th>
+                                                    <th scope="col" class="status">Status</th>
+                                                    <th scope="col" class="date_field">Date</th>
                                                     <th scope="col">Action</th>
                                                   </tr>
                                                 </thead>
@@ -41,8 +41,8 @@
                                                     <td><b><a href="{% url 'order_detail' order.order_number %}" class="text-dark">{{ order.order_number }}</a></b></td>
                                                     <td>{{ order.name }}</td>
                                                     <td>₹{{ order.total }}</td>
-                                                    <td>{{ order.status }}</td>
-                                                    <td>{{ order.created_at }}</td>
+                                                    <td class="status-value">{{ order.status }}</td>
+                                                    <td class="date_field_value">{{ order.created_at }}</td>
                                                     <td><a href="{% url 'order_detail' order.order_number %}" class="btn btn-danger">Details</a></td>
                                                   </tr>
                                                   {% endfor %}
@@ -63,5 +63,42 @@
 </div>
 <!-- Main Section End -->
 
+
+<script>
+function updateProductTableClass() {
+    var tbl = document.getElementById('myOrdersTable');
+    var status = document.getElementsByClassName('status');
+    var statusValue = document.getElementsByClassName('status-value');
+    var date_field = document.getElementsByClassName('date_field');
+    var date_field_value = document.getElementsByClassName('date_field_value');
+
+
+    if (!tbl) return;
+
+    function toggleDisplay(elements, displayValue) {
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].style.display = displayValue;
+        }
+    }
+
+    if (window.innerWidth < 992) {
+        tbl.classList.remove('table');
+        toggleDisplay(status, 'none');
+        toggleDisplay(statusValue, 'none');
+        toggleDisplay(date_field, 'none');
+        toggleDisplay(date_field_value, 'none');
+
+    } else {
+        tbl.classList.add('table');
+        toggleDisplay(status, '');
+        toggleDisplay(statusValue, '');
+        toggleDisplay(date_field, '');
+        toggleDisplay(date_field_value, '');
+    }
+}
+
+window.addEventListener('DOMContentLoaded', updateProductTableClass);
+window.addEventListener('resize', updateProductTableClass);
+</script>
 
 {% endblock %}

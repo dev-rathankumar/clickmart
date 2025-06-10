@@ -89,7 +89,16 @@ table td, table th{
     background-color: #B92E3A !important;
 }
 
+.buyer-logged-in .col-lg-3.col-md-3.col-sm-12.col-xs-12{
+    background-color: #D1E8F2 !important;
+    border-radius: 10px !important;
+}
+
+
  .vendor-image-up-btn{
 		width: 250px !important;
 		height: 32px !important;
     }
+.text-accent{
+    color: #B92E3A !important;
+}

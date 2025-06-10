@@ -3,7 +3,15 @@
 
 {% block content %}
 {% include 'includes/alerts.html' %}
+<style>
+  
+  @media only screen and (max-width: 575px) {
+   .res-d-block{
+    display: block;
+   }
+  }
 
+</style>
 <!-- Main Section Start -->
 <div class="main-section">
     
@@ -20,8 +28,8 @@
                         <div class="user-holder">
                             <div class="user-holder">
                                 <h5 class="text-uppercase" style="display: inline;">Build Your Product</h5>
-                                <a href="{% url 'add_product' %}" class="btn btn-info float-right m-lg-1 m-md-1"><i class="fa fa-plus" aria-hidden="true"></i> Add Product</a>
-                                <a href="{% url 'import_products' %}" class="btn btn-success float-right m-1"><i class="fa fa-cloud-download" aria-hidden="true"></i> Import Products</a>
+                                <a href="{% url 'add_product' %}" class="btn btn-info float-right m-lg-1 m-md-1 res-d-block"><i class="fa fa-plus" aria-hidden="true"></i> Add Product</a>
+                                <a href="{% url 'import_products' %}" class="btn btn-success float-right m-1 res-d-block"><i class="fa fa-cloud-download" aria-hidden="true"></i> Import Products</a>
 
                                 <hr>
                               
@@ -30,14 +38,14 @@
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                     <div class="user-products-list">
                                         <div class="responsive-table">
-                                            <table class="table table-hover" id="myProductsTable">
+                                            <table class="table table-hover table-bordered" id="myProductsTable">
                                                 <thead>
                                                   <tr>
                                                     <th scope="col" style="display: none !important;">id</th>
                                                     <th scope="col">Barcode/ID</th>
                                                     <th scope="col">Product Name</th>
-                                                    <th scope="col">Category</th>
-                                                    <th scope="col">SubCategory</th>
+                                                    <th scope="col" class="pro-cat">Category</th>
+                                                    <th scope="col" class="pro-sub-cat">SubCategory</th>
                                                     <th scope="col">Price</th>
                                                     <th scope="col">Stock</th>
                                                     <th scope="col">Availability</th>
@@ -50,8 +58,8 @@
                                                     <td style="display: none !important;">{{ product.id }}</td>
                                                     <td style="padding:5px 5px">{{ product.barcode }}</td>
                                                     <td style="padding:5px 5px">{{ product.product_name }}</td>
-                                                    <td style="padding:5px 5px">{{ product.category.category_name }}</td>
-                                                    <td style="padding:5px 5px">{{ product.subcategory.category_name }}</td>
+                                                    <td style="padding:5px 5px" class="pro-cat-val">{{ product.category.category_name }}</td>
+                                                    <td style="padding:5px 5px" class="pro-sub-cat-val">{{ product.subcategory.category_name }}</td>
                                                     
                                                     {% if product.sales_price %}
                                                     <td style="padding:5px 5px">₹ {{ product.sales_price }}</td>                                                        
@@ -89,5 +97,40 @@
     </div>
 </div>
 <!-- Main Section End -->
+<!-- Place this script at the end of your template, before </body> -->
+<script>
+function updateProductTableClass() {
+    var tbl = document.getElementById('myProductsTable');
+    var product_category = document.getElementsByClassName('pro-cat');
+    var product_subcategory = document.getElementsByClassName('pro-sub-cat');
+    var product_category_value = document.getElementsByClassName('pro-cat-val');
+    var product_subcategory_value = document.getElementsByClassName('pro-sub-cat-val');
+
+    if (!tbl) return;
+
+    function toggleDisplay(elements, displayValue) {
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].style.display = displayValue;
+        }
+    }
+
+    if (window.innerWidth < 992) {
+        tbl.classList.remove('table');
+        toggleDisplay(product_category, 'none');
+        toggleDisplay(product_subcategory, 'none');
+        toggleDisplay(product_category_value, 'none');
+        toggleDisplay(product_subcategory_value, 'none');
+    } else {
+        tbl.classList.add('table');
+        toggleDisplay(product_category, '');
+        toggleDisplay(product_subcategory, '');
+        toggleDisplay(product_category_value, '');
+        toggleDisplay(product_subcategory_value, '');
+    }
+}
+
+window.addEventListener('DOMContentLoaded', updateProductTableClass);
+window.addEventListener('resize', updateProductTableClass);
+</script>
 
 {% endblock %}

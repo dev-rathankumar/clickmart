@@ -28,6 +28,11 @@ class OpeningHourForm(forms.ModelForm):
     class Meta:
         model = OpeningHour
         fields = ['day', 'from_hour', 'to_hour', 'is_closed']
+        widgets = {
+            'day': forms.Select(attrs={'class': 'custom-day-class'}),
+            'from_hour': forms.Select(attrs={'class': 'custom-from-hour-class'}),
+            'to_hour': forms.Select(attrs={'class': 'custom-to-hour-class'}),
+        }
 
 
 class CategoryImportForm(forms.Form):

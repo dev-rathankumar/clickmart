@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.views import check_role_vendor
 from menu.models import Category, FoodItem
 from django.template.defaultfilters import slugify
+from django.db.models import Count, Q
 import csv
 from inventory.models import tax as Tax
 
@@ -86,19 +87,31 @@ def vprofile(request):
 #*  ================ Category section =============== 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
+
 def category_builder(request):
     vendor = get_vendor(request)
     store_type = vendor.store_type
     if vendor.store_type is None:
         messages.error(request, "Vendor doesn't have a store type. Please contact the admin.")
         return redirect("vendor")
-    categories = Category.objects.filter(store_type=vendor.store_type, parent__isnull=True).order_by('created_at')
+    
+    categories = Category.objects.filter(
+        store_type=vendor.store_type, 
+        parent__isnull=True
+    ).annotate(
+        subcategory_count=Count(
+            'subcategories',
+            filter=Q(
+                subcategories__vendor_subcategory_reference_id=vendor.id
+            )
+        )
+    ).order_by('created_at')
+    
     context = {
         'categories': categories,
         'store_type': store_type,
     }
     return render(request, 'vendor/menu_builder.html', context)
-
 
 def import_categories(request):
     if request.method == 'POST' and request.FILES['category_file']:
@@ -557,7 +570,8 @@ def product_list_view(request):
     return render(request, 'vendor/products_list.html', context)
 
 def get_subcategories(request, category_id):
-    subcategories = Category.objects.filter(parent_id=category_id)
+    vendor = get_vendor(request)
+    subcategories = Category.objects.filter(parent_id=category_id,vendor_subcategory_reference_id=vendor.id)
     subcategory_list = [{'id': subcategory.id, 'name': subcategory.category_name} for subcategory in subcategories]
     return JsonResponse({'subcategories': subcategory_list})
     
@@ -847,7 +861,7 @@ def order_status(request):
             
             <br><br>
             Regards,
-            Clickmall
+            Flickbasket
         """
             recipient = order.user.email
             from_email = settings.DEFAULT_FROM_EMAIL

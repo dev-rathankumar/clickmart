@@ -59,10 +59,10 @@
                                     
                                     <div>
 
-                                        <table class="table">
+                                        <table class="table table-borderless">
                                             <tbody>
                                                 {% for item in cart_items %}
-                                                <tr>
+                                                <tr style="border:none;">
                                                     <td><img src="{{ item.product.image.url }}" width="40" alt="Prodcut Image"></td>
                                                     <td><b>{{ item.product }}</b></td>
                                                     <td>{{ item.quantity }}</td>
@@ -79,49 +79,49 @@
                                                 {% endfor %}
                                             </tbody>
                                         </table>
-
-                                        <ul>
-                                            <li style="list-style-type: none;">
-                                                Subtotal
+                                       <ul class="order-summary-list">
+                                            <li class="order-summary-item d-flex justify-content-between align-items-center text-start mx-3 mb-1">
+                                                <span>Subtotal</span>
                                                 <span class="price float-right">
                                                     <span class="currency">₹</span>
                                                     <span id="subtotal">{{ subtotal }}</span>
                                                 </span>
                                             </li>
                                             {% for single_tax_dict in tax_dict %}
-                                            {% for key, value in single_tax_dict.tax_info.items %}
-                                                {% if value %}  
-                                                    <li style="list-style-type: none;">
-                                                        {{ single_tax_dict.tax_category }} 
-                                                        <small>({{ key }}%)</small>
-                                                        {% for item in cart_items %}
-                                                        
-                                                        {% if item.product.id == single_tax_dict.product_id %}
-                                                        <small>{{item.product}}</small>
-                                                        {% endif %}
-                                                        {% endfor %}
-
-                                                        <span class="price float-right">
-                                                            <span class="currency">₹</span>
-                                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
-                                                        </span>
-                                                    </li>
-                                                {% endif %}
+                                                {% for key, value in single_tax_dict.tax_info.items %}
+                                                    {% if value %}  
+                                                        <li class="order-summary-item d-flex justify-content-between align-items-start text-start mx-3 mb-1">
+                                                            <div class="d-flex justify-content-start align-items-center">
+                                                                {{ single_tax_dict.tax_category }}
+                                                                <div class="tax-info-label">
+                                                                    <small  style="font-size: 12px;">({{ key }}%)</small>
+                                                                    {% for item in cart_items %}
+                                                                        {% if item.product.id == single_tax_dict.product_id %}
+                                                                            <small  style="font-size: 12px;">{{item.product}}</small>
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                            <span class="price float-right">
+                                                                <span class="currency">₹</span>
+                                                                <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
+                                                            </span>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
                                             {% endfor %}
-                                        {% endfor %}
-                                            <li style="list-style-type: none; font-weight: 600;">
-                                                TOTAL
-                                                <span class="price float-right">
+                                            <li class="order-summary-item total d-flex justify-content-between align-items-center text-start mx-3 mb-1">
+                                                <strong>TOTAL</strong>
+                                                <span class="price fw-bolder float-right">
                                                     <span class="currency">₹</span>
                                                     <span id="total">{{ grand_total }}</span>
                                                 </span>
                                             </li>
-
                                             {% if order.payment_method == 'PayPal' %}
                                             <!-- PayPal Checkout Button -->
                                             <div id="paypal-button-container"></div>
                                             {% elif order.payment_method == 'COD' %}
-                                            <button id="placeOrderBtn" type="submit" class="btn btn-danger w-100 p-2 mt-3" onclick="placeOrder()">Place Order</button>
+                                            <button id="placeOrderBtn" type="submit" class="btn btn-danger w-100 p-2 mt-3 mb-4" onclick="placeOrder()">Place Order</button>
                                             <div id="pay-loading" class="my-4"style="display:none;"></div>
                                             {% endif %}
                                         </ul>
@@ -175,8 +175,8 @@
             "key": "{{ RZP_KEY_ID }}", // Enter the Key ID generated from the Dashboard
             "amount": "{{ rzp_amount }}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
             "currency": "INR",
-            "name": "Clickmall",
-            "description": "Clickmall - Multi Vendor Ecommerce Marketplace",
+            "name": "Flickbasket",
+            "description": "Flickbasket - Multi Vendor Ecommerce Marketplace",
             "image": "{% static 'logo/foodOnlineLogo.png' %}",
             "order_id": "{{ rzp_order_id }}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
             "handler": function (response){
