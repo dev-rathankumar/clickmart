@@ -12,7 +12,8 @@ from orders.models import Order, OrderedFood
 # from menu.models import Product,ProductGallery
 from unified.models import Product,ProductGallery
 import vendor
-from .forms import VendorForm, OpeningHourForm, CategoryImportForm, ProductImportForm
+from vendor.constants import CSV_FIELD_MAPPINGS
+from .forms import VendorForm, OpeningHourForm, CategoryImportForm, ProductImportForm, CSVUploadForm
 from accounts.forms import UserInfoForm, UserProfileForm
 
 from accounts.models import UserProfile
@@ -37,8 +38,7 @@ from django.core.files.base import ContentFile
 from urllib.request import urlretrieve
 from io import BytesIO
 from accounts.utils import send_notification
-
-
+import io
 
 
 
@@ -895,7 +895,86 @@ def import_your_data(request):
 
 def connect_erp(request):
     source = request.GET.get('source')
+    if source == 'Custom':
+        return redirect('upload_csv')
+    
     context = {
         'source': source,
     }
     return render(request, 'vendor/connect_erp.html', context)
+
+
+def upload_csv(request):
+    if request.method == 'POST':
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data['file']
+            decoded_file = file.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.reader(io_string)
+            headers = next(reader)
+
+            request.session['csv_data'] = decoded_file  # Save for later processing
+
+            return redirect('map_headers')  # Redirect to map headers page
+    else:
+        form = CSVUploadForm()
+    return render(request, 'vendor/upload_csv.html', {'form': form})
+
+
+def map_headers(request):
+    csv_data = request.session.get('csv_data')
+    if not csv_data:
+        return redirect('upload_csv')
+
+    io_string = io.StringIO(csv_data)
+    reader = csv.reader(io_string)
+    headers = next(reader)
+
+    internal_fields = CSV_FIELD_MAPPINGS
+
+    return render(request, 'vendor/map_headers.html', {
+        'csv_headers': headers,
+        'internal_fields': internal_fields,
+    })
+
+
+def process_mapped_data(request):
+    if request.method == 'POST':
+        mappings = {}
+        for key in CSV_FIELD_MAPPINGS.keys():
+            mappings[key] = request.POST.get(f'mapping_{key}')
+        print('mappings==>', mappings)
+
+        csv_data = request.session.get('csv_data')
+        
+        if not csv_data or not mappings:
+            return redirect('upload_csv')
+        
+        io_string = io.StringIO(csv_data)
+        reader = csv.DictReader(io_string)
+        products = []
+
+        for row in reader:
+            product = {}
+            for internal_field, csv_header in mappings.items():
+                product[internal_field] = row.get(csv_header, '').strip()
+                if csv_header:  # skip if user didn't map a field
+                    product[internal_field] = row.get(csv_header, '').strip()
+            products.append(product)
+
+        show_all = request.GET.get('show_all') == '1'
+        products_to_display = products if show_all else products[:3]
+
+        return render(request, 'vendor/validate_import_data.html', {
+            'products': products_to_display,
+            'field_mappings': CSV_FIELD_MAPPINGS,
+            'count': len(products),
+            'show_all': show_all,
+        })
+    return redirect('upload_csv')
+    
+    
+
+def validate_import_data(request):
+    pass

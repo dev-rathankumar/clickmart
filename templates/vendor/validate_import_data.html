@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/alerts.html' %}
+{% load custom_tags %}
+
+<!-- Main Section Start -->
+<div class="main-section">
+    {% include 'includes/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <!-- Load the sidebar here -->
+                    {% include 'includes/v_sidebar.html' %}
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder">
+                        <div class="user-holder">
+                            <h4 >Connect your <span style="color: #DC3545;">{{ source }}</span> account with Clickmall</h4>
+							<hr>
+                        </div>
+
+                       <h2 class="mb-3">Step 3: Review Products</h2>
+                        <p class="text-muted mb-4 alert alert-info" style="padding: 6px 10px;">
+                           <b>{{ count }}</b> products found in your file. Please check and review before saving.
+                        </p>
+
+                        <form method="post" action="">
+                        {% csrf_token %}
+
+                        <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-hover table-sm">
+                            <thead class="table-light">
+                            <tr>
+                                {% for key, info in field_mappings.items %}
+                                <th>{{ info.label }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in products|slice:":20" %}
+                                <tr>
+                                {% for key, info in field_mappings.items %}
+                                    <td>{{ row|get_item:key }}</td>
+                                {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="text-muted text-end">Showing first 20 of {{ count }} products.</p>
+                        </div>
+
+                        {% if count > 3 and not show_all %}
+                        <p class="text-end">
+                            Showing first 3 of {{ count }} products. 
+                            <a href="?show_all=1" class="btn btn-link">Show All</a>
+                        </p>
+                        {% elif count > 3 %}
+                        <p class="text-end">
+                            Showing all {{ count }} products.
+                            <a href="?show_all=0" class="btn btn-link">Show Less</a>
+                        </p>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success">Save to Database</button>
+                        </div>
+                    </form>
+                        
+                       
+                            
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+
+{% endblock %}

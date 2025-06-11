@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/alerts.html' %}
+
+<!-- Main Section Start -->
+<div class="main-section">
+    {% include 'includes/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <!-- Load the sidebar here -->
+                    {% include 'includes/v_sidebar.html' %}
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder">
+                        <div class="user-holder">
+                            <h4 >Connect your <span style="color: #DC3545;">{{ source }}</span> account with Clickmall</h4>
+							<hr>
+                        </div>
+
+                        <h2>Step 1: Upload Your CSV File</h2>
+                        <p class="text-muted text-left mb-4" style="font-size: 0.8rem; font-style: italic;">
+                            Please upload your product stock CSV file exported from your ERP system (e.g., Tally, Marg, Busy, etc.).<br>
+                            Don’t worry if the column names don’t match — you’ll map them in the next step.
+                        </p>
+                        <br>
+                        
+                            <div class="card-body">
+
+                                <form method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="id_file" class="form-label">Choose CSV File</label>
+                                        {{ form.file }}
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary">Next: Map Headers</button>
+                                    </div>
+                                </form>
+
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+
+{% endblock %}

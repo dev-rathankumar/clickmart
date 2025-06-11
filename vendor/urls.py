@@ -50,6 +50,10 @@ urlpatterns = [
     path('media-library/upload/', views.FileUploadView.as_view(), name='media_upload'),
     path('import-your-data/source/', views.import_your_data, name='import_your_data'),
     path('import-your-data/connect/', views.connect_erp, name='connect_erp'),
+    path('import-your-data/upload_csv/', views.upload_csv, name='upload_csv'),
+    path('import-your-data/map_headers/', views.map_headers, name='map_headers'),
+    path('import-your-data/process_mapped_data/', views.process_mapped_data, name='process_mapped_data'),
+    path('import-your-data/validate_import_data/', views.process_mapped_data, name='validate_import_data'),
 
 
 ]

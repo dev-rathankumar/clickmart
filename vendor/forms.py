@@ -35,3 +35,7 @@ class CategoryImportForm(forms.Form):
 
 class ProductImportForm(forms.Form):
     products_file = forms.FileField()
+
+
+class CSVUploadForm(forms.Form):
+    file = forms.FileField(label="Upload CSV file")
