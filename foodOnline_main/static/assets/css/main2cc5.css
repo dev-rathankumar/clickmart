@@ -1437,12 +1437,16 @@ textarea:focus {
 .form-group input {
   background: #fff;
   border: 1px solid #ececec;
-  height: 64px;
+  height: 44px;
   -webkit-box-shadow: none;
   box-shadow: none;
   padding-left: 20px;
-  font-size: 16px;
+  font-size: 14px;
   width: 100%;
+}
+
+.search-form input{
+  height: 44px;
 }
 
 .form-group input:focus {
@@ -1866,7 +1870,7 @@ input.qty-val {
 
 .hero-slider-1 .single-hero-slider {
   height: 300px;
-  border-radius: 30px;
+  border-radius: 10px;
   background-size: cover;
   background-position: center center;
 }

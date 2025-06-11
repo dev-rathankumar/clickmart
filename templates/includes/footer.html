@@ -1,13 +1,13 @@
 {% load static %}
 <!-- Footer Start -->
-<footer class="bg-clickmall text-light pt-5 pb-4">
+<footer class="bg-clickmall text-light pt-5 pb-4 mt-60">
     <div class="container">
       <div class="row">
   
         <!-- About Flickbasket -->
         <div class="col-md-3 mb-4">
           <h5 class="text-uppercase mb-3 text-light">About Flickbasket</h5>
-          <span class="text-light">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer in feugiat lorem.</span>
+          <span class="text-light">Flickbasket is a multi-vendor marketplace that brings together various sellers, allowing customers to discover and shop a wide range of products in one seamless and convenient platform.</span>
           <div class="d-flex gap-3 mt-3">
             <a href="#" class="text-light"><i class="fa fa-facebook-f"></i></a>
             <a href="#" class="text-light"><i class="fa fa-twitter"></i></a>
@@ -22,23 +22,24 @@
   
         <!-- Pages -->
         <div class="col-md-3 mb-4">
-          <h5 class="text-uppercase mb-3 text-light">Pages</h5>
+          <h5 class="text-uppercase mb-3 text-light">Sell on Flickbasket</h5>
           <ul class="list-unstyled">
-            <li><a href="#" class="text-light text-decoration-none">Home</a></li>
-            <li><a href="#" class="text-light text-decoration-none">About Us</a></li>
-            <li><a href="#" class="text-light text-decoration-none">Contact</a></li>
+            <li><a href="{% url 'registerVendor' %}" class="text-light text-decoration-none">Become a Seller</a></li>
+            <li><a href="{% url 'login' %}" class="text-light text-decoration-none">Login</a></li>
+            <li><a href="{% url 'marketplace' %}" class="text-light text-decoration-none">Our Sellers</a></li>
             <li><a href="#" class="text-light text-decoration-none">FAQs</a></li>
           </ul>
         </div>
   
         <!-- Explore -->
         <div class="col-md-3 mb-4">
-          <h5 class="text-uppercase mb-3 text-light">Explore</h5>
+          <h5 class="text-uppercase mb-3 text-light">Legal</h5>
           <ul class="list-unstyled">
-            <li><a href="#" class="text-light text-decoration-none">Offers</a></li>
-            <li><a href="#" class="text-light text-decoration-none">New Arrivals</a></li>
-            <li><a href="#" class="text-light text-decoration-none">Top Sellers</a></li>
-            <li><a href="#" class="text-light text-decoration-none">Blog</a></li>
+            <li><a href="#" class="text-light text-decoration-none">Terms & Conditions</a></li>
+            <li><a href="#" class="text-light text-decoration-none">Privacy Policy</a></li>
+            <li><a href="#" class="text-light text-decoration-none">Cancellation & Refund Policy</a></li>
+            <li><a href="#" class="text-light text-decoration-none">Cookie Policy</a></li>
+            <li><a href="#" class="text-light text-decoration-none">Contact Us</a></li>
           </ul>
         </div>
   
@@ -46,10 +47,9 @@
         <div class="col-md-3 mb-4">
           <h5 class="text-uppercase mb-3 text-light">Collections</h5>
           <ul class="list-unstyled">
-            <li><a href="#" class="text-light text-decoration-none">Groceries</a></li>
-            <li><a href="#" class="text-light text-decoration-none">Electronics</a></li>
-            <li><a href="#" class="text-light text-decoration-none">Fashion</a></li>
-            <li><a href="#" class="text-light text-decoration-none">Health & Beauty</a></li>
+            {% for i in store_types_footer %}
+            <li><a href="{% url 'marketplace' %}?search={{i}}" class="text-light text-decoration-none">{{ i }}</a></li>
+            {% endfor %}
           </ul>
          
         </div>

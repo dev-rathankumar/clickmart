@@ -22,7 +22,7 @@
         <div class="container-fluid">
             <div class="breadcrumb">
                 <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                <span></span> <a href="shop-grid-right.html">{{ product.category }}</a> <span></span> {{ product.product_name }}
+                <span></span> <a href="{% url 'filter_by_category' category_id=product.category.id %}">{{ product.category }}</a> <span></span> {{ product.product_name }}
             </div>
         </div>
     </div>
@@ -140,7 +140,7 @@
                                     <div class="row related-products">
                                       {% if similar_products %}
                                       {% for similar_product in similar_products %}
-                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                        <div class="col-lg-3 col-md-4 col-6 col-sm-6">
                                             <div class="product-cart-wrap hover-up">
                                                 <div class="product-img-action-wrap">
                                                     <div class="product-img product-img-zoom">

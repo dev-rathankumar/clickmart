@@ -102,3 +102,15 @@ table td, table th{
 .text-accent{
     color: #B92E3A !important;
 }
+
+@media (max-width: 767.98px) {
+  .card-2.categories {
+    width: 120px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .mobile-column-reverse {
+    flex-direction: column-reverse !important;
+  }
+}
