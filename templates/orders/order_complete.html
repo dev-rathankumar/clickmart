@@ -1,12 +1,68 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<style>
+  /* Responsive Styles */
+  @media only screen and (max-width: 1199px) {
+    select {width: 41%;}
 
+  }
+  
+  
+  @media only screen and (max-width: 991px) {
+    select {width: 41%;}
+    .custom-design-for-info{
+        display: block !important;
+    }
+    
+    select option {
+        font-size: 12px;
+    }
+
+
+    .status-img{
+        width: 160px !important;
+    }
+  }
+
+
+
+  @media only screen and (max-width: 768px) {
+    select {width: 41%;}
+    select option {font-size: 12px;}
+    .custom-design-for-info{
+        display: block !important;
+    }
+    .image-logo{
+        width: 170px !important;
+    }
+    .status-img{
+        width: 130px !important;
+    }
+
+  }
+  
+  
+  @media only screen and (max-width: 575px) {
+    select {width: 41%;}
+    select option {font-size: 10px;}
+    .custom-design-for-info{
+        display: block !important;
+    }
+    .image-logo{
+        width: 150px !important;
+    }
+    .status-img{
+        width: 100px !important;
+    }
+  }
+
+</style>
 <div class="container mt-5 mb-5">
     <div class="justify-content-center row">
         <div class="col-md-8">
             <div class="bg-white p-3">
-                <img src="{% static 'logo/clickmall-logo.svg' %}" alt="foodOnline Logo" width="300">
+                <img src="{% static 'logo/flickbasket-logo.svg' %}" alt="flickbasket Logo" width="300" class="image-logo">
                 <div class="row">
                     <div class="col-md-6">
                         <h4 class="mt-2 mb-3">Thank you for your order.</h4>
@@ -22,7 +78,7 @@
                 <h6>Hello {{ order.name }}, </h6><span>Review your order details below.</span>
                 <hr>
 
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between custom-design-for-info">
                     <div>
                         <span class="d-block">Order Date: </span><span class="font-weight-bold">{{ order.created_at }}</span>
                     </div>
@@ -63,15 +119,15 @@
                 <div class="row mt-5">
                     <div class="d-flex justify-content-center col-md-6">
                         {% if order.payment_method != 'COD' %}
-                        <img src="{% static 'images/paid.png' %}" width="200">
+                        <img src="{% static 'images/paid.png' %}" width="200" class="status-img">
                         {% elif order.payment_method == 'COD' %}
-                        <img src="{% static 'images/cod.svg' %}" width="200">
+                        <img src="{% static 'images/cod.svg' %}" width="200" class="status-img">
                         {% endif %}
                     </div>
                     
                     <div class="col-md-6">
                         <ul>
-                            <li style="list-style-type: none;">
+                            <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
                                 Subtotal
                                 <span class="price float-right">
                                     <span class="currency">₹</span>
@@ -82,15 +138,16 @@
                             {% for single_tax_dict in tax_data %}
                             {% for key, value in single_tax_dict.tax_info.items %}
                                 {% if value %}  
-                                    <li style="list-style-type: none;">
-                                        {{ single_tax_dict.tax_category }} 
-                                        <small>({{ key }}%)</small>
-                                        {% for item in cart_items %}
-                                        
-                                        {% if item.product.id == single_tax_dict.product_id %}
-                                        <small>{{item.product}}</small>
-                                        {% endif %}
-                                        {% endfor %}
+                                    <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            {{ single_tax_dict.tax_category }} 
+                                            <small>({{ key }}%)</small>
+                                            {% for item in cart_items %}
+                                            {% if item.product.id == single_tax_dict.product_id %}
+                                            <small>{{item.product}}</small>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
 
                                         <span class="price float-right">
                                             <span class="currency">₹</span>
@@ -103,9 +160,9 @@
 
 
 
-                            <li style="list-style-type: none; font-weight: 600;">
+                            <li style="list-style-type: none; font-weight: 600;" class="d-flex justify-content-between align-items-center">
                                 TOTAL
-                                <span class="price float-right">
+                                <span class="price float-right ">
                                     <span class="currency">₹</span>
                                     <span id="total">{{ order.total }}</span>
                                 </span>
@@ -117,7 +174,7 @@
                 <div class="d-flex justify-content-between">
                     <div>
                         <span class="d-block font-weight-bold">Thanks for ordering with us.</span>
-                        <span>Clickmall Team</span>
+                        <span>Flickbasket Team</span>
                     </div>
                 </div>
             </div>

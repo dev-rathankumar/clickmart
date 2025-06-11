@@ -60,6 +60,7 @@ def get_cart_amounts(request):
             tax_dict.append(tax_entry)
 
         grand_total = subtotal
+        print(tax_dict)
 
     return dict(subtotal=subtotal, tax=tax_value, grand_total=grand_total, tax_dict=tax_dict)
 

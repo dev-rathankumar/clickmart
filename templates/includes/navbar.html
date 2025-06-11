@@ -5,8 +5,8 @@
   .dropdown {
     position: relative;
     display: inline-block;
-}
-.dropdown-content {
+  }
+  .dropdown-content {
     display: none;
     position: fixed;
     background-color: #f9f9f9;
@@ -14,381 +14,359 @@
     border: 1px solid #ccc;
     margin: 11px 0px 0px 40px;
     z-index: 1;
-}
-.dropdown-content a {
+  }
+  .dropdown-content a {
     color: black;
     padding: 8px 12px;
     text-decoration: none;
     display: block;
-}
-.dropdown-content a:hover {
+  }
+  .dropdown-content a:hover {
     background-color: #f1f1f1;
-}
-.show {
+  }
+  .show {
     display: block;
-}
-.subcategory {
+  }
+  .subcategory {
     margin-left: 20px;
     font-size: 0.9em;
-}
-.btn-category{
+  }
+  .btn-category{
     padding: 6px 50px 5px 50px;
     margin: 0px 10px 0px 40px;
     font-weight: 600;
-}
-.logout-icon{
+  }
+  .logout-icon{
     font-size: 20px;
-}
-/* This Design for the Become a seller button  */
-.Become_a_seller_btn {
+  }
+  /* This Design for the Become a seller button  */
+  .Become_a_seller_btn {
     line-height: 44px !important;
     border-radius: 5px !important;
     padding: 0 20px !important;
     font-family: "Quicksand", sans-serif !important;
     font-size: 16px !important;
   }
-  
-@media only screen and (max-width: 768px) {
+
+  /* Responsive Styles */
+  @media only screen and (max-width: 1199px) {
+    .header-middle .container-fluid.py-2 {
+      flex-direction: column !important;
+      gap: 1rem !important;
+    }
+    .header-middle .d-flex.align-items-center.justify-content-between.flex-wrap.gap-3 {
+      flex-direction: column !important;
+      gap: 1rem !important;
+      align-items: stretch !important;
+    }
+    .header-middle .flex-grow-1 {
+      width: 100% !important;
+    }
+    .header-middle .d-flex.align-items-center.gap-3.flex-shrink-0 {
+      justify-content: flex-end !important;
+    }
+  }
+  @media only screen and (max-width: 991px) {
+    .header-middle.d-none.d-lg-block {
+      display: none !important;
+    }
+    .mobile-navbar {
+      display: block !important;
+    }
+    .navbar-mobile-overlay {
+      display: none;
+      position: fixed;
+      left: 0; top: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1099;
+      background: rgba(0,0,0,0.2);
+    }
+    .navbar-mobile-menu {
+      position: fixed;
+      left: 0; top: 0;
+      width: 80vw; max-width: 320px;
+      height: 100vh;
+      background: #fff;
+      z-index: 1100;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.07);
+      transform: translateX(-100%);
+      transition: transform 0.3s;
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      overflow-y: auto;
+    }
+    .navbar-mobile-menu.show {
+      transform: translateX(0);
+    }
+    .navbar-mobile-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .navbar-mobile-top .logo img {
+      height: 55px;
+    }
+    .mobile-category-btn {
+      display: block;
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+    .mobile-search-bar {
+      margin-bottom: 1.5rem;
+    }
+    .mobile-navbar-location {
+      margin-bottom: 1.5rem;
+    }
+    .mobile-navbar-links a, .mobile-navbar-links .btn {
+      display: block;
+      margin-bottom: 1rem;
+    }
+    .mobile-navbar-links .btn {
+      width: 100%;
+    }
+    .mobile-navbar-links .badge {
+      position: static !important;
+      margin-left: 8px;
+    }
+    .mobile-navbar-links .logout-icon {
+      font-size: 18px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+  }
+  @media only screen and (max-width: 768px) {
     .main-logo img{
-        max-width: 95%;
+      max-width: 95%;
     }
     .btn-category{
-        margin: 10px 10px 0px 0px;
-        padding: 6px 20px 5px 20px;
+      margin: 10px 10px 0px 0px;
+      padding: 6px 20px 5px 20px;
     }
     .main-location{
-        width: 100%;
-        margin-left: 0px !important;
-        margin-top: 5px;
+      width: 100%;
+      margin-left: 0px !important;
+      margin-top: 5px;
     }
     #categoryDropdown{
-        margin: 11px 0px 0px -40px;
-        z-index: 999;
+      margin: 11px 0px 0px -40px;
+      z-index: 999;
     }
     .logout-icon{
-        font-size: 18px;
-        position: relative;
-        top: 2px;
-        left: 10px;
+      font-size: 18px;
+      position: relative;
+      top: 2px;
+      left: 10px;
     }
     .cart-page .decrease_cart{
-        margin-right: 5px !important;
+      margin-right: 5px !important;
     }
     .menu-itam-holder .menu-itam-list .price-holder a i{
-        margin-left: 5px !important;
+      margin-left: 5px !important;
     }
-}
+  }
+  @media only screen and (max-width: 575px) {
+    .navbar-mobile-menu {
+      width: 97vw;
+      max-width: 97vw;
+      padding: 1rem 0.5rem 1.5rem 0.5rem;
+    }
+    .navbar-mobile-top .logo img {
+      height: 55px;
+    }
+    .popular-categories .slider-btn.slider-prev {
+        right: 50px !important;
+         left: 20px !important; 
+    }
+    option[name=store_type] {
+      padding: 10px;
+      font-size: 10px;
+    }
+  }
+  /* Hide mobile navbar on desktop */
+  .mobile-navbar { display: none; }
 </style>
 
 <header class="header-area header-style-1 header-height-2">
-	<div class="header-middle d-none d-lg-block" style="border-bottom: 1px solid #ececec;">
-		<!-- <div class="container-fluid">
-			<div class="header-wrap">
-                <div class="header-left" style="display: flex; width: 40%; align-items: center;">
-                    <div class="logo logo-width-1">
-                        <a href="/"><img src="{% static 'logo/clickmall-logo.svg' %}" alt="logo" /></a>
-                    </div>
-    
-                    <div class="main-categori-wrap d-none d-lg-block">
-                        <a class="categories-button-active" href="#">
-                            <span class="fi-rs-apps"></span> Browse All Categories
-                            <i class="fi-rs-angle-down"></i>
-                        </a>
-                        <div class="categories-dropdown-wrap categories-dropdown-active-large font-heading">
-                            <div class="d-flex categori-dropdown-inner">
-                                <ul>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="{% static 'assets/imgs/theme/icons/category-1.svg' %}" alt="" />Milks and Dairies</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="{% static 'assets/imgs/theme/icons/category-2.svg' %}" alt="" />Clothing & beauty</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-3.svg" alt="" />Pet Foods & Toy</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-4.svg" alt="" />Baking material</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-5.svg" alt="" />Fresh Fruit</a>
-                                    </li>
-                                </ul>
-                                <ul class="end">
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-6.svg" alt="" />Wines & Drinks</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-7.svg" alt="" />Fresh Seafood</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-8.svg" alt="" />Fast food</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-9.svg" alt="" />Vegetables</a>
-                                    </li>
-                                    <li>
-                                        <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/category-10.svg" alt="" />Bread and Juice</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="more_slide_open" style="display: none">
-                                <div class="d-flex categori-dropdown-inner">
-                                    <ul>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-1.svg" alt="" />Milks and Dairies</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-2.svg" alt="" />Clothing & beauty</a>
-                                        </li>
-                                    </ul>
-                                    <ul class="end">
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-3.svg" alt="" />Wines & Drinks</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="assets/imgs/theme/icons/icon-4.svg" alt="" />Fresh Seafood</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="more_categories"><span class="icon"></span> <span class="heading-sm-1">Show more...</span></div>
-                        </div>
-                    </div>
-                </div>
-				
+  <!-- Desktop Navbar -->
+  <div class="header-middle d-none d-lg-block" style="border-bottom: 1px solid #ececec;">
+    <!-- ... Desktop navbar unchanged ... -->
+    <div class="container-fluid py-2">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <!-- Left Side: Logo + Categories -->
+        <div class="d-flex align-items-center gap-4 flex-shrink-0">
+          <!-- Logo -->
+          <div class="logo logo-width-1">
+            <a href="/"><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" style="height: 75px;" /></a>
+          </div>
 
-
-				<div class="header-right" style="width: 60%;">
-					<div class="search-style-2">
-						<form action="#">
-							<select class="select-active">
-								<option>All Categories</option>
-								<option>Milks and Dairies</option>
-								<option>Wines & Alcohol</option>
-								<option>Clothing & Beauty</option>
-								<option>Pet Foods & Toy</option>
-								<option>Fast food</option>
-								<option>Baking material</option>
-								<option>Vegetables</option>
-								<option>Fresh Seafood</option>
-								<option>Noodles & Rice</option>
-								<option>Ice cream</option>
-							</select>
-							<input type="text" placeholder="Search for items..." />
-						</form>
-					</div>
-					<div class="header-action-right">
-						<div class="header-action-2">
-							<div class="search-location">
-								<form action="#">
-									<select class="select-active">
-										<option>Your Location</option>
-										<option>Alabama</option>
-										<option>Alaska</option>
-										<option>Arizona</option>
-										<option>Delaware</option>
-										<option>Florida</option>
-										<option>Georgia</option>
-										<option>Hawaii</option>
-										<option>Indiana</option>
-										<option>Maryland</option>
-										<option>Nevada</option>
-										<option>New Jersey</option>
-										<option>New Mexico</option>
-										<option>New York</option>
-									</select>
-								</form>
-							</div>
-							
-							
-							
-							
-						</div>
-					</div>
-				</div>
-			</div>
-		</div> -->
-	
-        <div class="container-fluid py-2">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-        
-                <!-- Left Side: Logo + Categories -->
-                <div class="d-flex align-items-center gap-4 flex-shrink-0">
-                    <!-- Logo -->
-                    <div class="logo logo-width-1">
-                        <a href="/"><img src="{% static 'logo/clickmall-logo.svg' %}" alt="logo" style="height: 75px;" /></a>
-                    </div>
-        
-                    <!-- Categories Dropdown -->
-                    <div class="main-categori-wrap d-none d-lg-block">
-                        <a class="categories-button-active" href="#" data-bs-toggle="modal" data-bs-target="#locationModal">
-                            <span class="fi-rs-marker"></span> <span  id="location-selector">Select Location</span>
-                        </a>
-                    </div>
-                    
-                </div>
-
-                <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="locationModalLabel">Select Your Location</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <ul>
-                                <li class="location-has-children choose-location">
-                                    <form action="#">
-                                        <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
-                                       
-                                    </form>
-                                </li>
-                                <li class="mt-3">
-                                    <div>
-                                        <div class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2">
-                                            <div>
-                                                <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()" style="cursor: pointer;">
-                                                            <i class="icon-target5"></i>
-                                                            Use your current location 
-                                                            <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
-                                                </span>
-                                        </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-        
-                <!-- Middle: Search Bar -->
-                <div class="flex-grow-1">
-                    <div class="search-style-2">
-                        <form action="{% url 'all_products' %}" method="get" class="d-flex">
-                            <select name="store_type" class="select-active me-2" style="min-width: 150px;">
-                                <option value="">All Categories</option>
-                                {% for st_type in store_types %}
-                                <option name=store_type value="{{st_type.slug}}" >{{st_type.name}}</option>
-                                {% endfor %}
-                            </select>
-                            <input type="text" name=search class="form-control" placeholder="What are you looking for?" />
-                            <button type="submit" class="ml-2" style="width:65px; background-color: transparent !important; "></button>
-
-                        </form>
-                    </div>
-                </div>
-        
-                <!-- Right Side: Location -->
-                <div class="d-flex align-items-center gap-3 flex-shrink-0">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'cart' %}" class="text-dark position-relative me-2 ms-4" style="font-size: 1.2rem;">
-                        <i class="fa fa-shopping-cart"></i>
-                        <!-- Optional: Cart item count badge -->
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{cart_count}}
-                            <span class="visually-hidden">cart items</span>
-                        </span>
-                    </a>
-                    <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
-                    {% endif %}
-                    {% if user.is_authenticated %}
-                    <a class="text-dark fw-700 login-popup" href="{% url 'myAccount' %}">My Account</a>
-                    <a class="cs-color cs-popup-joinus-btn login-popup text-danger" href="{% url 'logout' %}"><i class="fa fa-power-off logout-icon" aria-hidden="true"></i></a>
-                    {% else %}
-                    <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
-
-                    <a href="{% url 'login' %}" class="text-danger" style="font-size: 1rem; font-weight: 600;">
-                        <i class="fa fa-sign-in" aria-hidden="true"></i> Login
-                    </a>
-
-                    <div class="main-categori-wrap d-none d-lg-block" style="margin-right:10px; !important">
-                        <a class="Become_a_seller_btn" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff;">
-                            Become a Seller
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-        
-            </div>
+          <!-- Categories Dropdown -->
+          <div class="main-categori-wrap d-none d-lg-block">
+            <a class="categories-button-active" href="#" data-bs-toggle="modal" data-bs-target="#locationModal">
+              <span class="fi-rs-marker"></span> <span id="location-selector">Select Location</span>
+            </a>
+          </div>
         </div>
-        
+
+        <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="locationModalLabel">Select Your Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  <li class="location-has-children choose-location">
+                    <form action="#">
+                      <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
+                    </form>
+                  </li>
+                  <li class="mt-3">
+                    <div>
+                      <div class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2">
+                        <div>
+                          <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()" style="cursor: pointer;">
+                            <i class="icon-target5"></i>
+                            Use your current location 
+                            <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle: Search Bar -->
+        <div class="flex-grow-1">
+          <div class="search-style-2">
+            <form action="{% url 'all_products' %}" method="get" class="d-flex">
+              <select name="store_type" class="select-active me-2" style="min-width: 150px;">
+                <option value="">All Categories</option>
+                {% for st_type in store_types %}
+                <option name=store_type value="{{st_type.slug}}" >{{st_type.name}}</option>
+                {% endfor %}
+              </select>
+              <input type="text" name=search class="form-control" placeholder="What are you looking for?" />
+              <button type="submit" class="ml-2" style="width:65px; background-color: transparent !important; "></button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Side: Location -->
+        <div class="d-flex align-items-center gap-3 flex-shrink-0">
+          {% if user.is_authenticated %}
+          <a href="{% url 'cart' %}" class="text-dark position-relative me-2 ms-4" style="font-size: 1.2rem;">
+            <i class="fa fa-shopping-cart"></i>
+            <!-- Optional: Cart item count badge -->
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              {{cart_count}}
+              <span class="visually-hidden">cart items</span>
+            </span>
+          </a>
+          <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
+          {% endif %}
+          {% if user.is_authenticated %}
+          <a class="text-dark fw-700 login-popup" href="{% url 'myAccount' %}">My Account</a>
+          <a class="cs-color cs-popup-joinus-btn login-popup text-danger" href="{% url 'logout' %}"><i class="fa fa-power-off logout-icon" aria-hidden="true"></i></a>
+          {% else %}
+          <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
+          <a href="{% url 'login' %}" class="text-danger" style="font-size: 1rem; font-weight: 600;">
+            <i class="fa fa-sign-in" aria-hidden="true"></i> Login
+          </a>
+          <div class="main-categori-wrap d-none d-lg-block" style="margin-right:10px; !important">
+            <a class="Become_a_seller_btn" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff;">
+              Become a Seller
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
-	
+  </div>
+  <!-- Mobile Navbar -->
+  <div class="mobile-navbar" style="position:relative;">
+    <div style="background: #fff; border-bottom:1px solid #ececec; padding: 7px 0;">
+      <div class="container-fluid d-flex align-items-center justify-content-between">
+        <div class="logo">
+          <a href="/"><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" style="height: 60px;" /></a>
+        </div>
+        <div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'cart' %}" class="text-dark position-relative me-2" style="font-size:1.4rem;">
+            <i class="fa fa-shopping-cart"></i>
+            <span class="badge rounded-pill bg-danger">
+                {{cart_count}}
+            </span>
+            </a>
+            {% endif %}
+          <button class="btn btn-danger py-1 px-2" id="mobileMenuOpen" style="font-size:22px; border-radius:4px;">
+            <i class="fa fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="navbar-mobile-overlay" id="mobileNavbarOverlay"></div>
+    <div class="navbar-mobile-menu" id="mobileNavbarMenu">
+      <div class="navbar-mobile-top">
+        <div class="logo">
+          <a href="/"><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" /></a>
+        </div>
+        <button class="btn btn-link" id="mobileMenuClose" style="font-size:20px;"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="mobile-search-bar">
+        <form action="{% url 'all_products' %}" method="get" class="d-flex">
+          <select name="store_type" class="form-select me-2" style="min-width: 110px;">
+            <option value="" name="store_type">All Categories</option>
+            {% for st_type in store_types %}
+            <option name=store_type value="{{st_type.slug}}" >{{st_type.name}}</option>
+            {% endfor %}
+          </select>
+          <input type="text" name=search class="form-control" placeholder="What are you looking for?" />
+          <button type="submit" class="ml-2 btn btn-light" style="width: 20px;margin-left: 10px;padding-left: 17px;"><i class="fa fa-search"></i></button>
+        </form>
+      </div>
+      <div class="mobile-navbar-location">
+        <form action="#">
+          <input type="text" value="" name="location" id="location_mobile" placeholder="Your current location" autocomplete="off" class="form-control mb-1">
+        </form>
+        <span id="foodbakery_radius_location_open_mobile" class="foodbakery-radius-location" onclick="getLocation()" style="cursor:pointer;">
+          <i class="icon-target5"></i> Use your current location
+          <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
+        </span>
+      </div>
+      <div class="mobile-navbar-links">
+        {% if user.is_authenticated %}
+        <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
+        <a class="btn btn-outline-danger text-uppercase font-weight-bold" href="{% url 'myAccount' %}">My Account</a>
+        <a class="btn btn-outline-danger text-uppercase font-weight-bold" href="{% url 'logout' %}">
+          <i class="fa fa-power-off" aria-hidden="true"></i> Logout
+        </a>
+        {% else %}
+        <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
+        <a class="btn btn-outline-danger text-uppercase font-weight-bold" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff;">
+            Become a Seller
+          </a>
+        <a href="{% url 'login' %}" class="text-danger" style="font-size: 1rem; font-weight: 600;">
+          <i class="fa fa-sign-in" aria-hidden="true"></i> Login
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </header>
 
 <!--Main Wrapper-->
 <div class="wrapper">
-    <!-- Header Start -->
-    <!-- <header id="header">
-        <div class="main-header">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
-                       <div class="d-flex flex-row justify-content-start align-items-center flex-wrap">
-                        <div class="logo py-0">
-                            <figure class="mb-0">
-                                <a href="/" class="light-logo main-logo">
-                                    <img src="{% static 'logo/clickmall-logo.svg' %}" alt="Clickmall" width="250">
-                                </a>
-                            </figure>
-                        </div>
-                        <div class="dropdown">
-                            <button onclick="toggleDropdown()" class='btn btn-outline-danger btn-category text-uppercase'>Categories</button>
-                            <div id="categoryDropdown" class="dropdown-content">
-                                <a href="{% url 'all_products' %}">All Products</a>
-                                {% for category in categories %}
-                                    <a href="javascript:void(0)" onclick="toggleSubcategories({{ category.id }})">{{ category.category_name }} {% if category.subcategories.exists %}<i class="fa fa-angle-down float-right"></i>{% endif %}</a>
-                                    <div id="subcategory-{{ category.id }}" class="subcategory" style="display: none;">
-                                        {% for subcategory in category.subcategories.all %}
-                                            <a href="{% url 'filter_by_subcategory' subcategory.id %}">{{ subcategory.category_name }}</a>
-                                        {% endfor %}
-                                    </div>
-                                {% endfor %}
-                                <a href="{% url 'categories' %}">Show all categories</a>
-                            </div>
-                        </div>
-                        <div class="main-location ml-4">
-                            <ul>
-                                <li class="location-has-children choose-location">
-                                    <form action="#">
-                                        <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
-                                        <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()">
-                                            <i class="icon-target5"></i>
-                                        </span>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                       </div>
-                    </div>
+  <!-- Header Start -->
+  <!-- ... (keep your comment code blocks here, unchanged) ... -->
+  <!-- Header End -->
 
-                    <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="login-option">
-                            {% if user.is_authenticated %}
-                            <a href="{% url 'cart' %}">
-                                <i class="fa fa-shopping-cart text-danger" style="font-size: 20px;"></i>
-                                <span class="badge badge-warning" id="cart_counter" style="border-radius: 50px; position: relative; bottom:10px; left: -5px;">{{ cart_count }}</span>
-                            </a>
-                            {% endif %}
-                            <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
-                            {% if user.is_authenticated %}
-                            <a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'myAccount' %}">My Account</a>
-                            <a class="cs-color cs-popup-joinus-btn login-popup text-danger" href="{% url 'logout' %}"><i class="fa fa-power-off logout-icon" aria-hidden="true"></i></a>
-                            {% else %}
-                            <a class="cs-color cs-popup-joinus-btn login-popup" href="{% url 'login' %}">Login</a> /
-                            <span><a href="{% url 'registerUser' %}" class="cs-color cs-popup-joinus-btn login-popup ml-0">Register</a></span>
-                            <a class="get-start-btn" href="{% url 'registerVendor' %}" style="font-size: 10px;">Become a Vendor</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header> -->
-    <!-- Header End -->
-
-    <script>
+  <script>
  // Toggle dropdown display when clicking the button
 function toggleDropdown() {
     const dropdown = document.getElementById("categoryDropdown");
@@ -428,77 +406,86 @@ window.onclick = function(event) {
         }
     }
 };
-        // Geolocation Script
-        var x = document.getElementById("location");
-        var current_location = sessionStorage.getItem("current_location");
-        if (current_location != "") {
-            x.value = current_location;
+    // Geolocation Script
+    var x = document.getElementById("location");
+    var current_location = sessionStorage.getItem("current_location");
+    if (current_location != "") {
+        x.value = current_location;
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            x.innerHTML = "Geolocation is not supported by this browser.";
         }
+    }
 
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition);
-            } else {
-                x.innerHTML = "Geolocation is not supported by this browser.";
-            }
-        }
+    function showPosition(position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        var GOOGLE_API_KEY = "{{ GOOGLE_API_KEY }}";
+        var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + lat + "," + lng + "&key=" + GOOGLE_API_KEY;
 
-        function showPosition(position) {
-            var lat = position.coords.latitude;
-            var lng = position.coords.longitude;
-            var GOOGLE_API_KEY = "{{ GOOGLE_API_KEY }}";
-            var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + lat + "," + lng + "&key=" + GOOGLE_API_KEY;
-
-            $.ajax({
-                url: url,
-                type: "GET",
-                success: function(response) {
-                    var current_location = response.results[0].formatted_address;
-                    var addressComponents = response.results[0].address_components;
-                    var city = "";
-                    var pincode = "";
-                    // Loop through address components to find city and pincode
-                addressComponents.forEach(function(component) {
-                    if (component.types.includes("locality")) {
-                        city = component.long_name;
-                    }
-                    if (component.types.includes("postal_code")) {
-                        pincode = component.long_name;
-                    }
-                });
-                    console.log(addressComponents)
-                    console.log(city)
-                    console.log(pincode)
-
-                    x.value = current_location;
-                    sessionStorage.setItem("current_location", current_location);
-                    sessionStorage.setItem("city", city);
-                    sessionStorage.setItem("pincode", pincode);
-
-                    var location = "";
-                    if (city && pincode) {
-                        location = city + " - " + pincode;
-                    } else if (city) {
-                        location = city;
-                    } else if (pincode) {
-                        location = pincode;
-                    }
-
-                    updateNavbarLocation(location);
-                    window.location = '?lat=' + lat + '&lng=' + lng;
-                    console.log(current_location);
+        $.ajax({
+            url: url,
+            type: "GET",
+            success: function(response) {
+                var current_location = response.results[0].formatted_address;
+                var addressComponents = response.results[0].address_components;
+                var city = "";
+                var pincode = "";
+                // Loop through address components to find city and pincode
+            addressComponents.forEach(function(component) {
+                if (component.types.includes("locality")) {
+                    city = component.long_name;
+                }
+                if (component.types.includes("postal_code")) {
+                    pincode = component.long_name;
                 }
             });
-        }
+                console.log(addressComponents)
+                console.log(city)
+                console.log(pincode)
 
-     // Function to update navbar location text
+                x.value = current_location;
+                sessionStorage.setItem("current_location", current_location);
+                sessionStorage.setItem("city", city);
+                sessionStorage.setItem("pincode", pincode);
+
+                var location = "";
+                if (city && pincode) {
+                    location = city + " - " + pincode;
+                } else if (city) {
+                    location = city;
+                } else if (pincode) {
+                    location = pincode;
+                }
+
+                updateNavbarLocation(location);
+                window.location = '?lat=' + lat + '&lng=' + lng;
+                console.log(current_location);
+            }
+        });
+    }
+
+ // Function to update navbar location text
 function updateNavbarLocation(location) {
     var navLoc = document.getElementById("location-selector");
-    if (location && location.trim() !== "") {
-        navLoc.textContent = location;
-    } else {
-        navLoc.textContent = "";
-        navLoc.textContent = "Select Location";
+    if (navLoc) {
+      if (location && location.trim() !== "") {
+          navLoc.textContent = location;
+      } else {
+          navLoc.textContent = "Select Location";
+      }
+    }
+    var navLocMobile = document.getElementById("location-selector-mobile");
+    if (navLocMobile) {
+      if (location && location.trim() !== "") {
+          navLocMobile.textContent = location;
+      } else {
+          navLocMobile.textContent = "Select Location";
+      }
     }
 }
 
@@ -518,7 +505,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     updateNavbarLocation(location);
-});
 
-    </script>
+    // Mobile navbar event handling
+    const mobileMenuBtn = document.getElementById('mobileMenuOpen');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+    const mobileMenu = document.getElementById('mobileNavbarMenu');
+    const mobileOverlay = document.getElementById('mobileNavbarOverlay');
+    function openMobileMenu() {
+      mobileMenu.classList.add('show');
+      mobileOverlay.style.display = 'block';
+      document.body.style.overflow = "hidden";
+    }
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('show');
+      mobileOverlay.style.display = 'none';
+      document.body.style.overflow = "";
+    }
+    if(mobileMenuBtn) mobileMenuBtn.onclick = openMobileMenu;
+    if(mobileMenuClose) mobileMenuClose.onclick = closeMobileMenu;
+    if(mobileOverlay) mobileOverlay.onclick = closeMobileMenu;
+
+    // Sync location input between desktop/mobile
+    var locationInputDesktop = document.getElementById("location");
+    var locationInputMobile = document.getElementById("location_mobile");
+    if(locationInputDesktop && locationInputMobile) {
+      locationInputMobile.value = locationInputDesktop.value;
+      locationInputMobile.addEventListener('input', function(){
+        locationInputDesktop.value = this.value;
+      });
+      locationInputDesktop.addEventListener('input', function(){
+        locationInputMobile.value = this.value;
+      });
+    }
+    // Mobile geolocation button
+    var geoBtnMobile = document.getElementById("foodbakery_radius_location_open_mobile");
+    if(geoBtnMobile) {
+      geoBtnMobile.onclick = getLocation;
+    }
+});
+  </script>
 </div>

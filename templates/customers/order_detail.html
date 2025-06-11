@@ -3,7 +3,64 @@
 
 {% block content %}
 {% include 'includes/alerts.html' %}
+<style>
+    
+  /* Responsive Styles */
+  @media only screen and (max-width: 1199px) {
+    select {width: 41%;}
 
+  }
+  
+  
+  @media only screen and (max-width: 991px) {
+    select {width: 41%;}
+    .custom-design-for-info{
+        display: block !important;
+    }
+    
+    select option {
+        font-size: 12px;
+    }
+
+
+    .status-img{
+        width: 160px !important;
+    }
+  }
+
+
+
+  @media only screen and (max-width: 768px) {
+    select {width: 41%;}
+    select option {font-size: 12px;}
+    .custom-design-for-info{
+        display: block !important;
+    }
+    .image-logo{
+        width: 170px !important;
+    }
+    .status-img{
+        width: 130px !important;
+    }
+
+  }
+  
+  
+  @media only screen and (max-width: 575px) {
+    select {width: 41%;}
+    select option {font-size: 10px;}
+    .custom-design-for-info{
+        display: block !important;
+    }
+    .image-logo{
+        width: 150px !important;
+    }
+    .status-img{
+        width: 100px !important;
+    }
+  }
+
+</style>
 <!-- Main Section Start -->
 <div class="main-section">
     
@@ -23,7 +80,7 @@
                                 <div class="justify-content-center row">
                                     <div class="col-md-12">
                                         <div class="bg-white p-1">
-                                            <img src="{% static 'logo/clickmall-logo.png' %}" alt="foodOnline Logo" width="300">
+                                            <img src="{% static 'logo/flickbasket-logo.svg' %}" alt="foodOnline Logo" width="300" class="image-logo">
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <h4 class="mt-2 mb-3">Thank you for your order.</h4>
@@ -40,9 +97,9 @@
                                             <h6>Hello {{ order.name }}, </h6><span>Review your order details below.</span>
                                             <hr>
                             
-                                            <div class="d-flex justify-content-between">
+                                            <div class="d-flex justify-content-between custom-design-for-info">
                                                 <div>
-                                                    <span class="d-block">Order Date: </span><span class="font-weight-bold">{{ order.created_at }}</span>
+                                                    <span class="d-block">Order Date: </span><span class="font-weight-bold ">{{ order.created_at }}</span>
                                                 </div>
                                                 <div>
                                                     <span class="d-block">Order No: </span><span class="font-weight-bold">{{ order.order_number }}</span>
@@ -78,19 +135,19 @@
                                             <div class="row mt-5">
                                                 {% if order.status == 'Processing' %}
                                                 <div class="d-flex justify-content-center col-md-6">
-                                                    <img src="{% static 'images/payment-pending.png' %}" width="200">
+                                                    <img src="{% static 'images/payment-pending.png' %}" width="200" class="status-img">
                                                 </div>
                                                 {% elif order.status == 'Paid' or order.status == 'Completed' %}
                                                 <div class="d-flex justify-content-center col-md-6">
-                                                    <img src="{% static 'images/paid.png' %}" width="200">
+                                                    <img src="{% static 'images/paid.png' %}" width="200" class="status-img">
                                                 </div>
                                                 {% elif order.status == 'Cancelled' %}
                                                 <div class="d-flex justify-content-center col-md-6">
-                                                    <img src="{% static 'images/order-cancelled.png' %}" width="200">
+                                                    <img src="{% static 'images/order-cancelled.png' %}" width="200" class="status-img">
                                                 </div>
                                                 {% elif order.status == 'Refunded' %}
                                                 <div class="d-flex justify-content-center col-md-6">
-                                                    <img src="{% static 'images/refunded.png' %}" width="200">
+                                                    <img src="{% static 'images/refunded.png' %}" width="200" class="status-img">
                                                 </div>
                                                 {% endif %}
                                                 <div class="col-md-6">
@@ -130,7 +187,7 @@
                                             <div class="d-flex justify-content-between">
                                                 <div>
                                                     <span class="d-block font-weight-bold">Thanks for ordering with us.</span>
-                                                    <span>Clickmall Team</span>
+                                                    <span>Flickbasket Team</span>
                                                 </div>
                                             </div>
                                         </div>
