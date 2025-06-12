@@ -120,6 +120,12 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     
     cart_items = Cart.objects.filter(user=request.user) if request.user.is_authenticated else None
 
+    user_cart = Cart.objects.filter(user=request.user) if request.user.is_authenticated else []
+    cart_vendors = set(item.product.vendor_id for item in user_cart)
+
+    for product in products:
+        # True if cart is not empty and this product's vendor is NOT in the cart's vendors
+        product.is_different_vendor_for_cart = bool(cart_vendors) and (product.vendor_id not in cart_vendors)
 
 
       # Implement pagination
@@ -435,7 +441,6 @@ def checkout(request):
     }
     return render(request, 'marketplace/checkout.html', context)
 
-
 def All_products(request, category_id=None, subcategory_id=None):
     # Get only base categories (top-level)
     categories = Category.objects.filter(is_active=True, parent=None)
@@ -444,8 +449,6 @@ def All_products(request, category_id=None, subcategory_id=None):
     for cat in categories:
         # Get all active subcategory IDs under this category
         subcat_ids = cat.subcategories.filter(is_active=True).values_list('id', flat=True)
-
-        print("cat_ids",  [cat.id])
         # Include the main category itself in the filter
         all_category_ids = list(subcat_ids) + [cat.id]
 
@@ -459,64 +462,85 @@ def All_products(request, category_id=None, subcategory_id=None):
     search_query = request.GET.get('search', None)
     store_type = request.GET.get('store_type', None)
     sort_type = request.GET.get('sort', None)
+    search_type = request.GET.get('type', 'products')
 
-    products = Product.objects.filter(is_available=True, is_active=True)
-
-    # Handle category/subcategory filter
-    if subcategory_id:
-        selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
-        products = products.filter(subcategory=selected_subcategory)
-    elif category_id:
-        selected_category = get_object_or_404(Category, id=category_id, is_active=True)
-        subcategories = selected_category.subcategories.all()
-        products = products.filter(subcategory__in=subcategories)
-
-    # If not category search, filter by product name/desc as usual
-    if search_query:
-        print(search_query)
-        products = products.filter(
-            models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
-        )
-
-    # Handle search by category name
-    if search_query and products.count() <= 0:
-        # Try to find a matching category (case-insensitive, partial match)
-        matching_categories = Category.objects.filter(
-            category_name__icontains=search_query,
-            is_active=True
-        )
-        if matching_categories.exists():
-            # If multiple, take the first for now, or you can show all results for all matched categories
-            matched_category = matching_categories.first()
-            subcategories = matched_category.subcategories.all()
-            products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
-
-
-    # Filter by store type if provided
-    if store_type:
-        vendors = Vendor.objects.filter(store_type__slug=store_type, is_approved=True)
-        products = products.filter(vendor__in=vendors)
-    
-    if sort_type == 'dsec':
-        products =  products.order_by('-sales_price')
-    if sort_type == "asec":
-        products =  products.order_by('sales_price')
-
-
-
-    paginator = Paginator(products, 20)  # Show 12 products per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    show_pagination = paginator.num_pages > 1
-
+    # ---- Initialize context here ----
     context = {
         'categories': categories,
-        'products': page_obj,
-        'show_pagination':show_pagination
+        'search_type': search_type,
+        'search_query': search_query,
     }
-    return render(request, 'marketplace/products.html', context)
 
+    if search_type == 'stores':
+        vendors = Vendor.objects.filter(is_approved=True)
+        if search_query:
+            vendors = vendors.filter(
+                models.Q(vendor_name__icontains=search_query) |
+                models.Q(store_type__name__icontains=search_query)
+            )
+        paginator = Paginator(vendors, 20)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context.update({
+            'vendors': page_obj,
+            'show_pagination': paginator.num_pages > 1,
+        })
+    else:
+        products = Product.objects.filter(is_available=True, is_active=True)
+
+        # Handle category/subcategory filter
+        if subcategory_id:
+            selected_subcategory = get_object_or_404(Category, id=subcategory_id, is_active=True)
+            products = products.filter(subcategory=selected_subcategory)
+        elif category_id:
+            selected_category = get_object_or_404(Category, id=category_id, is_active=True)
+            subcategories = selected_category.subcategories.all()
+            products = products.filter(subcategory__in=subcategories)
+
+        # If not category search, filter by product name/desc as usual
+        if search_query:
+            products = products.filter(
+                models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
+            )
+
+        # Handle search by category name
+        if search_query and products.count() <= 0:
+            # Try to find a matching category (case-insensitive, partial match)
+            matching_categories = Category.objects.filter(
+                category_name__icontains=search_query,
+                is_active=True
+            )
+            if matching_categories.exists():
+                matched_category = matching_categories.first()
+                subcategories = matched_category.subcategories.all()
+                products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
+
+        # Filter by store type if provided
+        if store_type:
+            vendors = Vendor.objects.filter(store_type__slug=store_type, is_approved=True)
+            products = products.filter(vendor__in=vendors)
+        
+        if sort_type == 'dsec':
+            products = products.order_by('-sales_price')
+        if sort_type == "asec":
+            products = products.order_by('sales_price')
+        user_cart = Cart.objects.filter(user=request.user) if request.user.is_authenticated else []
+        cart_vendors = set(item.product.vendor_id for item in user_cart)
+
+        for product in products:
+            # True if cart is not empty and this product's vendor is NOT in the cart's vendors
+            product.is_different_vendor_for_cart = bool(cart_vendors) and (product.vendor_id not in cart_vendors)
+
+        paginator = Paginator(products, 20)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context.update({
+            'products': page_obj,
+            'show_pagination': paginator.num_pages > 1,
+        })
+
+    return render(request, 'marketplace/products.html', context)
 
 def add_product_to_cart(request, product_id):
     print(request)
@@ -541,7 +565,9 @@ def add_product_to_cart(request, product_id):
                     return JsonResponse({'success': False, 'message': 'Select a valid quantity'})
             except (json.JSONDecodeError, ValueError) as e:
                 return JsonResponse({'success': False, 'message': 'Invalid data.'})
-            
+             # --- Get the referer ---
+            referer = request.META.get('HTTP_REFERER', '/')
+
             # Check if the product is already in the cart
             try:
                 cart_item = Cart.objects.get(user=request.user, product=product)
@@ -559,7 +585,7 @@ def add_product_to_cart(request, product_id):
                     'success': True,
                     'status':'stock_out',
                     'message': f"Only {product.qty} units of {product.product_name} are available. ",
-                    'redirect_url': f'/marketplace/product/{product.vendor.vendor_slug}/{product.slug}/'
+                   'redirect_url': referer  
                 })
              
             try:
@@ -579,7 +605,7 @@ def add_product_to_cart(request, product_id):
             return JsonResponse({
                 'success': True,
                 'message': message,
-                'redirect_url': f'/marketplace/product/{product.vendor.vendor_slug}/{product.slug}/'  # Redirect to the cart page or any other page
+                'redirect_url': referer
             })
         
     
