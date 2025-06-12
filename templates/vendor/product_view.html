@@ -14,6 +14,74 @@
     color: white !important; /* To make the text stand out */
     border: none !important;
   }
+/* Responsive style for the new seller/cart card */
+@media (max-width: 600px) {
+  .product-seller-cart-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 8px;
+    gap: 12px;
+  }
+  .product-seller-cart-card > a {
+    width: 50%;
+    justify-content: center;
+  }
+}
+
+
+/* Hide by default */
+.mobile-fixed-cart-bar { display: none !important; }
+
+/* Show only on mobile */
+@media (max-width: 600px) {
+  .mobile-fixed-cart-bar {
+    display: block !important;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom); /* for iOS safe area */
+}
+.product-extra-link2{
+    display: none !important;
+}
+.mobile-fixed-cart-bar .cart-bar-inner {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 12px 16px 10px 16px;
+    border-top: 1px solid #eee;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.10);
+  }
+  .mobile-fixed-cart-bar .mrp-label {
+    font-size: 18px;
+    color: #222;
+    font-weight: 500;
+  }
+  .mobile-fixed-cart-bar .add-to-cart-btn {
+    background: #DC3545;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 30px;
+    box-shadow: 0 2px 8px rgba(245,0,87,0.06);
+    transition: background 0.2s;
+  }
+  .mobile-fixed-cart-bar .add-to-cart-btn:disabled {
+    background: #ccc;
+    color: #888;
+  }
+}
+/* Hide the mobile cart info by default, show it only on screens <= 600px */
+.mobile-cart-info { display: none; }
+@media (max-width: 600px) {
+  .mobile-cart-info { display: block !important; }
+}
 </style>
 {% include 'includes/alerts.html' %}
   <!-- content -->
@@ -87,6 +155,36 @@
                                         <h4 class="text-danger">Out of Stock</h4>
                                         {% else %}
                                         <div class="detail-extralink mb-50">
+                                            <!-- Fixed Add to Cart Bar: Only shown on mobile -->
+                                            <div class="mobile-fixed-cart-bar">
+                                               <!-- Only visible on mobile screens -->
+                                                <div class="mobile-cart-info" style="display:none;">
+                                                <div class="product-seller-cart-card" style="margin-top: 16px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+                                                    <a href="{% url 'cart' %}" style="display: flex; flex-direction: column; align-items: center; background: #23b03e; color: #fff; padding: 8px 18px; border-radius: 30px; font-weight: 500; text-decoration: none; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                                    <span style="display: flex; align-items: center;">
+                                                        <i class="fi-rs-shopping-cart" style="margin-right: 8px;"></i>
+                                                        View Cart
+                                                        <i class="fi-rs-arrow-right ml-2"></i>
+                                                    </span>
+                                                    <span style="font-size: 13px; font-weight: 400;">
+                                                        {% if chkCart_count %}{{ chkCart_count }} Item{{ chkCart_count|pluralize }}{% else %}0 Item{% endif %}
+                                                    </span>
+                                                    </a>
+                                                </div>
+                                                </div>
+                                            <div class="cart-bar-inner">
+                                                <span class="mrp-label">MRP <b>₹{{ product.sales_price }}</b></span>
+                                                {% if product.qty > 0 %}
+                                                {% if check_cart %}
+                                                <button  class="button add-to-cart-btn add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% else %} 
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ different_vendor_product_exists|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% endif %}
+                                                {% else %}
+                                                <button class="button button-add-to-cart add_to_cart" disabled style="background:#ccc;color:#666;">Out of Stock</button>
+                                                {% endif %}
+                                            </div>
+                                            </div>
                                             <div class="detail-qty border radius">
                                                 <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"type="button" id="decrease-quantity" data-mdb-ripple-color="dark"></i></a>
                                                    <input type="text" id="quantity-input" class="qty-val" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />

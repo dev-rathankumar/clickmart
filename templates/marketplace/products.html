@@ -1,7 +1,25 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-
+<style>
+	.product-extra-link2 .button.button-add-to-cart {
+    position: relative !important;
+    padding: 0px 14px !important;
+    border-radius: 5px !important;
+    border: 0 !important;
+    height: 30px !important;
+    line-height: 15px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    font-family: "Quicksand", sans-serif !important;
+    margin: auto !important;
+    text-align: center !important;
+    width: 143px !important;
+    margin-top: 6px !important;
+    margin-bottom: 7px !important;
+}
+</style>
+{% include 'includes/alerts.html' %}
 
 <div class="container my-4">
     <main class="main">
@@ -15,9 +33,10 @@
                         <div class="col-xl-9 text-end d-none d-xl-block">
                             <div class="flex-grow-1">
                                 <div class="search-style-2">
-                                    <form method="get" class="d-flex">
-                                        <input type="text" name=search class="form-control" placeholder="Search products..."   value="{{ search_query|default:'' }}" />
-                                        <button type="submit" class="ml-2" style="width:65px; background-color: transparent !important; "></button>
+                                    <form method="get" class="d-flex" id="searchForm">
+                                        <input type="text" name="search" class="form-control" placeholder="Search products or stores..." value="{{ search_query|default:'' }}" />
+                                        <input type="hidden" name="type" id="searchType" value="{{ search_type|default:'products' }}">
+                                        <button type="submit" class="ml-2" style="width:65px; background-color: transparent !important;"></button>
                                     </form>
                                 </div>
                             </div>
@@ -30,9 +49,21 @@
         <div class="container mb-30">
             <div class="row flex-row-reverse mobile-column-reverse">
                 <div class="col-lg-9">
+                    <div class="shop-toolbar d-flex justify-content-start align-items-center mb-10 ">
+                        <div class="me-3">
+                            <a href="#" class="btn btn-sm {% if search_type == 'products' or not search_type %}btn-success{% else %}btn-outline-success{% endif %}" onclick="switchType('products')">Products</a>
+                        </div>
+                        <div>
+                            <a href="#" class="btn btn-sm {% if search_type == 'stores' %}btn-success{% else %}btn-outline-success{% endif %}" onclick="switchType('stores')">Stores</a>
+                        </div>
+                    </div>
                     <div class="shop-product-fillter">
                         <div class="totall-product">
-                            <p>We found <strong class="text-brand">{{ products|length }}</strong> items for you!</p>
+                            {% if search_type == 'stores' %}
+                                <p>We found <strong class="text-brand">{{ vendors|length }}</strong> stores for you!</p>
+                            {% else %}
+                                <p>We found <strong class="text-brand">{{ products|length }}</strong> products for you!</p>
+                            {% endif %}
                         </div>
                         <div class="sort-by-product-area">
                             {% comment %} <div class="sort-by-cover mr-10">
@@ -54,6 +85,7 @@
                                     </ul>
                                 </div>
                             </div> {% endcomment %}
+                            {% if search_type != 'stores' %}
                             <div class="sort-by-cover">
                                 <div class="sort-by-product-wrap">
                                     <div class="sort-by">
@@ -81,8 +113,94 @@
                                     </ul>
                                 </div>
                             </div>
+
+                            {% endif %}
                         </div>
                     </div>
+                    {% if search_type == 'stores' %}
+                    <div class="row vendor-grid">
+                        {% for vendor in vendors %}
+                            <div class="col-lg-3 col-md-6 col-12 col-sm-6">
+                                    <div class="vendor-wrap mb-40">
+                                        <div class="vendor-img-action-wrap">
+                                            <div class="vendor-img">
+                                                <a href="{% url 'vendor_detail' vendor.vendor_slug %}">
+                                                    {% if vendor.user_profile.profile_picture %}
+                                                        <img src="{{ vendor.user_profile.profile_picture.url }}" class="img-list wp-post-image" alt="" style="max-width: 100%;">
+                                                        {% else %}
+                                                        <img src="{% static 'images/default-profile-new.png' %}" class="img-list wp-post-image" alt="" style="max-width: 100%;">
+                                                    {% endif %}
+                                                </a>
+                                            </div>
+                                            <div class="product-badges product-badges-position product-badges-mrg">
+                                                {% if vendor.is_open %}
+                                                    <span class="green bg-success">Open</span>
+                                                {% else %}
+                                                    <span class="new">Close</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="vendor-content-wrap">
+                                            <div class="d-flex justify-content-between align-items-end mb-30">
+                                                <div>
+                                                    <div class="product-category">
+                                                        <span class="text-muted">{{ vendor.store_type }}</span>
+                                                    </div>
+                                                    <h4 class="mb-5"><a href="{% url 'vendor_detail' vendor.vendor_slug %}">{{ vendor.vendor_name }}</a></h4>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="vendor-info mb-30">
+                                                <ul class="contact-infor text-muted">
+                                                    <li><strong>Address: </strong> <span>{{ vendor.user_profile.address }}</span></li>
+                                                    <li><strong>Call Us:</strong><span>(+91) - 540-025-124553</span></li>
+                                                </ul>
+                                            </div>
+                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-xs">Visit Store <i class="fi-rs-arrow-small-right"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                        {% empty %}
+                        {% endfor %}
+                    </div>
+                    {% if show_pagination %}
+                        <div class="pagination-area mt-20 mb-20">
+                                {% if vendors.has_other_pages %}
+                                <nav aria-label="Page navigation example">
+                                    <ul class="pagination justify-content-start">
+                                        {% if vendors.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ vendors.previous_page_number }}"><i class="fi-rs-arrow-small-left"></i></a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fi-rs-arrow-small-left"></i></span>
+                                        </li>
+                                        {% endif %}
+
+                                        {% for num in vendors.paginator.page_range %}
+                                            {% if vendors.number == num %}
+                                                <li class="page-item active"><a class="page-link text-light" href="#">{{ num }}</a></li>
+                                            {% elif num > vendors.number|add:'-3' and num < vendors.number|add:'3' %}
+                                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if vendors.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ vendors.next_page_number }}"><i class="fi-rs-arrow-small-right"></i></a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fi-rs-arrow-small-right"></i></span>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                                {% endif %}
+                            </div>
+                    {% endif %}
+                {% else %}
                     <div class="row product-grid">
                         {% for product in products %}
                         <div class="col-lg-3 col-md-4 col-6 col-sm-6">
@@ -110,6 +228,20 @@
                                             <span>₹{{ product.sales_price }}</span>
                                             <span class="old-price">₹{{ product.regular_price }}</span>
                                         </div>
+                                        <div class="product-extra-link2">
+                                                {% if check_cart %}
+                                                
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                
+                                                {% else %} 
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% endif %}
+                                            </div>
+                                              {% if check_cart %}
+                                            <p class="text-success" style="font-weight: 600;">
+                                                {{ chkCart_count }} items added to the cart.
+                                            </p>
+                                            {% endif %}
                                         <div class="add-cart">
                                             <a class="add w-100 text-center" href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">View Product </a>
                                         </div>
@@ -166,6 +298,7 @@
                             </nav>
                         </div>
                         {% endif %}
+                        {% endif %}
                         
                     </div>
                     <div class="col-lg-3 primary-sidebar sticky-sidebar">
@@ -217,7 +350,84 @@
     // Add event listener to handle window resize
     window.addEventListener("resize", updateCategoryIcon);
 
+function switchType(type) {
+    document.getElementById('searchType').value = type;
+    document.getElementById('searchForm').submit();
+}
+</script>
 
+
+<script>
+document.querySelectorAll('.add_to_cart').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const productId = button.getAttribute('data-id');
+        const url = button.getAttribute('data-url');
+        const isDifferentVendor = button.getAttribute('data-different-vendor') === 'true';
+        const quantity = document.getElementById('quantity-input') ?
+                         document.getElementById('quantity-input').value : 1;
+
+        if (isDifferentVendor) {
+            swal({
+                title: "Warning",
+                text: "You have added products from a different vendor to your cart. Adding this product will remove the previously added items. Do you want to proceed?",
+                icon: "warning",
+                buttons: ["Cancel", "OK"],
+                dangerMode: true,
+            }).then((willProceed) => {
+                if (willProceed) {
+                    addProductToCart(url, productId, quantity);
+                }
+            });
+        } else {
+            addProductToCart(url, productId, quantity);
+        }
+    });
+});
+
+// Function to Add Product to Cart
+function addProductToCart(url, productId, quantity) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: parseInt(quantity)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+                  window.location.href = data.redirect_url; // Redirect to cart if needed
+        } else {;
+            swal("Info", data.message || "Something went wrong!", "info");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        swal("Error", "Something went wrong!", "error");
+    });
+}
+
+// Utility function to get CSRF token
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 
 {% endblock %}

@@ -1,6 +1,25 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<style>
+	.product-extra-link2 .button.button-add-to-cart {
+    position: relative !important;
+    padding: 0px 14px !important;
+    border-radius: 5px !important;
+    border: 0 !important;
+    height: 30px !important;
+    line-height: 15px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    font-family: "Quicksand", sans-serif !important;
+    margin: auto !important;
+    text-align: center !important;
+    width: 143px !important;
+    margin-top: 6px !important;
+    margin-bottom: 7px !important;
+}
+</style>
+{% include 'includes/alerts.html' %}
 
 <!-- Main Section Start -->
 <main class="main">
@@ -175,6 +194,20 @@
                                         <span>₹{{ product.sales_price }}</span>
                                         <span class="old-price">₹{{ product.regular_price }}</span>
                                     </div>
+                                    <div class="product-extra-link2">
+                                                {% if check_cart %}
+                                                
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                
+                                                {% else %} 
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% endif %}
+                                            </div>
+                                              {% if check_cart %}
+                                            <p class="text-success" style="font-weight: 600;">
+                                                {{ chkCart_count }} items added to the cart.
+                                            </p>
+                                            {% endif %}
                                     <div class="add-cart">
                                         <a class="add w-100 text-center" href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">View Product </a>
                                     </div>
@@ -326,6 +359,79 @@
 
 
 
+</script>
+
+<script>
+document.querySelectorAll('.add_to_cart').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const productId = button.getAttribute('data-id');
+        const url = button.getAttribute('data-url');
+        const isDifferentVendor = button.getAttribute('data-different-vendor') === 'true';
+        const quantity = document.getElementById('quantity-input') ?
+                         document.getElementById('quantity-input').value : 1;
+
+        if (isDifferentVendor) {
+            swal({
+                title: "Warning",
+                text: "You have added products from a different vendor to your cart. Adding this product will remove the previously added items. Do you want to proceed?",
+                icon: "warning",
+                buttons: ["Cancel", "OK"],
+                dangerMode: true,
+            }).then((willProceed) => {
+                if (willProceed) {
+                    addProductToCart(url, productId, quantity);
+                }
+            });
+        } else {
+            addProductToCart(url, productId, quantity);
+        }
+    });
+});
+
+// Function to Add Product to Cart
+function addProductToCart(url, productId, quantity) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: parseInt(quantity)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+                  window.location.href = data.redirect_url; // Redirect to cart if needed
+        } else {;
+            swal("Info", data.message || "Something went wrong!", "info");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        swal("Error", "Something went wrong!", "error");
+    });
+}
+
+// Utility function to get CSRF token
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 
 {% endblock %}
