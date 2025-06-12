@@ -127,6 +127,7 @@
                                                     {% else %}
                                                         <td>₹{{ item.product.regular_price }}</td>
                                                     {% endif %}
+                                                        <td>{{item.product.tax_category}}</td>
                                                     </tr>
                                                     {% endfor %}
                                                 </tbody>
@@ -152,34 +153,45 @@
                                                 {% endif %}
                                                 <div class="col-md-6">
                                                     <ul>
-                                                        <li style="list-style-type: none;">
-                                                            Subtotal
-                                                            <span class="price float-right">
-                                                                <span class="currency">₹</span>
-                                                                <span id="subtotal">{{ subtotal }}</span>
-                                                            </span>
-                                                        </li>
-                            
-                                                        {% for key, value in tax_data.items %}
-                                                            {% for i, j in value.items %}
-                                                                <li style="list-style-type: none;">
-                                                                    {{ key }} <small>({{ i }}%)</small>
-                                                                    <span class="price float-right">
-                                                                        <span class="currency">₹</span>
-                                                                        <span id="tax-{{ key }}">{{ j }}</span>
-                                                                    </span>
-                                                                </li>
-                                                            {% endfor %}
-                                                        {% endfor %}
-                            
-                            
-                                                        <li style="list-style-type: none; font-weight: 600;">
-                                                            TOTAL
-                                                            <span class="price float-right">
-                                                                <span class="currency">₹</span>
-                                                                <span id="total">{{ order.total }}</span>
-                                                            </span>
-                                                        </li>
+                                                    <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
+                                                        Subtotal
+                                                        <span class="price float-right">
+                                                            <span class="currency">₹</span>
+                                                            <span id="subtotal">{{ subtotal }}</span>
+                                                        </span>
+                                                    </li>
+                                                    
+                                                    {% for single_tax_dict in tax_data %}
+                                                    {% for key, value in single_tax_dict.tax_info.items %}
+                                                        {% if value %}  
+                                                            <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
+                                                                <div style="font-size: 12px;">
+                                                                    {{ single_tax_dict.tax_category }} 
+                                                                    <small>({{ key }}%)</small>
+                                                                    {% for item in ordered_food %}
+                                                                    {% if item.product.id == single_tax_dict.product_id %}
+                                                                    <small>{{item.product | truncatechars:20}}</small>
+                                                                    {% endif %}
+                                                                    {% endfor %}
+                                                                </div>
+                                                                <span class="price float-right">
+                                                                    <span class="currency">₹</span>
+                                                                    <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
+                                                                </span>
+                                                            </li>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endfor %}
+
+
+
+                                                    <li style="list-style-type: none; font-weight: 600;" class="d-flex justify-content-between align-items-center">
+                                                        TOTAL
+                                                        <span class="price float-right ">
+                                                            <span class="currency">₹</span>
+                                                            <span id="total">{{ order.total }}</span>
+                                                        </span>
+                                                    </li>
                                                     </ul>
                                                 </div>
                                             </div>

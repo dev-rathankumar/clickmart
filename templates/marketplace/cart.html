@@ -100,13 +100,13 @@
                                             {% for key, value in single_tax_dict.tax_info.items %}
                                                 {% if value %}  
                                                     <li class="d-flex justify-content-between align-items-center text-start mx-3" style="list-style-type: none; margin-left: 15px;">
+                                                        <div style="font-size: 11px; text-align:left;">
                                                         {{ single_tax_dict.tax_category }} 
-                                                       <div style="font-size: 11px; text-align:left;">
                                                            <small>({{ key }}%)</small>
                                                            {% for item in cart_items %}
                                                            
                                                            {% if item.product.id == single_tax_dict.product_id %}
-                                                           <small>{{item.product}}</small>
+                                                           <small>{{item.product | truncatechars:40}}</small>
                                                            {% endif %}
                                                            {% endfor %}
                                                        </div>
