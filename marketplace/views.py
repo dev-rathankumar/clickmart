@@ -437,14 +437,21 @@ def checkout(request):
 
 
 def All_products(request, category_id=None, subcategory_id=None):
-    # Base categories (parent=None)
-    categories = Category.objects.filter(is_active=True, parent=None).prefetch_related('subcategories')
+    # Get only base categories (top-level)
+    categories = Category.objects.filter(is_active=True, parent=None)
 
-    # Annotate product count for each category
+    # Annotate product count for each top-level category
     for cat in categories:
+        # Get all active subcategory IDs under this category
         subcat_ids = cat.subcategories.filter(is_active=True).values_list('id', flat=True)
+
+        print("cat_ids",  [cat.id])
+        # Include the main category itself in the filter
+        all_category_ids = list(subcat_ids) + [cat.id]
+
+        # Count all products that belong to this category or its subcategories
         cat.product_count = Product.objects.filter(
-            subcategory__in=subcat_ids,
+            category__id__in=all_category_ids,
             is_available=True,
             is_active=True
         ).count()
