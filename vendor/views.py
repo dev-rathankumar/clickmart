@@ -41,6 +41,7 @@ from io import BytesIO
 from accounts.utils import send_notification
 import io
 
+import simplejson as json
 
 
 
@@ -798,6 +799,7 @@ def order_detail(request, order_number):
     try:
         order = Order.objects.get(order_number=order_number, is_ordered=True)
         ordered_food = OrderedFood.objects.filter(order=order, product__vendor=get_vendor(request))
+        tax_data = json.loads(order.tax_data)
 
         context = {
             'order': order,
@@ -805,6 +807,7 @@ def order_detail(request, order_number):
             'subtotal': order.get_total_by_vendor()['subtotal'],
             'tax_data': order.get_total_by_vendor()['tax_dict'],
             'grand_total': order.get_total_by_vendor()['grand_total'],
+            'tax_data': tax_data,
         }
     except:
         return redirect('vendor')

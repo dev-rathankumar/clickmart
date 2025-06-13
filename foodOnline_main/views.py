@@ -9,7 +9,7 @@ from django.contrib.gis.measure import D # ``D`` is a shortcut for ``Distance``
 from django.contrib.gis.db.models.functions import Distance
 from homepage.models import HomePageBanner, CategoryBanner
 from collections import defaultdict
-
+from marketplace.models import Cart
 
 def get_or_set_current_location(request):
     if 'lat' in request.session:
@@ -44,6 +44,12 @@ def home(request):
 
     products = Product.objects.filter(is_active=True)[:10]
     categories_home = Category.objects.filter(parent=None, is_active=True)
+    user_cart = Cart.objects.filter(user=request.user) if request.user.is_authenticated else []
+    cart_vendors = set(item.product.vendor_id for item in user_cart)
+
+    for product in products:
+        # True if cart is not empty and this product's vendor is NOT in the cart's vendors
+        product.is_different_vendor_for_cart = bool(cart_vendors) and (product.vendor_id not in cart_vendors)
 
     banners = AdBanner.objects.all()
     # Split the banners into chunks of 3

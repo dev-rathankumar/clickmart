@@ -171,6 +171,7 @@ class Order(models.Model):
 
         # Compile the final context
         grand_total = float(subtotal)
+        print("processed_taxes:", processed_taxes)  
 
         context = {
             'subtotal': subtotal,

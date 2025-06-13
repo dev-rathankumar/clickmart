@@ -97,7 +97,7 @@
                                                                     <small  style="font-size: 12px;">({{ key }}%)</small>
                                                                     {% for item in cart_items %}
                                                                         {% if item.product.id == single_tax_dict.product_id %}
-                                                                            <small  style="font-size: 12px;">{{item.product}}</small>
+                                                                            <small  style="font-size: 12px;">{{item.product | truncatechars:40}}</small>
                                                                         {% endif %}
                                                                     {% endfor %}
                                                                 </div>
