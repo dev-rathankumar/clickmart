@@ -185,13 +185,15 @@
   }
   /* Hide mobile navbar on desktop */
   .mobile-navbar { display: none; }
+
+
 </style>
 
 <header class="header-area header-style-1 header-height-2">
   <!-- Desktop Navbar -->
   <div class="header-middle d-none d-lg-block" style="border-bottom: 1px solid #ececec;">
     <!-- ... Desktop navbar unchanged ... -->
-    <div class="container-fluid py-2">
+    <div class="container-fluid">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
         <!-- Left Side: Logo + Categories -->
         <div class="d-flex align-items-center gap-4 flex-shrink-0">
@@ -246,7 +248,7 @@
           <div class="search-style-2">
             <form action="{% url 'all_products' %}" method="get" class="d-flex">
               <select name="store_type" class="select-active me-2" style="min-width: 150px;">
-                <option value="">All Categories</option>
+                <option value="">All</option>
                 {% for st_type in store_types %}
                 <option name=store_type value="{{st_type.slug}}" >{{st_type.name}}</option>
                 {% endfor %}
@@ -268,18 +270,18 @@
               <span class="visually-hidden">cart items</span>
             </span>
           </a>
-          <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
+          <!-- <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a> -->
           {% endif %}
           {% if user.is_authenticated %}
           <a class="text-dark fw-700 login-popup" href="{% url 'myAccount' %}">My Account</a>
           <a class="cs-color cs-popup-joinus-btn login-popup text-danger" href="{% url 'logout' %}"><i class="fa fa-power-off logout-icon" aria-hidden="true"></i></a>
           {% else %}
-          <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
-          <a href="{% url 'login' %}" class="text-danger" style="font-size: 1rem; font-weight: 600;">
+          <!-- <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a> -->
+          <a href="{% url 'login' %}" class="text-danger Become_a_seller_btn" style="font-size: 1rem; font-weight: 600; border: 1px solid #DC3545;">
             <i class="fa fa-sign-in" aria-hidden="true"></i> Login
           </a>
-          <div class="main-categori-wrap d-none d-lg-block" style="margin-right:10px; !important">
-            <a class="Become_a_seller_btn" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff;">
+          <div class="main-categori-wrap d-none d-lg-block" style="margin-right:10px !important;">
+            <a class="Become_a_seller_btn" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff !important; font-weight: 600;">
               Become a Seller
             </a>
           </div>
@@ -360,8 +362,7 @@
   </div>
 </header>
 
-<!--Main Wrapper-->
-<div class="wrapper">
+
   <!-- Header Start -->
   <!-- ... (keep your comment code blocks here, unchanged) ... -->
   <!-- Header End -->
@@ -544,4 +545,3 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
   </script>
-</div>

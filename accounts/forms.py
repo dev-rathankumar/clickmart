@@ -11,6 +11,36 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password','phone_number']
 
+    def __init__(self, *args, **kwargs):
+        super(UserForm, self).__init__(*args, **kwargs)
+
+        self.fields['first_name'].widget.attrs.update({
+            'placeholder': 'Enter first name',
+            'autocomplete': 'off'
+        })
+        self.fields['last_name'].widget.attrs.update({
+            'placeholder': 'Enter last name',
+            'autocomplete': 'off'
+        })
+        
+        self.fields['email'].widget.attrs.update({
+            'placeholder': 'Enter email',
+            'autocomplete': 'off'
+        })
+        self.fields['password'].widget.attrs.update({
+            'placeholder': 'Create password',
+            'autocomplete': 'new-password'
+        })
+        self.fields['confirm_password'].widget.attrs.update({
+            'placeholder': 'Confirm password',
+            'autocomplete': 'new-password'
+        })
+        self.fields['phone_number'].widget.attrs.update({
+            'placeholder': 'Enter phone number',
+            'autocomplete': 'off'
+        })
+
+
     def clean(self):
         cleaned_data = super(UserForm, self).clean()
         password = cleaned_data.get('password')

@@ -46,20 +46,23 @@ def registerUser(request):
     elif request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
-            # Create the user using the form
-            # password = form.cleaned_data['password']
-            # user = form.save(commit=False)
-            # user.set_password(password)
-            # user.role = User.CUSTOMER
-            # user.save()
-
             # Create the user using create_user method
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-            username = form.cleaned_data['username']
             email = form.cleaned_data['email']
             phone_number = form.cleaned_data['phone_number']
             password = form.cleaned_data['password']
+
+            # Generate base username
+            base_username = (first_name + last_name).lower().replace(" ", "")
+            username = base_username
+            counter = 1
+
+            # Ensure username is unique
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            
             user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
             user.phone_number=phone_number
             user.role = User.CUSTOMER

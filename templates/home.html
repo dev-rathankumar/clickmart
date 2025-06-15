@@ -5,26 +5,87 @@
 {% block content %}
 
 <style>
-	.product-extra-link2 .button.button-add-to-cart {
+	.product-extra-link2 .button-add-to-cart {
     position: relative !important;
-    padding: 0px 14px !important;
+    padding: 8px 10px;
     border-radius: 5px !important;
     border: 0 !important;
-    height: 30px !important;
     line-height: 15px !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
     font-family: "Quicksand", sans-serif !important;
     margin: auto !important;
-    text-align: center !important;
-    width: 160px !important;
-    margin-top: 6px !important;
+	background-color: #DC3444;
+	color: #fff !important;
+	float: right;
 }
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+	text-align: center;
+    margin: 10px;
+}
+
+.category-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    margin: 10px auto; /* 🟢 THIS ensures it's centered */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+	box-shadow: 0 3px 4px rgba(0,0,0,.09)!important;
+}
+
+.category-circle:hover{
+	background-color: #DC3545 !important;
+}
+
+.category-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+	padding: 15px;
+	display: block;
+}
+
+.category-name {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-size: 14px;
+}
+
+.carausel-10-columns-arrow {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  z-index: 10;
+}
+.col-1-7 {
+    flex: 0 0 14.2857%;
+    max-width: 14.2857%;
+  }
+  .row>*{
+	padding-left: 5px;
+	 padding-right: 5px;
+  }
 </style>
 {% include 'includes/alerts.html' %}
 
-<section class="popular-categories section-padding" style="padding-bottom: 0;">
-	<div class="container wow animate__animated animate__fadeIn">
+<section class="popular-categories" style="padding-bottom: 0;">
+	<div class="container">
+
+		
 		<div class="section-title">
 			
 			<div class="slider-arrow slider-arrow-2 carausel-10-columns-arrow" id="carausel-10-columns-arrows">
@@ -34,11 +95,15 @@
 		<div class="carausel-10-columns-cover position-relative">
 			<div class="carausel-10-columns" id="carausel-10-columns">
 				{% for cat in categories_home %}
-				<div class="card-2 categories bg-{{forloop.counter}} wow animate__animated animate__fadeInUp" data-wow-delay=".1s">
-					<figure class="img-hover-scale overflow-hidden">
-						<a href="{% url 'filter_by_category' category_id=cat.id %}"><img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" /></a>
-					</figure>
-					<h6><a href="{% url 'filter_by_category' category_id=cat.id %}">{{ cat.category_name }}</a></h6>
+				<div class="category-item">
+					<div class="category-circle bg-7">
+						<a href="{% url 'filter_by_category' category_id=cat.id %}">
+							<img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" />
+						</a>
+					</div>
+					<h6 class="category-name">
+						<a href="{% url 'filter_by_category' category_id=cat.id %}">{{ cat.category_name }}</a>
+					</h6>
 				</div>
 				{% endfor %}
 			</div>
@@ -81,48 +146,40 @@
 				<div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
 					<div class="row product-grid-4">
 						{% for product in products %}
-						<div class="col-lg-1-5 col-md-4 col-6 col-sm-6">
+						<div class="col-1-7 col-md-4 col-6 col-sm-6">
 							<div class="product-cart-wrap mb-30 wow animate__animated animate__fadeIn" data-wow-delay=".1s">
 								<div class="product-img-action-wrap">
 									<div class="product-img product-img-zoom">
 										<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
 											<img class="default-img" src="{{ product.image.url }}" alt="" />
 										</a>
+										<div class="product-extra-link2">
+										{% if check_cart %}
+										<button  class="button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">ADD</button>
+										{% else %} 
+										<button  class="button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}">ADD</button>
+										{% endif %}
+									</div>
 									</div>
 									{% if product.get_discount_percentage > 0 %}
 										<div class="product-badges product-badges-position product-badges-mrg">
-											<span class="hot">Save {{product.get_discount_percentage}}%</span>
+											<span class="hot">{{product.get_discount_percentage}}%</span>
 										</div>
 									{% endif %}
 								</div>
 								<div class="product-content-wrap">
 									<div class="product-category">
-										<a href="#">{{product.category}}</a>
+										<small class="text-muted" style="font-size: 12px;">{{product.category}}</small>
 									</div>
 									<h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{product.product_name}}</a></h2>
-									<div>
-										<span class="font-small text-muted">By <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{product.vendor}}</a></span>
-									</div>
+									
 									<div>
 										<div class="product-price">
 											<span>₹{{ product.sales_price }}</span>
 											<span class="old-price">₹{{ product.regular_price }}</span>
 										</div>
 									</div>
-									 <div class="product-extra-link2">
-                                                {% if check_cart %}
-                                                
-                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
-                                                
-                                                {% else %} 
-                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
-                                                {% endif %}
-                                            </div>
-                                              {% if check_cart %}
-                                            <p class="text-success" style="font-weight: 600;">
-                                                {{ chkCart_count }} items added to the cart.
-                                            </p>
-                                            {% endif %}
+									 
 								</div>
 							</div>
 						</div>
@@ -159,7 +216,7 @@
 								<div class="banner-img wow animate__animated" data-wow-delay="0">
 									<img src="{{ banner.image.url }}" alt="" />
 									<div class="banner-text mt-3">
-										<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-xs">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+										<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-xs text-light">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
 									</div>
 								</div>
 							</div>
@@ -204,7 +261,7 @@
 							<div class="banner-img wow animate__animated" data-wow-delay="0">
 								<img src="{{ banner.image.url }}" alt="{{ banner.category.category_name }}" />
 								<div class="banner-text mt-3">
-									<a href="{{ banner.link }}" class="btn btn-xs">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+									<a href="{{ banner.link }}" class="btn btn-xs text-light">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
 								</div>
 							</div>
 						</div>
