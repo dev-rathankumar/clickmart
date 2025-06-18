@@ -65,6 +65,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     subcategory = models.ForeignKey(Category, related_name='subcategory_products', on_delete=models.CASCADE, blank=True, null=True)
     is_popular = models.BooleanField(default=False, blank=True)
+    is_top_collection = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     
     # Fields from inventory.product model

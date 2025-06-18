@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from homepage.product_collections import get_products_for_collection
 from vendor.models import AdBanner, Vendor
 # from menu.models import Product
 from unified.models import Product, Category
@@ -10,6 +11,8 @@ from django.contrib.gis.db.models.functions import Distance
 from homepage.models import HomePageBanner, CategoryBanner
 from collections import defaultdict
 from marketplace.models import Cart
+from homepage.models import ProductCollection
+
 
 def get_or_set_current_location(request):
     if 'lat' in request.session:
@@ -43,6 +46,17 @@ def home(request):
         vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)[:8]
 
     products = Product.objects.filter(is_active=True)[:10]
+
+    # Product Collections
+    collections = ProductCollection.objects.filter(active=True)
+    collection_data = []
+    for collection in collections:
+        products = get_products_for_collection(collection.logic)
+        collection_data.append({
+            'name': collection.name,
+            'slug': collection.slug,
+            'products': products,
+        })
     categories_home = Category.objects.filter(parent=None, is_active=True)
     user_cart = Cart.objects.filter(user=request.user) if request.user.is_authenticated else []
     cart_vendors = set(item.product.vendor_id for item in user_cart)
@@ -75,5 +89,6 @@ def home(request):
         'banner_chunks': banner_chunks,
         'homepagebanners': homepagebanners,
         'grouped_banners_list': grouped_banners_list,
+        'collections': collection_data
     }
     return render(request, 'home.html', context)

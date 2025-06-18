@@ -3923,6 +3923,24 @@ table .product-thumbnail img {
   -o-transition: .2s;
 }
 
+.popular-slider-wrapper .product-cart-wrap {
+  position: relative;
+  background-color: #fff;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: .2s;
+  -moz-transition: .2s;
+  -webkit-transition: .2s;
+  -o-transition: .2s;
+}
+
+.popular-slider-wrapper .product-cart-wrap:hover {
+  box-shadow: unset !important;
+  border: 0 !important;
+  transition: unset !important;
+}
+
 .product-cart-wrap:hover {
   -webkit-box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
           box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
@@ -3938,7 +3956,9 @@ table .product-thumbnail img {
   background-color: #fff;
   overflow: hidden;
   max-height: 320px;
-  padding: 0px 5px
+  padding: 0px 5px;
+  border: 1px solid #ececec;
+  border-radius: 10px;
 }
 
 .product-cart-wrap .product-img-action-wrap .product-action-1 {
@@ -4120,7 +4140,7 @@ table .product-thumbnail img {
   display: inline-block;
   font-size: 12px;
   line-height: 1;
-  border-radius: 15px 0 20px 0;
+  border-radius: 10px 0 15px 0;
   color: #fff;
   padding: 7px 10px;
 }
@@ -4176,8 +4196,19 @@ table .product-thumbnail img {
   color: #DC3545;
 }
 
+.popular-products-slider .product-img-wrap {
+  aspect-ratio: 1 / 1; /* or 4 / 3, 16 / 9, etc. */
+  overflow: hidden;
+}
+
+.popular-products-slider .product-img-wrap img{
+   width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .product-cart-wrap .product-content-wrap .product-price {
-  padding-top: 5px;
+  padding-top: 0;
 }
 
 .product-cart-wrap .product-content-wrap .product-price span {
@@ -12414,7 +12445,7 @@ footer .hotline img {
   pointer-events: none; /* so it doesn't block slider */
 }
 
-#carausel-10-columns-arrows .slider-btn {
+#carausel-10-columns-arrows .slider-btn{
   pointer-events: all; /* re-enable click */
   background: #fff;
   border-radius: 50%;
@@ -12428,6 +12459,36 @@ footer .hotline img {
   top: 50% !important;
   position: absolute;
   transform: translateY(100%);
+}
+
+.popular-slider-wrapper {
+  position: relative;
+}
+
+#popular-products-slider-arrows {
+  position: absolute;
+  top: 37%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#popular-products-slider-arrows .slider-btn {
+  pointer-events: all;
+  background: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .bg-clickmall{

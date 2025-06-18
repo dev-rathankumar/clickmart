@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import HomePageBanner, CategoryBanner
+from .models import HomePageBanner, CategoryBanner, ProductCollection
 from django.utils.html import format_html
 from adminsortable2.admin import SortableAdminMixin
 
@@ -28,5 +28,13 @@ class CategoryBannerAdmin(admin.ModelAdmin):
         return "No Image"
     thumbnail.short_description = 'Preview'
 
+
+class ProductCollectionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'logic', 'active')
+    prepopulated_fields = {'slug': ('name',)}
+    list_editable = ('active',)
+
+
 admin.site.register(HomePageBanner, HomePageBannerAdmin)
 admin.site.register(CategoryBanner, CategoryBannerAdmin)
+admin.site.register(ProductCollection, ProductCollectionAdmin)

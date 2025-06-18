@@ -34,3 +34,22 @@ class CategoryBanner(models.Model):
 
     def __str__(self):
         return self.category.category_name
+    
+
+class ProductCollection(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    active = models.BooleanField(default=True)
+    
+    # For now, store the logic type (you can extend this later to include parameters)
+    LOGIC_CHOICES = [
+        ('popular', 'Popular Products'),
+        ('low_price', 'Lowest Price Guarantee'),
+        # ('top_rated', 'Top Rated'),
+        ('latest', 'Latest Products'),
+        ('top_collection', 'Flickbasket Top Collection')
+    ]
+    logic = models.CharField(max_length=50, choices=LOGIC_CHOICES)
+
+    def __str__(self):
+        return self.name
