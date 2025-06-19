@@ -9,7 +9,7 @@ class UserForm(forms.ModelForm):
     phone_number = forms.CharField(required=True)
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password','phone_number']
+        fields = ['first_name', 'last_name', 'email', 'password','phone_number']
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)

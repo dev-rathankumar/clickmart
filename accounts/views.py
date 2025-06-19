@@ -72,7 +72,7 @@ def registerUser(request):
             mail_subject = 'Please activate your account'
             email_template = 'accounts/emails/account_verification_email.html'
             send_verification_email(request, user, mail_subject, email_template)
-            messages.success(request, 'Your account has been registered sucessfully!')
+            messages.success(request, 'Please check your email to activate your account.')
             return redirect('registerUser')
         else:
             print('invalid form')
@@ -249,7 +249,6 @@ def forgot_password(request):
             send_verification_email(request, user, mail_subject, email_template)
 
             messages.success(request, 'Password reset link has been sent to your email address.')
-            return redirect('login')
         else:
             messages.error(request, 'Account does not exist')
             return redirect('forgot_password')
