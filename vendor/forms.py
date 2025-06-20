@@ -12,6 +12,13 @@ class VendorForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(VendorForm, self).__init__(*args, **kwargs)
+        
+        self.fields['vendor_name'].widget.attrs.update({
+            'placeholder': 'Enter store name',
+            'autocomplete': 'off'
+        })
+        self.fields['store_type'].empty_label = "Select business type"
+      
         if self.instance and self.instance.pk:
             # Disable the store_type field if updating an existing vendor
             self.fields['store_type'].disabled = True
