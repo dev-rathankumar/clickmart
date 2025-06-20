@@ -1,49 +1,137 @@
-{% extends 'base.html' %}
+{% load static  %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-{% comment %} Style for the form fields and label -----> It is here becasue i will now effect other tamplate only for this tamplate   {% endcomment %}
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Login - Flickbasket Multi-Vendor Ecommerce Marketplace</title>
+	<!-- Google Font Family Link Start -->
+	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Montserrat:400,700">
+	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,800">
+	
+	<link rel="stylesheet" href="{% static 'assets/css/main2cc5.css' %}" />
+	
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+	<!-- JAVASCRIPT -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+
 <style>
+    body {
+        background-color: #E0F0FE;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .main-section {
+        width: 100%;
+    }
+
+    .user-dashboard {
+        background-color: #ffffff;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 30px;
+    }
+
     .field-holder input,
     .field-holder select,
     .field-holder textarea {
-        padding: 6px 10px !important;
+        padding: 10px 12px !important;
         font-size: 14px !important;
         width: 100% !important;
         margin: 0 auto !important;
         height: 45px;
-        border-radius:5px;
+        border-radius: 5px;
+        border: 1px solid #ced4da;
     }
 
-    .field-holder {
-        padding: 5px;
-        display: flex !important;
-        flex-direction: column !important;
+    .field-holder label {
+        font-size: 14px;
+        margin-bottom: 6px;
     }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .form-fields-set input[type="submit"] {
+        transition: background-color 0.3s ease;
+    }
+
+    .form-fields-set input[type="submit"]:hover {
+        background-color: #c82333;
+    }
+
+    @media (max-width: 576px) {
+        .user-dashboard {
+            width: 100%;
+            margin: 20px;
+        }
+    }
+    .custom-file-upload-wrapper {
+    position: relative;
+}
+
+.custom-file-upload-wrapper input[type="file"] {
+    opacity: 0;
+    width: 100%;
+    height: 40px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
     
-    .field-holder label{
-        font-size:14px
-    }
-    #id_store_type{
-    border: 1px solid #8080802e;
-    }
-    #id_vendor_license{
-    background: lightgrey;
-    font-size: 12px !important;
-    }
+}
+#vendorLicenseLabel {
+    display: inline-block;
+    max-width: 90%; /* or any suitable percentage */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.custom-file-upload-wrapper label {
+    background-color: #ffffff; 
+    border: 1px solid #ccc; 
+    padding: 10px;
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: #777;
+}
+
 </style>
+</head>
+
+<body>
+
 <!-- Main Section Start -->
 <div class="main-section">
-    <div class="page-section nopadding cs-nomargin" style="margin-top: 0px;padding-top: 60px;padding-bottom: 60px;margin-bottom: 0px;">
+    <div class="page-section nopadding cs-nomargin">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8 col-md-10 col-sm-12 ">
-                    <div class="user-dashboard loader-holder">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-flex justify-content-center align-items-center my-5">
+                    <div class="user-dashboard loader-holder" style="width: 500px; min-height: auto;">
                         <div class="user-holder">
-                    <h4 class="text-center" style="margin-bottom: 0;">PARTNER WITH FLICKBASDET</h4>
-                    <p class="text-center">Register your store with Flickbasket marketplace and get more customers.</p>
-                    <hr>
-                    <div id="restaurant-sets-holder">
-                        <form action="{% url 'registerVendor' %}" class="form-fields-set foodbakery-dev-restaurant-form" method="post" enctype="multipart/form-data">
+                    <div class="text-center mb-3">
+                        <a href="/">
+                            <img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" style="height: 65px;">
+                        </a>
+                    </div>
+                    
+                     <h4 class="text-center" style="margin-bottom: 0;">PARTNER WITH FLICKBASDET</h4>
+                    <p class="text-center pt-2">Register your store with Flickbasket marketplace and get more customers.</p>
+                
+                    <div id="restaurant-sets-holder" class="mt-4">
+                         <form action="{% url 'registerVendor' %}" class="form-fields-set foodbakery-dev-restaurant-form" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <ul class="register-add-restaurant-tab-container restaurant-information-tab-container">
                                 <li>
@@ -52,60 +140,67 @@
                                             <div class="row">
                                                 <ul >
                                                     <li class="row">
-                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>First name</label>{{form.first_name}}
+                                                                {{form.first_name}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Last name</label>{{form.last_name}}
+                                                               {{form.last_name}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Store name</label>{{v_form.vendor_name}}
+                                                               {{v_form.vendor_name}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        
+                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Business Type</label>{{v_form.store_type}}
+                                                                {{v_form.store_type}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        {% comment %} <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2">
                                                             <div class="field-holder">
                                                                 <label>Store License</label>{{v_form.vendor_license}}
                                                             </div>
-                                                        </div>
+                                                        </div> {% endcomment %}
+                                                        <div class="custom-file-upload-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2">
+    <div class="field-holder">
+        <label for="id_vendor_license" class="d-flex align-items-center gap-2">
+            <i class="fas fa-upload"></i>
+            <span id="vendorLicenseLabel">Upload license image</span>
+        </label>
+        {{ v_form.vendor_license }}
+    </div>
+</div>
+
+
                                                         
                                                         
-                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Email Address</label>{{form.email}}
+                                                               {{form.email}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Phone Number</label>{{form.phone_number}}
+                                                             {{form.phone_number}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                                            <div class="field-holder">
-                                                                <label>Username</label>{{form.username}}
-                                                            </div>
-                                                        </div>
+
                                                     </li>
                                                     
                                                     <li class="row">
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Password</label>
                                                                 {{form.password}}
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 p-2">
                                                             <div class="field-holder">
-                                                                <label>Confirm Password</label>
+                                                                
                                                                 {{form.confirm_password}}
                                                             </div>
                                                         </div>
@@ -133,7 +228,10 @@
                                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                             <div class="field-holder">
                                                 <div class="payment-holder">
-                                                    <input type="submit" value="Submit" id="btn-next-restaurant-information" class="btn btn-sm text-uppercase fw-semibold rounded" style="width: 170px !important; background-color: #DC3545; color:#fff;">                                             
+                                                    <input type="submit" value="Register" id="btn-next-restaurant-information" class="btn btn-sm fw-semibold rounded" style="width: 100% !important; background-color: #DC3545; color:#fff;">                                             
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <a href="{% url 'login' %}" class="text-decoration-underline">Already have an account? Sign in here</a>
                                                 </div>
                                                 
                                             </div>
@@ -141,7 +239,7 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 pt-2">
                                             <!-- Load message -->
                                             {% include 'includes/alerts.html' %}
                                         </div>
@@ -160,4 +258,16 @@
 </div>
 <!-- Main Section End -->
 
-{% endblock %}
+
+<script src="{% static 'assets/js/vendor/bootstrap.bundle.min.js' %}"></script>
+    
+    <!-- Template  JS -->
+<script>
+document.getElementById('id_vendor_license').addEventListener('change', function () {
+    const fileName = this.files[0]?.name || 'Upload license image';
+    document.getElementById('vendorLicenseLabel').textContent = fileName;
+});
+</script>
+
+
+</body>
