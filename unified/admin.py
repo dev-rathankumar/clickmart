@@ -2,13 +2,15 @@ from django.contrib import admin
 
 from inventory.models import tax
 from vendor.models import Vendor
-from .models import Product as UnifieldProduct
+from .models import Product as UnifieldProduct, CategoryBrowsePage, CategoryBrowseSection, ProductAssignment, SubCategoryAssignment
 from .models import ProductGallery, Category, MediaUpload
 import admin_thumbnails
 from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ExportMixin
 from import_export import resources
 from django.utils.html import format_html
+from django import forms
+from django.contrib.admin import SimpleListFilter
 
 
 class ProductGalleryInline(admin.TabularInline):
@@ -121,7 +123,101 @@ class MediaUploadAdmin(admin.ModelAdmin):
     image_thumbnail.short_description = 'Image Thumbnail'  # Optional: change the column title
 
 
+
+
+class CategoryBrowsePageForm(forms.ModelForm):
+    class Meta:
+        model = CategoryBrowsePage
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show main categories (i.e., no parent)
+        self.fields['category'].queryset = Category.objects.filter(parent__isnull=True)
+
+
+
+class ProductAssignmentInline(admin.TabularInline):
+    model = ProductAssignment
+    extra = 1
+
+class SubCategoryAssignmentInline(admin.TabularInline):
+    model = SubCategoryAssignment
+    extra = 1
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "subcategory":
+            kwargs["queryset"] = Category.objects.exclude(parent__isnull=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+
+class MainCategoryFilter(SimpleListFilter):
+    title = 'Main Category'
+    parameter_name = 'main_category'
+
+    def lookups(self, request, model_admin):
+        # Only categories where parent is None
+        return [(cat.id, cat.category_name) for cat in Category.objects.filter(parent__isnull=True)]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(browse_page__category__id=self.value())
+        return queryset
+    
+class CategoryBrowseSectionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'get_category_name', 'section_type', 'browse_page', 'order']
+    list_filter = [MainCategoryFilter, 'section_type', 'browse_page']
+    ordering = ['browse_page', 'order']
+    inlines = [ProductAssignmentInline]
+    def get_category_name(self, obj):
+        return obj.browse_page.category.category_name
+    get_category_name.short_description = 'Category'
+    get_category_name.admin_order_field = 'browse_page__category__name'
+
+    def get_inline_instances(self, request, obj=None):
+        inline_instances = []
+
+        # Only run this logic when editing an existing object
+        if obj is not None:
+            if obj.section_type == 'product_slider':
+                inline_classes = [ProductAssignmentInline]
+            elif obj.section_type == 'subcategory_slider':
+                inline_classes = [SubCategoryAssignmentInline]
+            else:
+                inline_classes = []
+            
+            for inline_class in inline_classes:
+                inline = inline_class(self.model, self.admin_site)
+                inline_instances.append(inline)
+        return inline_instances
+
+
+class CategoryBrowseSectionInline(admin.StackedInline):
+    model = CategoryBrowseSection
+    extra = 1
+    show_change_link = True
+
+
+class CategoryBrowsePageAdmin(admin.ModelAdmin):
+    form = CategoryBrowsePageForm
+    list_display = ['category']
+    inlines = [CategoryBrowseSectionInline]
+
+
+class ProductAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['section', 'product', 'order']
+
+
+class SubCategoryAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['section', 'product', 'order']
+
+
+
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(UnifieldProduct, UnifieldProductAdmin)
 admin.site.register(ProductGallery)
 admin.site.register(MediaUpload, MediaUploadAdmin)
+admin.site.register(CategoryBrowsePage, CategoryBrowsePageAdmin)
+admin.site.register(CategoryBrowseSection, CategoryBrowseSectionAdmin)
+admin.site.register(ProductAssignment, ProductAssignmentAdmin)
+admin.site.register(SubCategoryAssignment)

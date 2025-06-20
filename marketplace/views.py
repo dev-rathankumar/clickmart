@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import UserProfile, DeliveryAddress
 from .context_processors import get_cart_counter, get_cart_amounts
-from unified.models import Category, ProductGallery
+from unified.models import Category, CategoryBrowsePage, ProductGallery
 
 from unified.models import Product
 
@@ -619,3 +619,21 @@ def categories(request):
     categories = Category.objects.filter(parent__isnull=True, is_active=True).prefetch_related('subcategories').distinct()
     context = {'categories': categories}
     return render(request, 'marketplace/categories.html', context)
+
+
+def browse(request, category_slug):
+    browse_page = get_object_or_404(
+        CategoryBrowsePage.objects.select_related('category').prefetch_related(
+            'sections__products__product',
+            'sections__subcategories__subcategory',
+        ),
+        category__slug=category_slug
+    )
+    sections = browse_page.sections.all()
+
+    context = {
+        'page': browse_page,
+        'sections': sections
+    }
+    
+    return render(request, 'marketplace/browse.html', context)

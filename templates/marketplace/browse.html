@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+	.product-extra-link2 .button.button-add-to-cart {
+    position: relative !important;
+    padding: 0px 14px !important;
+    border-radius: 5px !important;
+    border: 0 !important;
+    height: 30px !important;
+    line-height: 15px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    font-family: "Quicksand", sans-serif !important;
+    margin: auto !important;
+    text-align: center !important;
+    width: 143px !important;
+    margin-top: 6px !important;
+    margin-bottom: 7px !important;
+}
+
+.product-img-wrap {
+  position: relative;
+}
+
+.product-img-wrap .button-add-to-cart {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 2;
+  padding: 6px 14px;
+  font-size: 12px;
+  background-color: #1b216a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+</style>
+{% include 'includes/alerts.html' %}
+
+<!-- Main Section Start -->
+<main class="main">
+    <div class="container-fluid mb-30 p-0">
+        <div class="archive-header" style="background-image: url({{ page.banner.url }}); height:50vh; border-radius:0">
+            
+        </div>
+    </div>
+
+    {% for section in sections %}
+  {% if section.section_type == 'product_slider' %}
+    <section class="product-tabs section-padding position-relative">
+      <div class="container">
+        <div class="section-title style-2 wow animate__animated animate__fadeIn mb-3 text-center">
+          <h3>{{ section.title }}</h3>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active">
+            <div class="container position-relative">
+              
+              <!-- Slider wrapper -->
+              <div class="popular-slider-wrapper">
+                <div class="row popular-products-slider" id="collections-slider-{{ forloop.counter }}">
+                  {% for assignment in section.products.all %}
+                    {% with product=assignment.product %}
+                    <div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
+                      <div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
+                        <div class="product-img-action-wrap">
+                          <div class="product-img-wrap product-img-zoom">
+                            <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                              <img class="product-img" src="{{ product.image.url }}" alt="" />
+                            </a>
+                            <div class="product-extra-link2">
+                              {% if check_cart %}
+                                <button class="button-add-to-cart add_to_cart"
+                                  data-id="{{ product.id }}"
+                                  data-url="{% url 'add_product_to_cart' product.id %}">ADD</button>
+                              {% else %}
+                                <button class="button-add-to-cart add_to_cart"
+                                  data-id="{{ product.id }}"
+                                  data-url="{% url 'add_product_to_cart' product.id %}"
+                                  data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}">ADD</button>
+                              {% endif %}
+                            </div>
+                          </div>
+                          {% if product.get_discount_percentage > 0 %}
+                            <div class="product-badges product-badges-position product-badges-mrg">
+                              <span class="hot">{{ product.get_discount_percentage }}%</span>
+                            </div>
+                          {% endif %}
+                        </div>
+                        <div class="product-content-wrap">
+                          <div class="product-category">
+                            <small class="text-muted" style="font-size: 12px;">{{ product.category }}</small>
+                          </div>
+                          <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name }}</a></h2>
+                          <div class="product-price">
+                            <span>₹{{ product.sales_price }}</span>
+                            <span class="old-price">₹{{ product.regular_price }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endwith %}
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Arrows -->
+              <div class="slider-arrow slider-arrow-2 popular-products-slider-arrow" id="slider-arrows-{{ forloop.counter }}"></div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    {% elif section.section_type == 'subcategory_slider' %}
+    <section class="product-tabs section-padding position-relative">
+      <div class="container">
+        <div class="section-title style-2 wow animate__animated animate__fadeIn mb-3">
+          <h3>{{ section.title }}</h3>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active">
+            <div class="container position-relative">
+              
+              <!-- Slider wrapper -->
+              <div class="popular-slider-wrapper">
+                <div class="row popular-products-slider" id="collections-slider-{{ forloop.counter }}">
+                  {% for assignment in section.products.all %}
+                    {% with product=assignment.product %}
+                    <div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
+                      <div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
+                        <div class="product-img-action-wrap">
+                          <div class="product-img-wrap product-img-zoom position-relative">
+                            <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                                <img class="product-img" src="{{ product.image.url }}" alt="" />
+                            </a>
+                            <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                            <button class="button-add-to-cart">
+                                VIEW
+                            </button>
+                            </a>
+                            </div>
+                          
+                          {% if assignment.product.get_discount_percentage > 0 %}
+                            <div class="product-badges product-badges-position product-badges-mrg">
+                              <span class="hot">{{ assignment.product.get_discount_percentage }}%</span>
+                            </div>
+                          {% endif %}
+                        </div>
+                        <div class="product-content-wrap">
+                          <div class="product-category">
+                            <small class="text-muted" style="font-size: 12px;">{{ assignment.product.category }}</small>
+                          </div>
+                          <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name }}</a></h2>
+                          <div class="product-price">
+                            <span>₹{{ assignment.product.sales_price }}</span>
+                            <span class="old-price">₹{{ assignment.product.regular_price }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endwith %}
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Arrows -->
+              <div class="slider-arrow slider-arrow-2 popular-products-slider-arrow" id="slider-arrows-{{ forloop.counter }}"></div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+{% endfor %}
+
+</main>
+<!-- Main Section End -->
+
+
+{% endblock %}

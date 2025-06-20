@@ -5,19 +5,23 @@
 {% block content %}
 
 <style>
-	.product-extra-link2 .button-add-to-cart {
-    position: relative !important;
-    padding: 8px 10px;
-    border-radius: 5px !important;
-    border: 0 !important;
-    line-height: 15px !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-    font-family: "Quicksand", sans-serif !important;
-    margin: auto !important;
-	background-color: #DC3444;
-	color: #fff !important;
-	float: right;
+.product-img-wrap {
+  position: relative;
+}
+
+.product-img-wrap .button-add-to-cart {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 2;
+  padding: 6px 14px;
+  font-size: 12px;
+  background-color: #1b216a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
 }
 
 .category-item {
@@ -97,7 +101,8 @@
 				{% for cat in categories_home %}
 				<div class="category-item">
 					<div class="category-circle bg-7">
-						<a href="{% url 'filter_by_category' category_id=cat.id %}">
+
+						<a href="{% url 'browse' category_slug=cat.slug %}">
 							<img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" />
 						</a>
 					</div>
@@ -141,11 +146,7 @@
 			<div class="section-title style-2 wow animate__animated animate__fadeIn mb-3">
 				<h3>Popular Products</h3>
 			</div>
-			<!--End nav-tabs-->
 			<div class="tab-content" id="myTabContent">
-
-				
-
 				<div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
 					<div class="container position-relative">
 					<div class="popular-slider-wrapper">
@@ -154,17 +155,16 @@
 						<div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
 							<div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
 								<div class="product-img-action-wrap">
-									<div class="product-img-wrap product-img-zoom">
-										<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
-											<img class="product-img" src="{{ product.image.url }}" alt="" />
-										</a>
-										<div class="product-extra-link2">
-										{% if check_cart %}
-										<button  class="button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}">ADD</button>
-										{% else %} 
-										<button  class="button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}">ADD</button>
-										{% endif %}
-									</div>
+									<div class="product-img-wrap product-img-zoom position-relative">
+									<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+										<img class="product-img" src="{{ product.image.url }}" alt="" />
+									</a>
+
+									<button class="button-add-to-cart add_to_cart"
+											data-id="{{ product.id }}"
+											data-url="{% url 'add_product_to_cart' product.id %}">
+										ADD
+									</button>
 									</div>
 									{% if product.get_discount_percentage > 0 %}
 										<div class="product-badges product-badges-position product-badges-mrg">
@@ -201,8 +201,79 @@
 		</div>
 	</section>
 
+	
 
+{% for collection in collections %}
+<section class="product-tabs section-padding position-relative">
+  <div class="container">
+    <div class="section-title style-2 wow animate__animated animate__fadeIn mb-3">
+      <h3>{{ collection.name }}</h3>
+    </div>
 
+    <div class="tab-content">
+      <div class="tab-pane fade show active">
+        <div class="container position-relative">
+          
+          <!-- Slider wrapper -->
+          <div class="popular-slider-wrapper">
+            <div class="row popular-products-slider" id="collections-slider-{{ forloop.counter }}">
+              {% for product in collection.products %}
+              <div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
+                <div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
+                  <div class="product-img-action-wrap">
+                    <div class="product-img-wrap product-img-zoom">
+                      <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                        <img class="product-img" src="{{ product.image.url }}" alt="" />
+                      </a>
+                      <div class="product-extra-link2">
+                        {% if check_cart %}
+                        <button class="button-add-to-cart add_to_cart"
+                          data-id="{{ product.id }}"
+                          data-url="{% url 'add_product_to_cart' product.id %}">
+                          ADD
+                        </button>
+                        {% else %}
+                        <button class="button-add-to-cart add_to_cart"
+                          data-id="{{ product.id }}"
+                          data-url="{% url 'add_product_to_cart' product.id %}"
+                          data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}">
+                          ADD
+                        </button>
+                        {% endif %}
+                      </div>
+                    </div>
+                    {% if product.get_discount_percentage > 0 %}
+                    <div class="product-badges product-badges-position product-badges-mrg">
+                      <span class="hot">{{ product.get_discount_percentage }}%</span>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="product-content-wrap">
+                    <div class="product-category">
+                      <small class="text-muted" style="font-size: 12px;">{{ product.category }}</small>
+                    </div>
+                    <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name }}</a></h2>
+                    <div class="product-price">
+                      <span>₹{{ product.sales_price }}</span>
+                      <span class="old-price">₹{{ product.regular_price }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Arrows -->
+          <div class="slider-arrow slider-arrow-2 popular-products-slider-arrow" id="slider-arrows-{{ forloop.counter }}">
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endfor %}
 
 
 	<section class="banners mb-25 pt-3">
@@ -300,6 +371,30 @@
 </div>
 <!-- Main Section End -->
 
+
+<script>
+	$(document).ready(function () {
+  {% for collection in collections %}
+  $('#collections-slider-{{ forloop.counter }}').slick({
+    infinite: true,
+    slidesToShow: 6,
+    slidesToScroll: 6,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    arrows: true,
+    dots: false,
+    responsive: [
+      { breakpoint: 1200, settings: { slidesToShow: 3 }},
+      { breakpoint: 992, settings: { slidesToShow: 2 }},
+      { breakpoint: 576, settings: { slidesToShow: 1 }}
+    ],
+    prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-arrow-small-left"></i></span>',
+    nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-arrow-small-right"></i></span>',
+    appendArrows: '#slider-arrows-{{ forloop.counter }}'
+  });
+  {% endfor %}
+});
+</script>
 
 <script>
 

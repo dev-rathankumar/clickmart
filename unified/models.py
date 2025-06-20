@@ -168,3 +168,56 @@ class MediaUpload(models.Model):
 
     def __str__(self):
         return self.image.name
+
+
+class CategoryBrowsePage(models.Model):
+    category = models.OneToOneField(Category, on_delete=models.CASCADE)
+    banner = models.ImageField(upload_to='browse-banners/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.category.category_name} Browse Page"
+
+
+class CategoryBrowseSection(models.Model):
+    PAGE_SECTION_TYPES = [
+        ('product_slider', 'Product Slider'),
+        ('subcategory_slider', 'Subcategory Slider'),
+        ('brand_slider', 'Brand Slider'),
+        ('custom_heading', 'Custom Heading Only'),
+    ]
+
+    browse_page = models.ForeignKey(CategoryBrowsePage, on_delete=models.CASCADE, related_name='sections')
+    title = models.CharField(max_length=255)
+    section_type = models.CharField(max_length=50, choices=PAGE_SECTION_TYPES)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.title} ({self.get_section_type_display()})"
+    
+
+class ProductAssignment(models.Model):
+    section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='products')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+
+class SubCategoryAssignment(models.Model):
+    section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='subcategories')
+    subcategory = models.ForeignKey('unified.Category', on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.subcategory.parent is None:
+            raise ValidationError("Only subcategories (i.e., categories with a parent) can be assigned here.")
+
+
