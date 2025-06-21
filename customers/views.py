@@ -1,13 +1,15 @@
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.forms import UserInfoForm, UserProfileForm
 from accounts.models import UserProfile
 from django.contrib import messages
+from accounts.views import check_role_customer
 from orders.models import Order, OrderedFood
 import simplejson as json
 
 
 @login_required(login_url='login')
+@user_passes_test(check_role_customer)
 def cprofile(request):
     profile = get_object_or_404(UserProfile, user=request.user)
     if request.method == 'POST':
@@ -33,6 +35,8 @@ def cprofile(request):
     return render(request, 'customers/cprofile.html', context)
 
 
+@login_required(login_url='login')
+@user_passes_test(check_role_customer)
 def my_orders(request):
     orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
 
@@ -42,6 +46,8 @@ def my_orders(request):
     return render(request, 'customers/my_orders.html', context)
 
 
+@login_required(login_url='login')
+@user_passes_test(check_role_customer)
 def order_detail(request, order_number):
     try:
         order = Order.objects.get(order_number=order_number, is_ordered=True)
