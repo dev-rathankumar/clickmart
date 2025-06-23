@@ -86,7 +86,7 @@
 </style>
 {% include 'includes/alerts.html' %}
 
-<section class="popular-categories" style="padding-bottom: 0;">
+<section class="popular-categories d-none d-md-block" style="padding-bottom: 0;">
 	<div class="container">
 
 		
@@ -116,8 +116,41 @@
 	</div>
 </section>
 
+<!-- Mobile Banner -->
+<div class="d-block d-md-none w-100">
+  <img 
+    src="{% static 'images/fathers-day.jpg' %}" 
+    alt="Mobile Banner" 
+    class="img-fluid w-100" 
+    style="max-height: 250px; object-fit: cover;">
+</div>
+
+<div class="container px-3 pb-3 d-block d-md-none" style="background-color: #FFEBF0;">
+  <div class="row g-2">
+    <div class="col-4">
+      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a4ea0a738d06184170b3/asset-11-400x400.png" class="img-fluid w-100" alt="">
+    </div>
+    <div class="col-4">
+      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a500cfa48eb6459a6e69/asset-17-400x400.png" class="img-fluid w-100" alt="">
+    </div>
+    <div class="col-4">
+      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a520ccc4b4c233f5bf9a/asset-13-400x400.png" class="img-fluid w-100" alt="">
+    </div>
+    <div class="col-4">
+      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a537c914b0f9203a090d/asset-16-400x400.png" class="img-fluid w-100" alt="">
+    </div>
+    <div class="col-4">
+      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a54d70b4aec40237ecc3/asset-14-400x400.png" class="img-fluid w-100" alt="">
+    </div>
+    <div class="col-4">
+      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a56127e3c691c8320a29/asset-15-400x400.png" class="img-fluid w-100" alt="">
+    </div>
+  </div>
+</div>
+
+
 <!-- Main Section Start -->
-	<section class="home-slider position-relative mb-20 page-section nopadding cs-nomargin">
+	<section class="home-slider position-relative mb-20 page-section nopadding cs-nomargin d-none d-md-block">
 		<div class="container">
 			<div class="home-slide-cover">
 				<div class="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
@@ -201,10 +234,54 @@
 		</div>
 	</section>
 
-	
 
-{% for collection in collections %}
-<section class="product-tabs section-padding position-relative">
+	<section class="banners mb-25 pt-3">
+		<div class="container">
+			<div class="section-title wow animate__animated animate__fadeIn mb-3">
+				<h3 class="">Flickbasket Top Collection</h3>
+			</div>
+	
+			<!-- Bootstrap Carousel for multiple banners -->
+			<div id="bannerCarousel" class="carousel slide">
+				<div class="carousel-inner">
+	
+					<!-- Carousel Item 1 -->
+					{% for chunk in banner_chunks %}
+					<div class="carousel-item {% if forloop.first %}active{% endif %}">
+						<div class="row">
+							{% for banner in chunk %}
+							<div class="col-lg-4 col-md-6">
+								<div class="banner-img wow animate__animated" data-wow-delay="0">
+									<img src="{{ banner.image.url }}" alt="" />
+									<div class="banner-text mt-3">
+										<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-xs text-light">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+									</div>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+					</div>
+					{% endfor %}
+	
+					
+	
+					<!-- More Carousel Items (repeat for other banners) -->
+	
+				</div>
+	
+				<!-- Carousel Controls -->
+				<button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev" style="z-index: 9;">
+					<span class="carousel-control-prev-icon"></span>
+				</button>
+				<button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+					<span class="carousel-control-next-icon"></span>
+				</button>
+			</div>
+		</div>
+	</section>
+
+  {% for collection in collections %}
+<section class="product-tabs section-padding position-relative d-none d-md-block">
   <div class="container">
     <div class="section-title style-2 wow animate__animated animate__fadeIn mb-3">
       <h3>{{ collection.name }}</h3>
@@ -275,52 +352,6 @@
 </section>
 {% endfor %}
 
-
-	<section class="banners mb-25 pt-3">
-		<div class="container">
-			<div class="section-title wow animate__animated animate__fadeIn mb-3">
-				<h3 class="">Flickbasket Top Collection</h3>
-			</div>
-	
-			<!-- Bootstrap Carousel for multiple banners -->
-			<div id="bannerCarousel" class="carousel slide">
-				<div class="carousel-inner">
-	
-					<!-- Carousel Item 1 -->
-					{% for chunk in banner_chunks %}
-					<div class="carousel-item {% if forloop.first %}active{% endif %}">
-						<div class="row">
-							{% for banner in chunk %}
-							<div class="col-lg-4 col-md-6">
-								<div class="banner-img wow animate__animated" data-wow-delay="0">
-									<img src="{{ banner.image.url }}" alt="" />
-									<div class="banner-text mt-3">
-										<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-xs text-light">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
-									</div>
-								</div>
-							</div>
-							{% endfor %}
-						</div>
-					</div>
-					{% endfor %}
-	
-					
-	
-					<!-- More Carousel Items (repeat for other banners) -->
-	
-				</div>
-	
-				<!-- Carousel Controls -->
-				<button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev" style="z-index: 9;">
-					<span class="carousel-control-prev-icon"></span>
-				</button>
-				<button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-					<span class="carousel-control-next-icon"></span>
-				</button>
-			</div>
-		</div>
-	</section>
-
 	{% for category, chunks in grouped_banners_list %}
 <section class="banners mb-25 pt-3">
 	<div class="container">
@@ -373,28 +404,51 @@
 
 
 <script>
-	$(document).ready(function () {
-  {% for collection in collections %}
-  $('#collections-slider-{{ forloop.counter }}').slick({
-    infinite: true,
-    slidesToShow: 6,
-    slidesToScroll: 6,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    arrows: true,
-    dots: false,
-    responsive: [
-      { breakpoint: 1200, settings: { slidesToShow: 3 }},
-      { breakpoint: 992, settings: { slidesToShow: 2 }},
-      { breakpoint: 576, settings: { slidesToShow: 1 }}
-    ],
-    prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-arrow-small-left"></i></span>',
-    nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-arrow-small-right"></i></span>',
-    appendArrows: '#slider-arrows-{{ forloop.counter }}'
+  $(document).ready(function () {
+    const totalSliders = {{ collections|length }};
+    let slidersInitialized = 0;
+
+    {% for collection in collections %}
+    $('#collections-slider-{{ forloop.counter }}').on('init', function () {
+      slidersInitialized++;
+      if (slidersInitialized === totalSliders) {
+        // All sliders are initialized → now run sticky logic
+        initStickyHeader();
+      }
+    }).slick({
+      infinite: true,
+      slidesToShow: 6,
+      slidesToScroll: 6,
+      autoplay: true,
+      autoplaySpeed: 3000,
+      arrows: true,
+      dots: false,
+      responsive: [
+        { breakpoint: 1200, settings: { slidesToShow: 3 }},
+        { breakpoint: 992, settings: { slidesToShow: 2 }},
+        { breakpoint: 576, settings: { slidesToShow: 1 }}
+      ],
+      prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-arrow-small-left"></i></span>',
+      nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-arrow-small-right"></i></span>',
+      appendArrows: '#slider-arrows-{{ forloop.counter }}'
+    });
+    {% endfor %}
+
+    function initStickyHeader() {
+      const stickyEl = document.querySelector('.mobile-header-section');
+      const stickyTop = stickyEl.offsetTop;
+
+      window.addEventListener('scroll', () => {
+        if (window.scrollY >= stickyTop) {
+          stickyEl.classList.add('sticky');
+        } else {
+          stickyEl.classList.remove('sticky');
+        }
+      });
+    }
   });
-  {% endfor %}
-});
 </script>
+
 
 <script>
 

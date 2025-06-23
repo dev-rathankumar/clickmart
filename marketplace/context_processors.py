@@ -71,3 +71,8 @@ def categories_processor(request):
 def store_type_processor(request):
     store_types = StoreType.objects.all()
     return{'store_types':store_types}
+
+
+def categories_home_processor(request):
+    categories_home = Category.objects.filter(parent=None, is_active=True)
+    return {'categories_home': categories_home}

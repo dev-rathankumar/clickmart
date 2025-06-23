@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'filer',
     'homepage',
     'adminsortable2',
+    'mobile',
     
 ]
 
@@ -109,6 +110,7 @@ TEMPLATES = [
                 'marketplace.context_processors.categories_processor',
                 'marketplace.context_processors.store_type_processor',
                 'accounts.context_processors.get_store_types',
+                'marketplace.context_processors.categories_home_processor',
             ],
         },
     },

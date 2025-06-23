@@ -189,7 +189,8 @@
 
 </style>
 
-<header class="header-area header-style-1 header-height-2" style="position: sticky;top: 0;left: 0;width: 100%;z-index: 999;background-color: #fff;">
+<!-- Desktop Header -->
+<header class="header-area header-style-1 header-height-2 large-header" style="position: sticky;top: 0;left: 0;width: 100%;z-index: 999;background-color: #fff;">
   <!-- Desktop Navbar -->
   <div class="header-middle d-none d-lg-block" style="box-shadow: 0 0 10px 0 rgba(0,0,0,.15);">
     <!-- ... Desktop navbar unchanged ... -->
@@ -210,38 +211,7 @@
           </div>
         </div>
 
-        <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="locationModalLabel">Select Your Location</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <ul>
-                  <li class="location-has-children choose-location">
-                    <form action="#">
-                      <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
-                    </form>
-                  </li>
-                  <li class="mt-3">
-                    <div>
-                      <div class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2">
-                        <div>
-                          <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()" style="cursor: pointer;">
-                            <i class="icon-target5"></i>
-                            Use your current location 
-                            <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
         <!-- Middle: Search Bar -->
         <div class="flex-grow-1">
@@ -361,6 +331,133 @@
     </div>
   </div>
 </header>
+
+<!-- Mobile Header -->
+<div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1; background-color: #FFEBF0;">
+  
+  <!-- Top Row: Location & User Icon (scrolls away) -->
+  <div class="mobile-row w-100 top-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3" style="height: 55px;">
+    <div class="mobile-col flex-fill left text-dark d-flex flex-row flex-nowrap align-items-center justify-content-start h-100">
+      <div class="mobile-col-item mobile-location flex-fill">
+        <div role="button" class="selected_mobile_location h-100">
+          <a class="d-flex align-items-start" style="width: 100%;">
+            <div class="loc_active text-muted flex-fill">
+              <h5 class="mb-1 fw-semibold ms-fs-18 text-dark" style="font-size: 18px;">400709</h5>
+              <p class="m-0 lh-1 d-inline-block w-100 d-flex align-items-center">
+                <span class="d-inline-block text-truncate text-dark" style="max-width: 100%; font-size: 14px;">Navi Mumbai, Maharashtra</span>
+                <i class="bi bi-caret-down-fill lh-1 ms-fs-10 ms-1"></i>
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-col flex-auto right">
+      <div class="mobile-col-item mobile-cart">
+        <a class="mobile-header-icon position-relative d-block ps-3" data-bs-toggle="offcanvas" data-bs-target="#humburgermenu">
+          <span class="bg-dark bg-opacity-75 d-inline-flex align-items-center justify-content-center rounded-circle" style="height: 35px; width: 35px;">
+            <i class="bi bi-person-fill lh-1 fs-4 text-white"></i>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle Row: Search Bar (Sticky) -->
+   <div id="sticky-placeholder" style="height: 0;"></div>
+  <div class="mobile-header-section w-100" style="background-color: #FFEBF0;">
+    <div class="mobile-row w-100 middle-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3 py-0" style="height: 60px;">
+      <div class="mobile-col w-100">
+        <div class="mobile-col-item mobile-autocomplete flex-fill">
+          <div class="autocomplete_mobile_container w-100">
+            <div class="autocomplete_mobile_inputgroup input-group position-relative rounded-3 overflow-hidden bg-white d-flex flex-row flex-nowrap" style="height: 40px; border: 1px solid #eee; box-shadow: 0 0 5px rgba(0,0,0,0.07);">
+              <div class="input-group">
+                <span class="input-group-text bg-white border-0">
+                  <i class="fi-rs-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control border-0 bg-white px-2 py-1" 
+                  placeholder="Search for products, sellers and more"
+                  style="font-size: 14px; height: 100%;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-row w-100 bottom-mobile-row" style="height: 70px;">
+    <div class="mobile-col h-100 w-100 d-flex flex-row flex-nowrap">
+      <div id="mobile-header-categories" class="mobile-col-item mobile-header-categories overflow-hidden small border-bottom border-opacity-10 h-100" style="border-width: 0.5px !important;">
+        <div class="d-flex flex-row flex-nowrap text-nowrap overflow-auto px-3 h-100 mobile-header-scroll" style="scroll-snap-type: x mandatory;">
+          
+          <!-- Static 'All' Category -->
+          <div class="mobile-header-category-item animate text-center" data-id="sample-id" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
+            <a role="button" class="d-block text-center px-2 py-1 pb-2 position-relative overflow-hidden h-100">
+              <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
+                <img src="{% static 'images/all.svg' %}" class="img-fluid" alt="All" style="width: 2rem; height: 2rem;">
+              </div>
+              <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12">All</span>
+            </a>
+          </div>
+
+          <!-- Dynamic Categories -->
+          {% for cat in categories_home %}
+          <div class="mobile-header-category-item animate text-center" data-id="{{ cat.id }}" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
+            <a role="button" class="d-block px-1 py-1 pb-2 position-relative overflow-hidden h-100">
+              <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
+                <img src="{{ cat.category_image.url }}" class="img-fluid" alt="{{ cat.category_name }}" style="width: 2rem; height: 2rem;">
+              </div>
+              <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12 text-truncate" style="font-size: 12px;">{{ cat.category_name }}</span>
+            </a>
+          </div>
+          {% endfor %}
+          
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Categories (Sticky) -->
+  
+
+</div>
+
+
+<div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true" style="z-index: 9999;">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="locationModalLabel">Select Your Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  <li class="location-has-children choose-location">
+                    <form action="#">
+                      <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
+                    </form>
+                  </li>
+                  <li class="mt-3">
+                    <div>
+                      <div class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2">
+                        <div>
+                          <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()" style="cursor: pointer;">
+                            <i class="icon-target5"></i>
+                            Use your current location 
+                            <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
 
 
   <!-- Header Start -->

@@ -65,7 +65,27 @@
 <!-- Footer End -->
 </div>
 
-	
+	<script>
+   document.addEventListener('DOMContentLoaded', function () {
+  const stickyTarget = document.querySelector('.mobile-header-section');
+  const placeholder = document.getElementById('sticky-placeholder');
+  const stickyOffset = stickyTarget.offsetTop;
+  const stickyHeight = stickyTarget.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    if (window.scrollY >= stickyOffset) {
+      stickyTarget.classList.add('sticky');
+      placeholder.style.height = stickyHeight + 'px'; // Reserve space
+    } else {
+      stickyTarget.classList.remove('sticky');
+      placeholder.style.height = '0px'; // Collapse placeholder
+    }
+  });
+});
+
+
+
+  </script>
 	<!-- Vendor JS-->
     <script src="{% static 'assets/js/vendor/modernizr-3.6.0.min.js' %}"></script>
     <script src="{% static 'assets/js/vendor/jquery-3.6.0.min.js' %}"></script>
