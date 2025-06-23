@@ -31,12 +31,12 @@
     margin-left: 20px;
     font-size: 0.9em;
   }
-  .btn-category{
+  .btn-category {
     padding: 6px 50px 5px 50px;
     margin: 0px 10px 0px 40px;
     font-weight: 600;
   }
-  .logout-icon{
+  .logout-icon {
     font-size: 20px;
   }
   /* This Design for the Become a seller button  */
@@ -54,7 +54,8 @@
       flex-direction: column !important;
       gap: 1rem !important;
     }
-    .header-middle .d-flex.align-items-center.justify-content-between.flex-wrap.gap-3 {
+    .header-middle
+      .d-flex.align-items-center.justify-content-between.flex-wrap.gap-3 {
       flex-direction: column !important;
       gap: 1rem !important;
       align-items: stretch !important;
@@ -76,20 +77,23 @@
     .navbar-mobile-overlay {
       display: none;
       position: fixed;
-      left: 0; top: 0;
+      left: 0;
+      top: 0;
       width: 100vw;
       height: 100vh;
       z-index: 1099;
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
     }
     .navbar-mobile-menu {
       position: fixed;
-      left: 0; top: 0;
-      width: 80vw; max-width: 320px;
+      left: 0;
+      top: 0;
+      width: 80vw;
+      max-width: 320px;
       height: 100vh;
       background: #fff;
       z-index: 1100;
-      box-shadow: 2px 0 6px rgba(0,0,0,0.07);
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.07);
       transform: translateX(-100%);
       transition: transform 0.3s;
       padding: 2rem 1.5rem 1.5rem 1.5rem;
@@ -118,7 +122,8 @@
     .mobile-navbar-location {
       margin-bottom: 1.5rem;
     }
-    .mobile-navbar-links a, .mobile-navbar-links .btn {
+    .mobile-navbar-links a,
+    .mobile-navbar-links .btn {
       display: block;
       margin-bottom: 1rem;
     }
@@ -136,32 +141,32 @@
     }
   }
   @media only screen and (max-width: 768px) {
-    .main-logo img{
+    .main-logo img {
       max-width: 95%;
     }
-    .btn-category{
+    .btn-category {
       margin: 10px 10px 0px 0px;
       padding: 6px 20px 5px 20px;
     }
-    .main-location{
+    .main-location {
       width: 100%;
       margin-left: 0px !important;
       margin-top: 5px;
     }
-    #categoryDropdown{
+    #categoryDropdown {
       margin: 11px 0px 0px -40px;
       z-index: 999;
     }
-    .logout-icon{
+    .logout-icon {
       font-size: 18px;
       position: relative;
       top: 2px;
       left: 10px;
     }
-    .cart-page .decrease_cart{
+    .cart-page .decrease_cart {
       margin-right: 5px !important;
     }
-    .menu-itam-holder .menu-itam-list .price-holder a i{
+    .menu-itam-holder .menu-itam-list .price-holder a i {
       margin-left: 5px !important;
     }
   }
@@ -175,56 +180,152 @@
       height: 55px;
     }
     .popular-categories .slider-btn.slider-prev {
-        right: 50px !important;
-         left: 20px !important; 
+      right: 50px !important;
+      left: 20px !important;
     }
-    option[name=store_type] {
+    option[name="store_type"] {
       padding: 10px;
       font-size: 10px;
     }
   }
   /* Hide mobile navbar on desktop */
-  .mobile-navbar { display: none; }
-
-
+  .mobile-navbar {
+    display: none;
+  }
 </style>
 
 <!-- Desktop Header -->
 <header class="header-area header-style-1 header-height-2 large-header" style="position: sticky;top: 0;left: 0;width: 100%;z-index: 999;background-color: #fff;">
   <!-- Desktop Navbar -->
-  <div class="header-middle d-none d-lg-block" style="box-shadow: 0 0 10px 0 rgba(0,0,0,.15);">
+  <div
+    class="header-middle d-none d-lg-block"
+    style="box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.15)"
+  >
     <!-- ... Desktop navbar unchanged ... -->
     <div class="container-fluid">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div
+        class="d-flex align-items-center justify-content-between flex-wrap gap-3"
+      >
         <!-- Left Side: Logo + Categories -->
         <div class="d-flex align-items-center gap-4 flex-shrink-0">
           <!-- Logo -->
           <div class="logo logo-width-1">
-            <a href="/"><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" style="height: 75px;" /></a>
+            <a href="/"
+              ><img
+                src="{% static 'logo/flickbasket-logo.svg' %}"
+                alt="logo"
+                style="height: 75px"
+            /></a>
           </div>
 
           <!-- Categories Dropdown -->
           <div class="main-categori-wrap d-none d-lg-block">
-            <a class="categories-button-active" href="#" data-bs-toggle="modal" data-bs-target="#locationModal">
-              <span class="fi-rs-marker"></span> <span id="location-selector">Select Location</span>
+            <a
+              class="categories-button-active"
+              href="#"
+              data-bs-toggle="modal"
+              data-bs-target="#locationModal"
+            >
+              <span class="fi-rs-marker"></span>
+              <span id="location-selector">Select Location</span>
             </a>
           </div>
         </div>
 
+<<<<<<< HEAD
         
+=======
+        <div
+          class="modal fade"
+          id="locationModal"
+          tabindex="-1"
+          aria-labelledby="locationModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="locationModalLabel">
+                  Select Your Location
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  <li class="location-has-children choose-location">
+                    <form action="#">
+                      <input
+                        type="text"
+                        value=""
+                        name="location"
+                        id="location"
+                        placeholder="Your current location"
+                        autocomplete="off"
+                      />
+                    </form>
+                  </li>
+                  <li class="mt-3">
+                    <div>
+                      <div
+                        class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2"
+                      >
+                        <div>
+                          <span
+                            id="foodbakery_radius_location_open"
+                            class="foodbakery-radius-location"
+                            onclick="getLocation()"
+                            style="cursor: pointer"
+                          >
+                            <i class="icon-target5"></i>
+                            Use your current location
+                            <span
+                              class="dots-circle-spinner loading ms-2"
+                              style="display: none"
+                            ></span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+>>>>>>> 17859a24a8ddeee68862ffa86a9aa460ec8ae968
 
         <!-- Middle: Search Bar -->
         <div class="flex-grow-1">
           <div class="search-style-2">
             <form action="{% url 'all_products' %}" method="get" class="d-flex">
-              <select name="store_type" class="select-active me-2" style="min-width: 150px;">
+              <select
+                name="store_type"
+                class="select-active me-2"
+                style="min-width: 150px"
+              >
                 <option value="">All</option>
                 {% for st_type in store_types %}
-                <option name=store_type value="{{st_type.slug}}" >{{st_type.name}}</option>
+                <option name="store_type" value="{{st_type.slug}}">
+                  {{st_type.name}}
+                </option>
                 {% endfor %}
               </select>
-              <input type="text" name=search class="form-control" placeholder="What are you looking for?" />
-              <button type="submit" class="ml-2" style="width:65px; background-color: transparent !important; "></button>
+              <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="What are you looking for?"
+              />
+              <button
+                type="submit"
+                class="ml-2"
+                style="width: 65px; background-color: transparent !important"
+              ></button>
             </form>
           </div>
         </div>
@@ -232,26 +333,52 @@
         <!-- Right Side: Location -->
         <div class="d-flex align-items-center gap-3 flex-shrink-0">
           {% if user.is_authenticated %}
-          <a href="{% url 'cart' %}" class="text-dark position-relative me-2 ms-4" style="font-size: 1.2rem;">
+          <a
+            href="{% url 'cart' %}"
+            class="text-dark position-relative me-2 ms-4"
+            style="font-size: 1.2rem"
+          >
             <i class="fa fa-shopping-cart"></i>
             <!-- Optional: Cart item count badge -->
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <span
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            >
               {{cart_count}}
               <span class="visually-hidden">cart items</span>
             </span>
           </a>
           <!-- <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a> -->
-          {% endif %}
-          {% if user.is_authenticated %}
-          <a class="text-dark fw-700 login-popup" href="{% url 'myAccount' %}">My Account</a>
-          <a class="cs-color cs-popup-joinus-btn login-popup text-danger" href="{% url 'logout' %}"><i class="fa fa-power-off logout-icon" aria-hidden="true"></i></a>
+          {% endif %} {% if user.is_authenticated %}
+          <a class="text-dark fw-700 login-popup" href="{% url 'myAccount' %}"
+            >My Account</a
+          >
+          <a
+            class="cs-color cs-popup-joinus-btn login-popup text-danger"
+            href="{% url 'logout' %}"
+            ><i class="fa fa-power-off logout-icon" aria-hidden="true"></i
+          ></a>
           {% else %}
           <!-- <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a> -->
-          <a href="{% url 'login' %}" class="text-danger Become_a_seller_btn" style="font-size: 1rem; font-weight: 600; border: 1px solid #DC3545;">
+          <a
+            href="{% url 'login' %}"
+            class="text-danger Become_a_seller_btn"
+            style="font-size: 1rem; font-weight: 600; border: 1px solid #dc3545"
+          >
             <i class="fa fa-sign-in" aria-hidden="true"></i> Login
           </a>
-          <div class="main-categori-wrap d-none d-lg-block" style="margin-right:10px !important;">
-            <a class="Become_a_seller_btn" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff !important; font-weight: 600;">
+          <div
+            class="main-categori-wrap d-none d-lg-block"
+            style="margin-right: 10px !important"
+          >
+            <a
+              class="Become_a_seller_btn"
+              href="{% url 'registerVendor' %}"
+              style="
+                background-color: #dc3545;
+                color: #fff !important;
+                font-weight: 600;
+              "
+            >
               Become a Seller
             </a>
           </div>
@@ -261,22 +388,37 @@
     </div>
   </div>
   <!-- Mobile Navbar -->
-  <div class="mobile-navbar" style="position:relative;">
-    <div style="background: #fff; border-bottom:1px solid #ececec; padding: 7px 0;">
-      <div class="container-fluid d-flex align-items-center justify-content-between">
+  <div class="mobile-navbar" style="position: relative">
+    <div
+      style="background: #fff; border-bottom: 1px solid #ececec; padding: 7px 0"
+    >
+      <div
+        class="container-fluid d-flex align-items-center justify-content-between"
+      >
         <div class="logo">
-          <a href="/"><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" style="height: 60px;" /></a>
+          <a href="/"
+            ><img
+              src="{% static 'logo/flickbasket-logo.svg' %}"
+              alt="logo"
+              style="height: 60px"
+          /></a>
         </div>
         <div>
-        {% if user.is_authenticated %}
-            <a href="{% url 'cart' %}" class="text-dark position-relative me-2" style="font-size:1.4rem;">
+          {% if user.is_authenticated %}
+          <a
+            href="{% url 'cart' %}"
+            class="text-dark position-relative me-2"
+            style="font-size: 1.4rem"
+          >
             <i class="fa fa-shopping-cart"></i>
-            <span class="badge rounded-pill bg-danger">
-                {{cart_count}}
-            </span>
-            </a>
-            {% endif %}
-          <button class="btn btn-danger py-1 px-2" id="mobileMenuOpen" style="font-size:22px; border-radius:4px;">
+            <span class="badge rounded-pill bg-danger"> {{cart_count}} </span>
+          </a>
+          {% endif %}
+          <button
+            class="btn btn-danger py-1 px-2"
+            id="mobileMenuOpen"
+            style="font-size: 22px; border-radius: 4px"
+          >
             <i class="fa fa-bars"></i>
           </button>
         </div>
@@ -286,44 +428,108 @@
     <div class="navbar-mobile-menu" id="mobileNavbarMenu">
       <div class="navbar-mobile-top">
         <div class="logo">
-          <a href="/"><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" /></a>
+          <a href="/"
+            ><img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo"
+          /></a>
         </div>
-        <button class="btn btn-link" id="mobileMenuClose" style="font-size:20px;"><i class="fa fa-times"></i></button>
+        <button
+          class="btn btn-link"
+          id="mobileMenuClose"
+          style="font-size: 20px"
+        >
+          <i class="fa fa-times"></i>
+        </button>
       </div>
       <div class="mobile-search-bar">
         <form action="{% url 'all_products' %}" method="get" class="d-flex">
-          <select name="store_type" class="form-select me-2" style="min-width: 110px;">
+          <select
+            name="store_type"
+            class="form-select me-2"
+            style="min-width: 110px"
+          >
             <option value="" name="store_type">All Categories</option>
             {% for st_type in store_types %}
-            <option name=store_type value="{{st_type.slug}}" >{{st_type.name}}</option>
+            <option name="store_type" value="{{st_type.slug}}">
+              {{st_type.name}}
+            </option>
             {% endfor %}
           </select>
-          <input type="text" name=search class="form-control" placeholder="What are you looking for?" />
-          <button type="submit" class="ml-2 btn btn-light" style="width: 20px;margin-left: 10px;padding-left: 17px;"><i class="fa fa-search"></i></button>
+          <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="What are you looking for?"
+          />
+          <button
+            type="submit"
+            class="ml-2 btn btn-light"
+            style="width: 20px; margin-left: 10px; padding-left: 17px"
+          >
+            <i class="fa fa-search"></i>
+          </button>
         </form>
       </div>
       <div class="mobile-navbar-location">
         <form action="#">
-          <input type="text" value="" name="location" id="location_mobile" placeholder="Your current location" autocomplete="off" class="form-control mb-1">
+          <input
+            type="text"
+            value=""
+            name="location"
+            id="location_mobile"
+            placeholder="Your current location"
+            autocomplete="off"
+            class="form-control mb-1"
+          />
         </form>
-        <span id="foodbakery_radius_location_open_mobile" class="foodbakery-radius-location" onclick="getLocation()" style="cursor:pointer;">
+        <span
+          id="foodbakery_radius_location_open_mobile"
+          class="foodbakery-radius-location"
+          onclick="getLocation()"
+          style="cursor: pointer"
+        >
           <i class="icon-target5"></i> Use your current location
-          <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
+          <span
+            class="dots-circle-spinner loading ms-2"
+            style="display: none"
+          ></span>
         </span>
       </div>
       <div class="mobile-navbar-links">
         {% if user.is_authenticated %}
-        <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
-        <a class="btn btn-outline-danger text-uppercase font-weight-bold" href="{% url 'myAccount' %}">My Account</a>
-        <a class="btn btn-outline-danger text-uppercase font-weight-bold" href="{% url 'logout' %}">
+        <a
+          href="{% url 'marketplace' %}"
+          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          >Marketplace</a
+        >
+        <a
+          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          href="{% url 'myAccount' %}"
+          >My Account</a
+        >
+        <a
+          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          href="{% url 'logout' %}"
+        >
           <i class="fa fa-power-off" aria-hidden="true"></i> Logout
         </a>
         {% else %}
-        <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a>
-        <a class="btn btn-outline-danger text-uppercase font-weight-bold" href="{% url 'registerVendor' %}" style="background-color: #DC3545; color: #fff;">
-            Become a Seller
-          </a>
-        <a href="{% url 'login' %}" class="text-danger" style="font-size: 1rem; font-weight: 600;">
+        <a
+          href="{% url 'marketplace' %}"
+          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          >Marketplace</a
+        >
+        <a
+          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          href="{% url 'registerVendor' %}"
+          style="background-color: #dc3545; color: #fff"
+        >
+          Become a Seller
+        </a>
+        <a
+          href="{% url 'login' %}"
+          class="text-danger"
+          style="font-size: 1rem; font-weight: 600"
+        >
           <i class="fa fa-sign-in" aria-hidden="true"></i> Login
         </a>
         {% endif %}
@@ -332,6 +538,7 @@
   </div>
 </header>
 
+<<<<<<< HEAD
 <!-- Mobile Header -->
 <div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1; background-color: #FFEBF0;">
   
@@ -459,186 +666,199 @@
           </div>
         </div>
 
+=======
+<!-- Header Start -->
+<!-- ... (keep your comment code blocks here, unchanged) ... -->
+<!-- Header End -->
+>>>>>>> 17859a24a8ddeee68862ffa86a9aa460ec8ae968
 
-  <!-- Header Start -->
-  <!-- ... (keep your comment code blocks here, unchanged) ... -->
-  <!-- Header End -->
-
-  <script>
- // Toggle dropdown display when clicking the button
-function toggleDropdown() {
+<script>
+  // Toggle dropdown display when clicking the button
+  function toggleDropdown() {
     const dropdown = document.getElementById("categoryDropdown");
     dropdown.classList.toggle("show");
 
     if (dropdown.classList.contains("show")) {
-        // Add scroll event listener only when the dropdown is open
-        window.addEventListener("scroll", closeDropdownOnScroll);
+      // Add scroll event listener only when the dropdown is open
+      window.addEventListener("scroll", closeDropdownOnScroll);
     }
-}
+  }
 
-// Close the dropdown
-function closeDropdownOnScroll() {
+  // Close the dropdown
+  function closeDropdownOnScroll() {
     const dropdown = document.getElementById("categoryDropdown");
     if (dropdown.classList.contains("show")) {
-        dropdown.classList.remove("show");
-        // Remove the scroll event listener to prevent unnecessary calls
-        window.removeEventListener("scroll", closeDropdownOnScroll);
+      dropdown.classList.remove("show");
+      // Remove the scroll event listener to prevent unnecessary calls
+      window.removeEventListener("scroll", closeDropdownOnScroll);
     }
-}
+  }
 
-// Toggle subcategory display for each category and prevent dropdown from closing
-function toggleSubcategories(categoryId) {
+  // Toggle subcategory display for each category and prevent dropdown from closing
+  function toggleSubcategories(categoryId) {
     var subcategoryDiv = document.getElementById("subcategory-" + categoryId);
-    subcategoryDiv.style.display = subcategoryDiv.style.display === "none" ? "block" : "none";
-}
+    subcategoryDiv.style.display =
+      subcategoryDiv.style.display === "none" ? "block" : "none";
+  }
 
-// Close the dropdown if clicked outside, but ignore clicks on the dropdown content
-window.onclick = function(event) {
-    if (!event.target.matches('.dropdown button') && !event.target.matches('.dropdown-content a')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
+  // Close the dropdown if clicked outside, but ignore clicks on the dropdown content
+  window.onclick = function (event) {
+    if (
+      !event.target.matches(".dropdown button") &&
+      !event.target.matches(".dropdown-content a")
+    ) {
+      var dropdowns = document.getElementsByClassName("dropdown-content");
+      for (var i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains("show")) {
+          openDropdown.classList.remove("show");
         }
+      }
     }
-};
-    // Geolocation Script
-    var x = document.getElementById("location");
-    var current_location = sessionStorage.getItem("current_location");
-    if (current_location != "") {
-        x.value = current_location;
+  };
+  // Geolocation Script
+  var x = document.getElementById("location");
+  var current_location = sessionStorage.getItem("current_location");
+  if (current_location != "") {
+    x.value = current_location;
+  }
+
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+      x.innerHTML = "Geolocation is not supported by this browser.";
     }
+  }
 
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition);
-        } else {
-            x.innerHTML = "Geolocation is not supported by this browser.";
-        }
-    }
+  function showPosition(position) {
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    var GOOGLE_API_KEY = "{{ GOOGLE_API_KEY }}";
+    var url =
+      "https://maps.googleapis.com/maps/api/geocode/json?latlng=" +
+      lat +
+      "," +
+      lng +
+      "&key=" +
+      GOOGLE_API_KEY;
 
-    function showPosition(position) {
-        var lat = position.coords.latitude;
-        var lng = position.coords.longitude;
-        var GOOGLE_API_KEY = "{{ GOOGLE_API_KEY }}";
-        var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + lat + "," + lng + "&key=" + GOOGLE_API_KEY;
-
-        $.ajax({
-            url: url,
-            type: "GET",
-            success: function(response) {
-                var current_location = response.results[0].formatted_address;
-                var addressComponents = response.results[0].address_components;
-                var city = "";
-                var pincode = "";
-                // Loop through address components to find city and pincode
-            addressComponents.forEach(function(component) {
-                if (component.types.includes("locality")) {
-                    city = component.long_name;
-                }
-                if (component.types.includes("postal_code")) {
-                    pincode = component.long_name;
-                }
-            });
-                console.log(addressComponents)
-                console.log(city)
-                console.log(pincode)
-
-                x.value = current_location;
-                sessionStorage.setItem("current_location", current_location);
-                sessionStorage.setItem("city", city);
-                sessionStorage.setItem("pincode", pincode);
-
-                var location = "";
-                if (city && pincode) {
-                    location = city + " - " + pincode;
-                } else if (city) {
-                    location = city;
-                } else if (pincode) {
-                    location = pincode;
-                }
-
-                updateNavbarLocation(location);
-                window.location = '?lat=' + lat + '&lng=' + lng;
-                console.log(current_location);
-            }
+    $.ajax({
+      url: url,
+      type: "GET",
+      success: function (response) {
+        var current_location = response.results[0].formatted_address;
+        var addressComponents = response.results[0].address_components;
+        var city = "";
+        var pincode = "";
+        // Loop through address components to find city and pincode
+        addressComponents.forEach(function (component) {
+          if (component.types.includes("locality")) {
+            city = component.long_name;
+          }
+          if (component.types.includes("postal_code")) {
+            pincode = component.long_name;
+          }
         });
-    }
+        console.log(addressComponents);
+        console.log(city);
+        console.log(pincode);
 
- // Function to update navbar location text
-function updateNavbarLocation(location) {
+        x.value = current_location;
+        sessionStorage.setItem("current_location", current_location);
+        sessionStorage.setItem("city", city);
+        sessionStorage.setItem("pincode", pincode);
+
+        var location = "";
+        if (city && pincode) {
+          location = city + " - " + pincode;
+        } else if (city) {
+          location = city;
+        } else if (pincode) {
+          location = pincode;
+        }
+
+        updateNavbarLocation(location);
+        window.location = "?lat=" + lat + "&lng=" + lng;
+        console.log(current_location);
+      },
+    });
+  }
+
+  // Function to update navbar location text
+  function updateNavbarLocation(location) {
     var navLoc = document.getElementById("location-selector");
     if (navLoc) {
       if (location && location.trim() !== "") {
-          navLoc.textContent = location;
+        navLoc.textContent = location;
       } else {
-          navLoc.textContent = "Select Location";
+        navLoc.textContent = "Select Location";
       }
     }
     var navLocMobile = document.getElementById("location-selector-mobile");
     if (navLocMobile) {
       if (location && location.trim() !== "") {
-          navLocMobile.textContent = location;
+        navLocMobile.textContent = location;
       } else {
-          navLocMobile.textContent = "Select Location";
+        navLocMobile.textContent = "Select Location";
       }
     }
-}
+  }
 
-// On page load, update navbar with stored city and pincode
-document.addEventListener("DOMContentLoaded", function () {
+  // On page load, update navbar with stored city and pincode
+  document.addEventListener("DOMContentLoaded", function () {
     var city = sessionStorage.getItem("city");
     var pincode = sessionStorage.getItem("pincode");
 
     // Combine city and pincode if available
     var location = "";
     if (city && pincode) {
-        location = city + " - " + pincode;
+      location = city + " - " + pincode;
     } else if (city) {
-        location = city;
+      location = city;
     } else if (pincode) {
-        location = pincode;
+      location = pincode;
     }
 
     updateNavbarLocation(location);
 
     // Mobile navbar event handling
-    const mobileMenuBtn = document.getElementById('mobileMenuOpen');
-    const mobileMenuClose = document.getElementById('mobileMenuClose');
-    const mobileMenu = document.getElementById('mobileNavbarMenu');
-    const mobileOverlay = document.getElementById('mobileNavbarOverlay');
+    const mobileMenuBtn = document.getElementById("mobileMenuOpen");
+    const mobileMenuClose = document.getElementById("mobileMenuClose");
+    const mobileMenu = document.getElementById("mobileNavbarMenu");
+    const mobileOverlay = document.getElementById("mobileNavbarOverlay");
     function openMobileMenu() {
-      mobileMenu.classList.add('show');
-      mobileOverlay.style.display = 'block';
+      mobileMenu.classList.add("show");
+      mobileOverlay.style.display = "block";
       document.body.style.overflow = "hidden";
     }
     function closeMobileMenu() {
-      mobileMenu.classList.remove('show');
-      mobileOverlay.style.display = 'none';
+      mobileMenu.classList.remove("show");
+      mobileOverlay.style.display = "none";
       document.body.style.overflow = "";
     }
-    if(mobileMenuBtn) mobileMenuBtn.onclick = openMobileMenu;
-    if(mobileMenuClose) mobileMenuClose.onclick = closeMobileMenu;
-    if(mobileOverlay) mobileOverlay.onclick = closeMobileMenu;
+    if (mobileMenuBtn) mobileMenuBtn.onclick = openMobileMenu;
+    if (mobileMenuClose) mobileMenuClose.onclick = closeMobileMenu;
+    if (mobileOverlay) mobileOverlay.onclick = closeMobileMenu;
 
     // Sync location input between desktop/mobile
     var locationInputDesktop = document.getElementById("location");
     var locationInputMobile = document.getElementById("location_mobile");
-    if(locationInputDesktop && locationInputMobile) {
+    if (locationInputDesktop && locationInputMobile) {
       locationInputMobile.value = locationInputDesktop.value;
-      locationInputMobile.addEventListener('input', function(){
+      locationInputMobile.addEventListener("input", function () {
         locationInputDesktop.value = this.value;
       });
-      locationInputDesktop.addEventListener('input', function(){
+      locationInputDesktop.addEventListener("input", function () {
         locationInputMobile.value = this.value;
       });
     }
     // Mobile geolocation button
-    var geoBtnMobile = document.getElementById("foodbakery_radius_location_open_mobile");
-    if(geoBtnMobile) {
+    var geoBtnMobile = document.getElementById(
+      "foodbakery_radius_location_open_mobile"
+    );
+    if (geoBtnMobile) {
       geoBtnMobile.onclick = getLocation;
     }
-});
-  </script>
+  });
+</script>
