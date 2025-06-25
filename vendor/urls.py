@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views
 from accounts import views as AccountViews
 
-
+from unified.autocomplete import ProductByCategoryAutocomplete
 urlpatterns = [
     path('', AccountViews.vendorDashboard, name='vendor'),
     path('profile/', views.vprofile, name='vprofile'),
@@ -54,6 +54,8 @@ urlpatterns = [
     path('import-your-data/map_headers/', views.map_headers, name='map_headers'),
     path('import-your-data/process_mapped_data/', views.process_mapped_data, name='process_mapped_data'),
     path('import-your-data/validate_import_data/', views.process_mapped_data, name='validate_import_data'),
+
+     path('product-autocomplete/', ProductByCategoryAutocomplete.as_view(), name='product-by-category-autocomplete'),
 
 
 ]

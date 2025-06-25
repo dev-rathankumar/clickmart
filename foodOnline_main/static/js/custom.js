@@ -85,7 +85,6 @@ $(document).ready(function(){
             type: 'GET',
             url: url,
             success: function(response){
-                console.log(response)
                 if(response.status == 'login_required'){
                     swal(response.message, '', 'info').then(function(){
                         window.location = '/login';
@@ -100,8 +99,30 @@ $(document).ready(function(){
                     swal(response.message,'','warning')
                 }
                 else{
-                    $('#cart_counter').html(response.cart_counter['cart_count']);
+                    console.log(response)
+                    $('#cart_count').text(response.cart_counter);
+                    // $('#cart_counter').attr('data-count', response.cart_counter['cart_count']);
                     $('#qty-'+food_id).html(response.qty);
+                    console.log($('#cart_count').text())
+                    console.log(response.qty)
+
+                    console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
+
+
+                    if (response.qty <= 0){
+                        // If the quantity is 0 or less, show the add button
+                        $('#add_to_cart_btn-'+food_id).show();
+                        $('#quantity-btn-box-'+food_id).hide();
+                    } else {
+                        // If the quantity is greater than 0, show the increase and decrease buttons
+                        $('#add_to_cart_btn-'+food_id).hide();
+                        $('#quantity-btn-box-'+food_id).show();
+                    console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
+
+                    } 
+                    // # TODO
+                        // In where we will get the add and increse and decrease cart item button when it qty is 0 or lesss the show 
+                        // add  button otherwise show the increase and decrease button if more then 1 or greater then 1
 
                     // subtotal, tax and grand total
                     applyCartAmounts(
@@ -143,8 +164,19 @@ $(document).ready(function(){
                 }else if(response.status == 'Failed'){
                     swal(response.message, '', 'error')
                 }else{
-                    $('#cart_counter').html(response.cart_counter['cart_count']);
+                    $('#cart_count').text(response.cart_counter);
                     $('#qty-'+food_id).html(response.qty);
+                     if (response.qty <= 0){
+                        // If the quantity is 0 or less, show the add button
+                        $('#add_to_cart_btn-'+food_id).show();
+                        $('#quantity-btn-box-'+food_id).hide();
+                    } else {
+                        // If the quantity is greater than 0, show the increase and decrease buttons
+                        $('#add_to_cart_btn-'+food_id).hide();
+                        $('#quantity-btn-box-'+food_id).show();
+                    console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
+
+                    } 
 
                     applyCartAmounts(
                         response.cart_amount['subtotal'],
@@ -153,7 +185,7 @@ $(document).ready(function(){
                     )
 
                     if(window.location.pathname == '/cart/'){
-                        removeCartItem(response.qty, cart_id);
+                        removeCartItem(response.qty, cart_id, food_id);
                         checkEmptyCart();
                     }
                     
@@ -169,6 +201,7 @@ $(document).ready(function(){
         
         cart_id = $(this).attr('data-id');
         url = $(this).attr('data-url');
+        product_id = $(this).attr('data-product-id');
         
         
         $.ajax({
@@ -179,7 +212,8 @@ $(document).ready(function(){
                 if(response.status == 'Failed'){
                     swal(response.message, '', 'error')
                 }else{
-                    $('#cart_counter').html(response.cart_counter['cart_count']);
+                    console.log(response)
+                    $('#cart_count').text(response.cart_counter);
 
                     applyCartAmounts(
                         response.cart_amount['subtotal'],
@@ -187,7 +221,7 @@ $(document).ready(function(){
                         response.cart_amount['grand_total']
                     )
 
-                    removeCartItem(0, cart_id);
+                    removeCartItem(0, cart_id, product_id);
                     checkEmptyCart();
                 } 
             }
@@ -196,18 +230,20 @@ $(document).ready(function(){
 
 
     // delete the cart element if the qty is 0
-    function removeCartItem(cartItemQty, cart_id){
-            if(cartItemQty <= 0){
-                // remove the cart item element
-                document.getElementById("cart-item-"+cart_id).remove()
-                location.reload();
-            }
-        
+function removeCartItem(cartItemQty, cart_id,product_id){
+    if(cartItemQty <= 0){
+        var el = document.getElementById("cart-item-"+cart_id);
+        var el2 = document.getElementById("tax-li-"+product_id);
+        if (el || el2) {
+            el.remove();
+            el2.remove();
+        }
     }
+}
 
     // Check if the cart is empty
     function checkEmptyCart(){
-        var cart_counter = document.getElementById('cart_counter').innerHTML
+        var cart_counter = document.getElementById('cart_count').innerText
         if(cart_counter == 0){
             document.getElementById("empty-cart").style.display = "block";
         }

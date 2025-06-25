@@ -28,7 +28,11 @@
                                         <ul>
                                             {% if cart_items %}
                                                 {% for item in cart_items %}
-                                                <li id="cart-item-{{item.id}}">
+                                                    {% if item.cart_id %}
+                                                            <li id="cart-item-{{item.cart_id}}">
+                                                    {% else %}
+                                                            <li id="cart-item-{{item.product.id}}">
+                                                    {% endif %}
                                                     <div class="image-holder"> <img src="{{ item.product.image.url }}" alt=""></div>
                                                     <div class="text-holder ms-3" style="width: 390px;">
                                                         <h6>{{ item.product }}</h6>
@@ -43,11 +47,21 @@
                                                             <span class="bold">₹ {{ item.product.regular_price }}</span>
                                                         {% endif %}
                                                             
-
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
+                                                        {% if item.cart_id %}
+                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.cart_id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
+                                                        {% else %}
+                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.product.id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
+                                                        {% endif %}
+                                                        
                                                         <label id="qty-{{item.product.id}}">0</label>
                                                         <a href="#" class="add_to_cart" data-id="{{ item.product.id }}" data-url="{% url 'add_to_cart' item.product.id %}"><i class="icon-plus4 text-color"></i></a>
-                                                        <a href="#" class="delete_cart" data-id="{{ item.id }}" data-url="{% url 'delete_cart' item.id %}"><i class="icon-delete text-color"></i></a>
+                                                        
+                                                        {% if item.cart_id %}
+                                                        <a href="#" class="delete_cart" data-id="{{ item.cart_id }}" data-url="{% url 'delete_cart' item.cart_id %}" data-product-id="{{item.product.id}}"><i class="icon-delete text-color"></i></a>       
+                                                        {% else %}
+                                                        <a href="#" class="delete_cart" data-id="{{ item.product.id }}" data-url="{% url 'delete_cart' item.product.id %}" data-product-id="{{item.product.id}}"><i class="icon-delete text-color"></i></a>       
+                                                        {% endif %}
+                                                            
                                                         
                                                     </div>
                                                 </li>
@@ -99,7 +113,8 @@
                                         {% for single_tax_dict in tax_dict %}
                                             {% for key, value in single_tax_dict.tax_info.items %}
                                                 {% if value %}  
-                                                    <li class="d-flex justify-content-between align-items-center text-start mx-3" style="list-style-type: none; margin-left: 15px;">
+                                                    <li class="d-flex justify-content-between align-items-center text-start mx-3" style="list-style-type: none; margin-left: 15px;" id="tax-li-{{ single_tax_dict.product_id }}">
+                                                        
                                                         <div style="font-size: 11px; text-align:left;">
                                                         {{ single_tax_dict.tax_category }} 
                                                            <small>({{ key }}%)</small>

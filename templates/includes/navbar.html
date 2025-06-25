@@ -327,7 +327,6 @@
 
         <!-- Right Side: Location -->
         <div class="d-flex align-items-center gap-3 flex-shrink-0">
-          {% if user.is_authenticated %}
           <a
             href="{% url 'cart' %}"
             class="text-dark position-relative me-2 ms-4"
@@ -335,15 +334,13 @@
           >
             <i class="fa fa-shopping-cart"></i>
             <!-- Optional: Cart item count badge -->
-            <span
-              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-            >
-              {{cart_count}}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <span id="cart_count">{{cart_count}}</span>  
               <span class="visually-hidden">cart items</span>
             </span>
           </a>
           <!-- <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a> -->
-          {% endif %} {% if user.is_authenticated %}
+          {% if user.is_authenticated %}
           <a class="text-dark fw-700 login-popup" href="{% url 'myAccount' %}"
             >My Account</a
           >
