@@ -64,7 +64,7 @@
               <div class="popular-slider-wrapper">
                 <div class="row popular-products-slider" id="collections-slider-{{ forloop.counter }}">
                   {% for assignment in section.products.all %}
-                    {% with product=assignment.product %}
+                    {% for product in assignment.product.all %}
                     <div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
                       <div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
                         <div class="product-img-action-wrap">
@@ -103,7 +103,7 @@
                         </div>
                       </div>
                     </div>
-                    {% endwith %}
+                    {% endfor %}
                   {% endfor %}
                 </div>
               </div>
@@ -131,7 +131,7 @@
               <div class="popular-slider-wrapper">
                 <div class="row popular-products-slider" id="collections-slider-{{ forloop.counter }}">
                   {% for assignment in section.products.all %}
-                    {% with product=assignment.product %}
+                    {% for product in assignment.product.all %}
                     <div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
                       <div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
                         <div class="product-img-action-wrap">
@@ -164,7 +164,7 @@
                         </div>
                       </div>
                     </div>
-                    {% endwith %}
+                    {% endfor %}
                   {% endfor %}
                 </div>
               </div>

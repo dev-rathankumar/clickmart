@@ -183,6 +183,7 @@ class CategoryBrowseSection(models.Model):
         ('product_slider', 'Product Slider'),
         ('subcategory_slider', 'Subcategory Slider'),
         ('brand_slider', 'Brand Slider'),
+        ('image_slider', 'Image Slider'),
         ('custom_heading', 'Custom Heading Only'),
     ]
 
@@ -200,7 +201,7 @@ class CategoryBrowseSection(models.Model):
 
 class ProductAssignment(models.Model):
     section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='products')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ManyToManyField(Product, null=True, blank=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -209,15 +210,16 @@ class ProductAssignment(models.Model):
 
 class SubCategoryAssignment(models.Model):
     section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='subcategories')
-    subcategory = models.ForeignKey('unified.Category', on_delete=models.CASCADE)
+    subcategory = models.ManyToManyField('unified.Category',null=True, blank=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['order']
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        if self.subcategory.parent is None:
-            raise ValidationError("Only subcategories (i.e., categories with a parent) can be assigned here.")
-
+            if self.pk:  # Only run this if the instance has been saved (i.e., has a primary key)
+                from django.core.exceptions import ValidationError
+                for subcat in self.subcategory.all():
+                    if subcat.parent is None:
+                        raise ValidationError("Only subcategories (i.e., categories with a parent) can be assigned here.")
 

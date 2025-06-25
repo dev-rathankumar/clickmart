@@ -212,131 +212,221 @@ def view_Product(request, vendor_slug, product_slug):
     
     return render(request, 'vendor/product_view.html', context)
 
-
 def add_to_cart(request, food_id):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # Check if the food item exists
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            product = Product.objects.get(id=food_id)
+        except Product.DoesNotExist:
+            return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+
+        # --- Authenticated user ---
+        if request.user.is_authenticated:
             try:
-                product = Product.objects.get(id=food_id)
-
-                # Check if the user has already added that food to the cart
-                try:
-                    chkCart = Cart.objects.get(user=request.user, product=product)
-                    
-                    # Calculate the new quantity after increment
-                    new_quantity = chkCart.quantity + 1
-                    
-                    # Check if the new quantity exceeds available stock
-                    if new_quantity > product.qty:
-                        return JsonResponse({
-                            'status': 'Failed',
-                            'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
-                            'cart_counter': get_cart_counter(request),
-                            'qty': chkCart.quantity,
-                            'cart_amount': get_cart_amounts(request)
-                        })
-
-                    # Increase the cart quantity
-                    chkCart.quantity = new_quantity
-                    chkCart.save()
+                chkCart = Cart.objects.get(user=request.user, product=product)
+                new_quantity = chkCart.quantity + 1
+                if new_quantity > product.qty:
+                    cart_counter = get_cart_counter(request)
                     return JsonResponse({
-                        'status': 'Success',
-                        'message': 'Increased the cart quantity',
-                        'cart_counter': get_cart_counter(request),
+                        'status': 'Failed',
+                        'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
+                        'cart_counter': cart_counter['cart_count'],
                         'qty': chkCart.quantity,
                         'cart_amount': get_cart_amounts(request)
                     })
-                except Cart.DoesNotExist:
-                    # Check if stock is available for at least one unit
-                    if product.qty < 1:
-                        return JsonResponse({
-                            'status': 'Failed',
-                            'message': f'{product.product_name} is out of stock.',
-                            'cart_counter': get_cart_counter(request),
-                            'qty': 0,
-                            'cart_amount': get_cart_amounts(request)
-                        })
-
-                    # Add the product to the cart with a quantity of 1
-                    chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
+                chkCart.quantity = new_quantity
+                chkCart.save()
+                cart_counter = get_cart_counter(request)
+                return JsonResponse({
+                    'status': 'Success',
+                    'message': 'Increased the cart quantity',
+                    'cart_counter': cart_counter['cart_count'],
+                    'qty': chkCart.quantity,
+                    'cart_amount': get_cart_amounts(request)
+                })
+            except Cart.DoesNotExist:
+                if product.qty < 1:
+                    cart_counter = get_cart_counter(request)
                     return JsonResponse({
-                        'status': 'Success',
-                        'message': 'Added the product to the cart',
-                        'cart_counter': get_cart_counter(request),
-                        'qty': chkCart.quantity,
+                        'status': 'Failed',
+                        'message': f'{product.product_name} is out of stock.',
+                        'cart_counter':cart_counter['cart_count'],
+                        'qty': 0,
                         'cart_amount': get_cart_amounts(request)
                     })
-            except Product.DoesNotExist:
-                return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+                chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
+                cart_counter = get_cart_counter(request)
+                return JsonResponse({
+                    'status': 'Success',
+                    'message': 'Added the product to the cart',
+                    'cart_counter': cart_counter['cart_count'],
+                    'qty': chkCart.quantity,
+                    'cart_amount': get_cart_amounts(request)
+                })
+
+        # --- Guest user (session cart) ---
         else:
-            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+            cart = request.session.get('cart', {})
+            product_id = str(product.id)
+            prev_qty = int(cart.get(product_id, 0))
+            new_qty = prev_qty + 1
+
+            if new_qty > product.qty:
+                return JsonResponse({
+                    'status': 'Failed',
+                    'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
+                    'cart_counter': sum(cart.values()),
+                    'qty': prev_qty,
+                    'cart_amount': get_cart_amounts(request, session_cart=cart)
+                })
+
+            cart[product_id] = new_qty
+            request.session['cart'] = cart
+            request.session.modified = True
+
+            return JsonResponse({
+                'status': 'Success',
+                'message': 'Added the product to the cart',
+                'cart_counter': sum(cart.values()),
+                'qty': cart[product_id],
+                'cart_amount': get_cart_amounts(request, session_cart=cart)
+            })
     else:
-        return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+        return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+    
 
 
 def decrease_cart(request, food_id):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # Check if the food item exists
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            product = Product.objects.get(id=food_id)
+        except Product.DoesNotExist:
+            return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+
+        if request.user.is_authenticated:
             try:
-                product = Product.objects.get(id=food_id)
-                # Check if the user has already added that food to the cart
-                try:
-                    chkCart = Cart.objects.get(user=request.user, product=product)
-                    if chkCart.quantity > 1:
-                        # decrease the cart quantity
-                        chkCart.quantity -= 1
-                        # product.qty += 1 
-                        # product.save()
-                        chkCart.save()
-                    else:
-                        # product.qty += 1 
-                        # product.save()
-                        chkCart.delete()
-                        chkCart.quantity = 0
-                    return JsonResponse({'status': 'Success', 'cart_counter': get_cart_counter(request), 'qty': chkCart.quantity, 'cart_amount': get_cart_amounts(request)})
-                except:
-                    return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
-            except:
-                return JsonResponse({'status': 'Failed', 'message': 'This food does not exist!'})
+                chkCart = Cart.objects.get(user=request.user, product=product)
+                if chkCart.quantity > 1:
+                    chkCart.quantity -= 1
+                    chkCart.save()
+                else:
+                    chkCart.delete()
+                    chkCart.quantity = 0
+                cart_counter = get_cart_counter(request)
+                return JsonResponse({
+                    'status': 'Success',
+                    'cart_counter': cart_counter['cart_count'],
+                    'qty': chkCart.quantity,
+                    'cart_amount': get_cart_amounts(request)
+                })
+            except Cart.DoesNotExist:
+                return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
         else:
-            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
-        
+            cart = request.session.get('cart', {})
+            product_id = str(product.id)
+            qty = int(cart.get(product_id, 0))
+            if qty > 1:
+                cart[product_id] = qty - 1
+                new_qty = cart[product_id]
+            elif qty == 1:
+                del cart[product_id]
+                new_qty = 0
+            else:
+                return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
+            request.session['cart'] = cart
+            request.session.modified = True
+            return JsonResponse({
+                'status': 'Success',
+                'cart_counter': sum(cart.values()),
+                'qty': new_qty,
+                'cart_amount': get_cart_amounts(request, session_cart=cart)
+            })
     else:
-        return JsonResponse({'status': 'login_required', 'message': 'Please login to continue'})
+        return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+    
 
-
-@login_required(login_url = 'login')
 def cart(request):
-    cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
-    print(cart_items)
-    for item in cart_items:
-        print(item)
+    if request.user.is_authenticated:
+        cart_items = []
+        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
+            cart_items.append({
+                'product': cart_obj.product,
+                'quantity': cart_obj.quantity,
+                'cart_id': cart_obj.id,  # DB cart uses Cart PK
+            })
+    else:
+        cart = request.session.get('cart', {})
+        product_ids = list(cart.keys())
+        products = Product.objects.filter(id__in=product_ids)
+        cart_items = []
+        for product in products:
+            cart_items.append({
+                'product': product,
+                'quantity': cart[str(product.id)],
+                'cart_id': product.id,  # session cart uses product id
+            })
+
+            print("cart_items ===> ", cart_items)
     context = {
         'cart_items': cart_items,
     }
     return render(request, 'marketplace/cart.html', context)
 
+# def delete_cart(request, cart_id):
+#     if request.user.is_authenticated:
+#         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#             try:
+#                 # Check if the cart item exists
+#                 cart_item = Cart.objects.get(user=request.user, id=cart_id)
+#                 if cart_item:
+#                     product = Product.objects.get(id=cart_item.product.id)
+#                     # product.qty +=cart_item.quantity
+#                     # product.save()
+#                     cart_item.delete()
+#                     return JsonResponse({'status': 'Success', 'message': 'Cart item has been deleted!', 'cart_counter': get_cart_counter(request), 'cart_amount': get_cart_amounts(request)})
+#             except:
+#                 return JsonResponse({'status': 'Failed', 'message': 'Cart Item does not exist!'})
+#         else:
+#             return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+
 
 def delete_cart(request, cart_id):
-    if request.user.is_authenticated:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Authenticated user: remove from DB
+        if request.user.is_authenticated:
             try:
-                # Check if the cart item exists
+                print("cart_id ===> ", cart_id)
+                print("cart ---> ", Cart.objects.filter(user=request.user) )
                 cart_item = Cart.objects.get(user=request.user, id=cart_id)
-                if cart_item:
-                    product = Product.objects.get(id=cart_item.product.id)
-                    # product.qty +=cart_item.quantity
-                    # product.save()
-                    cart_item.delete()
-                    return JsonResponse({'status': 'Success', 'message': 'Cart item has been deleted!', 'cart_counter': get_cart_counter(request), 'cart_amount': get_cart_amounts(request)})
-            except:
+                cart_item.delete()
+                cart_counter = get_cart_counter(request)
+                return JsonResponse({
+                    'status': 'Success',
+                    'message': 'Cart item has been deleted!',
+                    'cart_counter':cart_counter['cart_count'],
+                    'cart_amount': get_cart_amounts(request)
+                })
+            except Cart.DoesNotExist:
                 return JsonResponse({'status': 'Failed', 'message': 'Cart Item does not exist!'})
+        # Guest user: remove from session cart
         else:
-            return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
-
-
+            cart = request.session.get('cart', {})
+            product_id = str(cart_id)
+            if product_id in cart:
+                del cart[product_id]
+                request.session['cart'] = cart
+                request.session.modified = True
+                
+                return JsonResponse({
+                    'status': 'Success',
+                    'message': 'Cart item has been deleted!',
+                    'cart_counter': sum(cart.values()),
+                    'cart_amount': get_cart_amounts(request, session_cart=cart)
+                })
+            else:
+                return JsonResponse({'status': 'Failed', 'message': 'Cart Item does not exist!'})
+    else:
+        return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
+    
 def search(request):
     if not 'address' in request.GET:
         return redirect('marketplace')
@@ -542,77 +632,190 @@ def All_products(request, category_id=None, subcategory_id=None):
 
     return render(request, 'marketplace/products.html', context)
 
-def add_product_to_cart(request, product_id):
-    print(request)
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            # Get the product object
-            try:
-                product = Product.objects.get(id=product_id)
-                vendor = product.vendor
-                existing_products_in_cart = Cart.objects.filter(user=request.user)
-                for single_cart_prodcut in existing_products_in_cart:
-                    if single_cart_prodcut.product.vendor != vendor:
-                        single_cart_prodcut.delete()
-            except Product.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Product not found.'})
+# def add_product_to_cart(request, product_id):
+#     print(request)
+#     if request.user.is_authenticated:
+#         if request.method == 'POST':
+#             # Get the product object
+#             try:
+#                 product = Product.objects.get(id=product_id)
+#                 vendor = product.vendor
+#                 existing_products_in_cart = Cart.objects.filter(user=request.user)
+#                 for single_cart_prodcut in existing_products_in_cart:
+#                     if single_cart_prodcut.product.vendor != vendor:
+#                         single_cart_prodcut.delete()
+#             except Product.DoesNotExist:
+#                 return JsonResponse({'success': False, 'message': 'Product not found.'})
              
-            # Try to parse JSON data from the request body
-            try:
-                data = json.loads(request.body)
-                quantity = int(data.get('quantity'))
-                if quantity <= 0:
-                    return JsonResponse({'success': False, 'message': 'Select a valid quantity'})
-            except (json.JSONDecodeError, ValueError) as e:
-                return JsonResponse({'success': False, 'message': 'Invalid data.'})
-             # --- Get the referer ---
-            referer = request.META.get('HTTP_REFERER', '/')
+#             # Try to parse JSON data from the request body
+#             try:
+#                 data = json.loads(request.body)
+#                 quantity = int(data.get('quantity'))
+#                 if quantity <= 0:
+#                     return JsonResponse({'success': False, 'message': 'Select a valid quantity'})
+#             except (json.JSONDecodeError, ValueError) as e:
+#                 return JsonResponse({'success': False, 'message': 'Invalid data.'})
+#              # --- Get the referer ---
+#             referer = request.META.get('HTTP_REFERER', '/')
 
-            # Check if the product is already in the cart
-            try:
-                cart_item = Cart.objects.get(user=request.user, product=product)
-                existing_quantity = cart_item.quantity
-            except Cart.DoesNotExist:
-                existing_quantity = 0
+#             # Check if the product is already in the cart
+#             try:
+#                 cart_item = Cart.objects.get(user=request.user, product=product)
+#                 existing_quantity = cart_item.quantity
+#             except Cart.DoesNotExist:
+#                 existing_quantity = 0
 
-            # Calculate the total quantity after adding the new quantity
-            total_quantity = existing_quantity + quantity
+#             # Calculate the total quantity after adding the new quantity
+#             total_quantity = existing_quantity + quantity
 
-            # Check if requested quantity exceeds available stock
-            if total_quantity > product.qty:
-                messages.warning(request, f"Only {product.qty} units of {product.product_name} are available. ")
-                return JsonResponse({
-                    'success': True,
-                    'status':'stock_out',
-                    'message': f"Only {product.qty} units of {product.product_name} are available. ",
-                   'redirect_url': referer  
-                })
+#             # Check if requested quantity exceeds available stock
+#             if total_quantity > product.qty:
+#                 messages.warning(request, f"Only {product.qty} units of {product.product_name} are available. ")
+#                 return JsonResponse({
+#                     'success': True,
+#                     'status':'stock_out',
+#                     'message': f"Only {product.qty} units of {product.product_name} are available. ",
+#                    'redirect_url': referer  
+#                 })
              
-            try:
-                cart_item = Cart.objects.get(user=request.user, product=product)
-                cart_item.quantity += quantity
-                cart_item.save()
-                message = f"The quantity of {product.product_name} has been updated in your cart."
-                messages.success(request, f"The quantity of {product.product_name} has been updated in your cart.")
-            except:
-                cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
-                # product.qty = product.qty - quantity
-                # product.save()
-                messages.success(request, f"{product.product_name} has been added to your cart.")
-                message = f"{product.product_name} has been added to your cart."
+#             try:
+#                 cart_item = Cart.objects.get(user=request.user, product=product)
+#                 cart_item.quantity += quantity
+#                 cart_item.save()
+#                 message = f"The quantity of {product.product_name} has been updated in your cart."
+#                 messages.success(request, f"The quantity of {product.product_name} has been updated in your cart.")
+#             except:
+#                 cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
+#                 # product.qty = product.qty - quantity
+#                 # product.save()
+#                 messages.success(request, f"{product.product_name} has been added to your cart.")
+#                 message = f"{product.product_name} has been added to your cart."
             
 
-            return JsonResponse({
-                'success': True,
-                'message': message,
-                'redirect_url': referer
-            })
+#             return JsonResponse({
+#                 'success': True,
+#                 'message': message,
+#                 'redirect_url': referer
+#             })
         
     
-        return JsonResponse({'success': False, 'status':'invalid_method','message': 'Invalid request method.'})
+#         return JsonResponse({'success': False, 'status':'invalid_method','message': 'Invalid request method.'})
            
+#     else:
+#         return JsonResponse({'success': False, 'status': 'login_required', 'message': 'Please login to continue'})
+
+def add_product_to_cart(request, product_id):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            product = Product.objects.get(id=product_id)
+            vendor = product.vendor
+        except Product.DoesNotExist:
+            return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+
+    try:
+        print("data ===> ", request.body)
+        data = json.loads(request.body)
+        quantity = int(data.get('quantity'))
+        if quantity <= 0:
+            return JsonResponse({'success': False, 'message': 'Select a valid quantity'})
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return JsonResponse({'success': False, 'message': 'Invalid data.'})
+
+    referer = request.META.get('HTTP_REFERER', '/')
+    try:
+        product = Product.objects.get(id=product_id)
+        vendor = product.vendor
+    except Product.DoesNotExist:
+            return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+
+    # --- Authenticated user logic ---
+    if request.user.is_authenticated:
+        # Remove items from other vendors
+        existing_cart_items = Cart.objects.filter(user=request.user)
+        for cart_item in existing_cart_items:
+            if cart_item.product.vendor != vendor:
+                cart_item.delete()
+
+        # Check if product is already in cart
+        try:
+            cart_item = Cart.objects.get(user=request.user, product=product)
+            existing_quantity = cart_item.quantity
+            cart_item_exists = True
+        except Cart.DoesNotExist:
+            existing_quantity = 0
+            cart_item_exists = False
+
+        total_quantity = existing_quantity + quantity
+
+        # Stock check
+        if total_quantity > product.qty:
+            return JsonResponse({
+                'success': True,
+                'status': 'stock_out',
+                'message': f"Only {product.qty} units of {product.product_name} are available.",
+                'redirect_url': referer
+            })
+
+        if cart_item_exists:
+            cart_item.quantity = total_quantity
+            cart_item.save()
+            message = f"The quantity of {product.product_name} has been updated in your cart."
+        else:
+            cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
+            message = f"{product.product_name} has been added to your cart."
+
+        return JsonResponse({
+            'success': True,
+            'cart_counter': get_cart_counter(request),
+            'redirect_url': referer
+        })
+
+    # --- Guest user (session cart) logic ---
     else:
-        return JsonResponse({'success': False, 'status': 'login_required', 'message': 'Please login to continue'})
+        cart = request.session.get('cart', {})
+        # Remove all items from other vendors in the session cart
+        items_to_remove = []
+        for pid in cart:
+            try:
+                p = Product.objects.get(id=pid)
+                if p.vendor.id != vendor.id:
+                    items_to_remove.append(pid)
+            except Product.DoesNotExist:
+                items_to_remove.append(pid)  # Clean up any dangling entries
+
+        for pid in items_to_remove:
+            cart.pop(pid, None)
+
+        product_id_str = str(product_id)
+        existing_quantity = int(cart.get(product_id_str, 0))
+        total_quantity = existing_quantity + quantity
+
+        # Stock check
+        if total_quantity > product.qty:
+            return JsonResponse({
+                'success': True,
+                'status': 'stock_out',
+                'message': f"Only {product.qty} units of {product.product_name} are available.",
+                'redirect_url': referer
+            })
+
+        cart[product_id_str] = total_quantity
+        request.session['cart'] = cart
+        request.session.modified = True
+
+        if existing_quantity == 0:
+            message = f"{product.product_name} has been added to your cart."
+        else:
+            message = f"The quantity of {product.product_name} has been updated in your cart."
+
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'cart_counter': sum(cart.values()),
+            'redirect_url': referer
+        })
+
+
 
 
 def categories(request):
@@ -622,18 +825,17 @@ def categories(request):
 
 
 def browse(request, category_slug):
-    browse_page = get_object_or_404(
-        CategoryBrowsePage.objects.select_related('category').prefetch_related(
+    try:
+        browse_page = CategoryBrowsePage.objects.select_related('category').prefetch_related(
             'sections__products__product',
             'sections__subcategories__subcategory',
-        ),
-        category__slug=category_slug
-    )
-    sections = browse_page.sections.all()
-
+        ).get(category__slug=category_slug)
+        sections = browse_page.sections.all()
+    except CategoryBrowsePage.DoesNotExist:
+        return  redirect('filter_by_category', category_id=Category.objects.get(slug=category_slug).id)
     context = {
         'page': browse_page,
-        'sections': sections
+        'sections': sections ,
     }
     
     return render(request, 'marketplace/browse.html', context)

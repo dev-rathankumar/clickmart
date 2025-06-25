@@ -82,6 +82,30 @@ def home(request):
         (category, list(chunked(banners, 3)))
         for category, banners in grouped_banners.items()
     ]
+    if request.user.is_authenticated:
+        cart_items = []
+        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
+            cart_items.append({
+                'product': cart_obj.product,
+                'quantity': cart_obj.quantity,
+                'cart_id': cart_obj.id,  # DB cart uses Cart PK
+            })
+    else:
+        cart = request.session.get('cart', {})
+        product_ids = list(cart.keys())
+        cart_products  = Product.objects.filter(id__in=product_ids)
+        cart_items = []
+        for product in cart_products :
+            print("product_id ===>", product.id)
+            quantity = cart.get(str(product.id))
+            cart_items.append({
+                'product': product,
+                'quantity': quantity,
+                'cart_id': product.id,  # session cart uses product id
+            })
+    print("cart_items", type(cart_items))
+    cart_product_ids = set(item['product'].id for item in cart_items)
+    print("cart_product_ids", cart_product_ids)
     context = {
         'products':products,
         'vendors': vendors,
@@ -89,6 +113,8 @@ def home(request):
         'banner_chunks': banner_chunks,
         'homepagebanners': homepagebanners,
         'grouped_banners_list': grouped_banners_list,
-        'collections': collection_data
+        'collections': collection_data, 
+        'cart_items': cart_items,
+        'cart_product_ids': cart_product_ids,
     }
     return render(request, 'home.html', context)

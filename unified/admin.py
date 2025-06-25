@@ -11,7 +11,9 @@ from import_export import resources
 from django.utils.html import format_html
 from django import forms
 from django.contrib.admin import SimpleListFilter
+from dal import autocomplete
 
+from django.contrib.admin.widgets import AutocompleteSelect
 
 class ProductGalleryInline(admin.TabularInline):
     model = ProductGallery
@@ -97,6 +99,7 @@ class UnifieldProductAdmin(ImportExportModelAdmin):
     list_editable = ('is_popular',)
     list_display_links = ('product_name', 'thumbnail')
     inlines = [ProductGalleryInline]
+    search_fields = ['product_name', 'slug', 'product_desc']  # 🔍 REQUIRED
 
     def thumbnail(self, obj):
         if obj.image:
@@ -104,6 +107,22 @@ class UnifieldProductAdmin(ImportExportModelAdmin):
         return "No Image"
     thumbnail.short_description = 'Thumbnail'
 
+    def get_search_results(self, request, queryset, search_term):
+            print(request.GET)
+            print("search_term", search_term)
+            queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+            # Get the section id from the GET params (Django passes it as e.g. 'section' or 'object_id')
+            section_id = request.GET.get('section') or request.GET.get('object_id')
+            if section_id:
+                from unified.models import CategoryBrowseSection
+                try:
+                    section = CategoryBrowseSection.objects.get(pk=section_id)
+                    category_id = section.browse_page.category_id
+                    queryset = queryset.filter(category_id=category_id)
+                except CategoryBrowseSection.DoesNotExist:
+                    pass
+            return queryset, use_distinct
+    
 
 @admin_thumbnails.thumbnail('image')
 class ProductGalleryInline(admin.TabularInline):
@@ -125,6 +144,32 @@ class MediaUploadAdmin(admin.ModelAdmin):
 
 
 
+
+# class ProductAssignmentInlineForm(forms.ModelForm):
+#     class Meta:
+#         model = ProductAssignment
+#         fields = "__all__"
+
+#     def __init__(self, *args, **kwargs):
+#         # This gives you access to the parent object (section) if editing
+#         self._section_instance = kwargs.get('instance').section if kwargs.get('instance') else None
+#         super().__init__(*args, **kwargs)
+
+#     def get_category_id(self):
+#         # Called by Django admin's autocomplete forward mechanism
+#         # Returns the parent category id
+#         if self.instance and self.instance.section and self.instance.section.browse_page:
+#             return self.instance.section.browse_page.category_id
+#         elif self._section_instance and self._section_instance.browse_page:
+#             return self._section_instance.browse_page.category_id
+#         return None
+
+
+
+
+
+
+
 class CategoryBrowsePageForm(forms.ModelForm):
     class Meta:
         model = CategoryBrowsePage
@@ -136,20 +181,45 @@ class CategoryBrowsePageForm(forms.ModelForm):
         self.fields['category'].queryset = Category.objects.filter(parent__isnull=True)
 
 
-
 class ProductAssignmentInline(admin.TabularInline):
     model = ProductAssignment
     extra = 1
-
+    max_num = 1
+    form = forms.modelform_factory(
+        ProductAssignment,
+        fields='__all__',
+        widgets={
+            'product': autocomplete.ModelSelect2Multiple(
+                url='product-by-category-autocomplete',
+                forward=['section__browse_page__category'],
+            )
+        }
+    )
+    
 class SubCategoryAssignmentInline(admin.TabularInline):
     model = SubCategoryAssignment
     extra = 1
+    max_num = 1
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "subcategory":
-            kwargs["queryset"] = Category.objects.exclude(parent__isnull=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
+            obj_id = None
+            if request.resolver_match and 'object_id' in request.resolver_match.kwargs:
+                obj_id = request.resolver_match.kwargs['object_id']
+            if obj_id:
+                try:
+                    section = CategoryBrowseSection.objects.get(id=obj_id)
+                    parent_category = section.browse_page.category
+                    kwargs["queryset"] = Category.objects.filter(parent=parent_category)
+                except (CategoryBrowseSection.DoesNotExist, AttributeError):
+                    kwargs["queryset"] = Category.objects.none()
+            else:
+                kwargs["queryset"] = Category.objects.none()
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+    def get_max_num(self, request, obj=None, **kwargs):
+        return 1
+
+
 
 class MainCategoryFilter(SimpleListFilter):
     title = 'Main Category'
@@ -163,12 +233,10 @@ class MainCategoryFilter(SimpleListFilter):
         if self.value():
             return queryset.filter(browse_page__category__id=self.value())
         return queryset
-    
 class CategoryBrowseSectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'get_category_name', 'section_type', 'browse_page', 'order']
     list_filter = [MainCategoryFilter, 'section_type', 'browse_page']
     ordering = ['browse_page', 'order']
-    inlines = [ProductAssignmentInline]
     def get_category_name(self, obj):
         return obj.browse_page.category.category_name
     get_category_name.short_description = 'Category'
@@ -177,18 +245,25 @@ class CategoryBrowseSectionAdmin(admin.ModelAdmin):
     def get_inline_instances(self, request, obj=None):
         inline_instances = []
 
-        # Only run this logic when editing an existing object
-        if obj is not None:
-            if obj.section_type == 'product_slider':
-                inline_classes = [ProductAssignmentInline]
-            elif obj.section_type == 'subcategory_slider':
-                inline_classes = [SubCategoryAssignmentInline]
-            else:
-                inline_classes = []
-            
-            for inline_class in inline_classes:
-                inline = inline_class(self.model, self.admin_site)
-                inline_instances.append(inline)
+        section_type = None
+        if obj:
+            section_type = obj.section_type
+        elif request.method == 'POST':
+            section_type = request.POST.get('section_type')
+        elif request.method == 'GET':
+            section_type = request.GET.get('section_type')
+
+        if section_type == 'product_slider':
+            inline_classes = [ProductAssignmentInline]
+        elif section_type == 'subcategory_slider':
+            inline_classes = [SubCategoryAssignmentInline]
+        else:
+            inline_classes = []
+
+        for inline_class in inline_classes:
+            inline = inline_class(self.model, self.admin_site)
+            inline_instances.append(inline)
+
         return inline_instances
 
 
@@ -205,7 +280,7 @@ class CategoryBrowsePageAdmin(admin.ModelAdmin):
 
 
 class ProductAssignmentAdmin(admin.ModelAdmin):
-    list_display = ['section', 'product', 'order']
+    list_display = ['section', 'order']
 
 
 class SubCategoryAssignmentAdmin(admin.ModelAdmin):
