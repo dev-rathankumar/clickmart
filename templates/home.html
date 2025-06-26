@@ -333,6 +333,8 @@
           <div class="popular-slider-wrapper">
             <div class="row popular-products-slider" id="collections-slider-{{ forloop.counter }}">
               {% for product in collection.products %}
+              {% if product.qty > 0 %}
+
               <div class="col-lg-2 col-md-4 col-6 col-sm-6 p-1">
                 <div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
                   <div class="product-img-action-wrap">
@@ -340,22 +342,34 @@
                       <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
                         <img class="product-img" src="{{ product.image.url }}" alt="" />
                       </a>
-                      <div class="product-extra-link2">
-                        {% if check_cart %}
-                        <button class="button-add-to-cart add_to_cart"
-                          data-id="{{ product.id }}"
-                          data-url="{% url 'add_product_to_cart' product.id %}">
-                          ADD
-                        </button>
-                        {% else %}
-                        <button class="button-add-to-cart add_to_cart"
-                          data-id="{{ product.id }}"
-                          data-url="{% url 'add_product_to_cart' product.id %}"
-                          data-different-vendor="{{ product.is_different_vendor_for_cart|yesno:'true,false' }}">
-                          ADD
-                        </button>
-                        {% endif %}
+                                         <div>
+                      <!-- ADD button -->
+                      <a href="#" class="button-add-to-cart add_to_cart text-white"
+                        id="add_to_cart_btn-{{product.id}}-{{collection.slug}}"
+                        data-id="{{ product.id }}"
+                        data-url="{% url 'add_to_cart' product.id %}"
+                        style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
+                        ADD
+                      </a>
+                      <!-- Quantity controls -->
+                      <div class="quantity-box"
+                          id="quantity-btn-box-{{ product.id }}-{{collection.slug}}"
+                          style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
+                        <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
+                          <i class="icon-minus text-white"></i>
+                        </a>
+                        <label id="qty-{{ product.id }}-{{collection.slug}}">
+                          {% for item in cart_items %}
+                            {% if product.id == item.product.id %}
+                              {{ item.quantity }}
+                            {% endif %}
+                          {% endfor %}
+                        </label>
+                        <a href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
+                          <i class="icon-plus text-white"></i>
+                        </a>
                       </div>
+                    </div>
                     </div>
                     {% if product.get_discount_percentage > 0 %}
                     <div class="product-badges product-badges-position product-badges-mrg">
@@ -375,6 +389,8 @@
                   </div>
                 </div>
               </div>
+              {% endif %}
+              {% empty %}
               {% endfor %}
             </div>
           </div>

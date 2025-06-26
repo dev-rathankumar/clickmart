@@ -102,12 +102,10 @@ $(document).ready(function(){
                     console.log(response)
                     $('#cart_count').text(response.cart_counter);
                     // $('#cart_counter').attr('data-count', response.cart_counter['cart_count']);
-                    $('#qty-'+food_id).html(response.qty);
-                    console.log($('#cart_count').text())
-                    console.log(response.qty)
-
-                    console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
-
+                    $('#qty-'+food_id).text(response.qty);
+                    $('#qty-'+food_id+'-latest-products').text(response.qty);
+                    $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
+      
 
                     if (response.qty <= 0){
                         // If the quantity is 0 or less, show the add button
@@ -120,11 +118,27 @@ $(document).ready(function(){
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
 
                     } 
-                    // # TODO
-                        // In where we will get the add and increse and decrease cart item button when it qty is 0 or lesss the show 
-                        // add  button otherwise show the increase and decrease button if more then 1 or greater then 1
+                    if (response.qty <= 0){
+                        // If the quantity is 0 or less, show the add button
+                        $('#add_to_cart_btn-'+food_id+'-latest-products').show();
+                        $('#quantity-btn-box-'+food_id+'-latest-products').hide();
+                    } else {
+                        // If the quantity is greater than 0, show the increase and decrease buttons
+                        $('#add_to_cart_btn-'+food_id+'-latest-products').hide();
+                        $('#quantity-btn-box-'+food_id+'-latest-products').show();
 
-                    // subtotal, tax and grand total
+                    } 
+                    if (response.qty <= 0){
+                        // If the quantity is 0 or less, show the add button
+                        $('#add_to_cart_btn-'+food_id+'-lowest-price-guarantee').show();
+                        $('#quantity-btn-box-'+food_id+'-lowest-price-guarantee').hide();
+                    } else {
+                        // If the quantity is greater than 0, show the increase and decrease buttons
+                        $('#add_to_cart_btn-'+food_id+'-lowest-price-guarantee').hide();
+                        $('#quantity-btn-box-'+food_id+'-lowest-price-guarantee').show();
+
+                    } 
+                    
                     applyCartAmounts(
                         response.cart_amount['subtotal'],
                         response.cart_amount['tax_dict'],
@@ -165,8 +179,12 @@ $(document).ready(function(){
                     swal(response.message, '', 'error')
                 }else{
                     $('#cart_count').text(response.cart_counter);
-                    $('#qty-'+food_id).html(response.qty);
-                     if (response.qty <= 0){
+                    $('#qty-'+food_id).text(response.qty);
+                    $('#qty-'+food_id+'-latest-products').text(response.qty);
+                    $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
+      
+
+                    if (response.qty <= 0){
                         // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
@@ -175,6 +193,26 @@ $(document).ready(function(){
                         $('#add_to_cart_btn-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
+
+                    } 
+                    if (response.qty <= 0){
+                        // If the quantity is 0 or less, show the add button
+                        $('#add_to_cart_btn-'+food_id+'-latest-products').show();
+                        $('#quantity-btn-box-'+food_id+'-latest-products').hide();
+                    } else {
+                        // If the quantity is greater than 0, show the increase and decrease buttons
+                        $('#add_to_cart_btn-'+food_id+'-latest-products').hide();
+                        $('#quantity-btn-box-'+food_id+'-latest-products').show();
+
+                    } 
+                    if (response.qty <= 0){
+                        // If the quantity is 0 or less, show the add button
+                        $('#add_to_cart_btn-'+food_id+'-lowest-price-guarantee').show();
+                        $('#quantity-btn-box-'+food_id+'-lowest-price-guarantee').hide();
+                    } else {
+                        // If the quantity is greater than 0, show the increase and decrease buttons
+                        $('#add_to_cart_btn-'+food_id+'-lowest-price-guarantee').hide();
+                        $('#quantity-btn-box-'+food_id+'-lowest-price-guarantee').show();
 
                     } 
 
