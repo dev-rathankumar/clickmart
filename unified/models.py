@@ -201,7 +201,7 @@ class CategoryBrowseSection(models.Model):
 
 class ProductAssignment(models.Model):
     section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='products')
-    product = models.ManyToManyField(Product, null=True, blank=True)
+    product = models.ManyToManyField(Product, blank=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -210,7 +210,7 @@ class ProductAssignment(models.Model):
 
 class SubCategoryAssignment(models.Model):
     section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='subcategories')
-    subcategory = models.ManyToManyField('unified.Category',null=True, blank=True)
+    subcategory = models.ManyToManyField('unified.Category', blank=True)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
