@@ -114,3 +114,13 @@ table td, table th{
     flex-direction: column-reverse !important;
   }
 }
+
+
+.btn-fix-hover{
+color: #fff !important;
+}
+.btn-fix-hover:hover {
+    background-color: #DC3545;
+    border: none !important;
+    color: #fff !important;
+}

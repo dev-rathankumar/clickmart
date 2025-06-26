@@ -644,7 +644,7 @@
   };
   // Geolocation Script
   var x = document.getElementById("location");
-  var current_location = sessionStorage.getItem("current_location");
+  var current_location = localStorage.getItem("current_location");
   if (current_location != "") {
     x.value = current_location;
   }
@@ -691,9 +691,9 @@
         console.log(pincode);
 
         x.value = current_location;
-        sessionStorage.setItem("current_location", current_location);
-        sessionStorage.setItem("city", city);
-        sessionStorage.setItem("pincode", pincode);
+        localStorage.setItem("current_location", current_location);
+        localStorage.setItem("city", city);
+        localStorage.setItem("pincode", pincode);
 
         var location = "";
         if (city && pincode) {
@@ -733,8 +733,8 @@
 
   // On page load, update navbar with stored city and pincode
   document.addEventListener("DOMContentLoaded", function () {
-    var city = sessionStorage.getItem("city");
-    var pincode = sessionStorage.getItem("pincode");
+    var city = localStorage.getItem("city");
+    var pincode = localStorage.getItem("pincode");
 
     // Combine city and pincode if available
     var location = "";

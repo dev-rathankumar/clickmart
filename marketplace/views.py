@@ -190,8 +190,14 @@ def view_Product(request, vendor_slug, product_slug):
                 different_vendor_product_exists=True
         chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     else:
-        chkCart = None
-        chkCart_count = 0
+        product_id_str = str(product.id)
+        cart = request.session.get('cart', {})
+        if product_id_str in cart:
+            chkCart = True
+            chkCart_count = cart[product_id_str]
+        else:
+            chkCart = None
+            chkCart_count = 0
     product_gallery = ProductGallery.objects.filter(product=product)
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
@@ -562,7 +568,19 @@ def All_products(request, category_id=None, subcategory_id=None):
     }
 
     if search_type == 'stores':
-        vendors = Vendor.objects.filter(is_approved=True)
+        if get_or_set_current_location(request) is not None:
+
+            pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
+
+            vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+
+            for v in vendors:
+                v.kms = round(v.distance.km, 1)
+        else:
+            vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
+        
+        print("vendors ===> ", vendors)
+
         if search_query:
             vendors = vendors.filter(
                 models.Q(vendor_name__icontains=search_query) |
@@ -730,12 +748,6 @@ def add_product_to_cart(request, product_id):
 
     # --- Authenticated user logic ---
     if request.user.is_authenticated:
-        # Remove items from other vendors
-        existing_cart_items = Cart.objects.filter(user=request.user)
-        for cart_item in existing_cart_items:
-            if cart_item.product.vendor != vendor:
-                cart_item.delete()
-
         # Check if product is already in cart
         try:
             cart_item = Cart.objects.get(user=request.user, product=product)
@@ -752,7 +764,7 @@ def add_product_to_cart(request, product_id):
             return JsonResponse({
                 'success': True,
                 'status': 'stock_out',
-                'message': f"Only {product.qty} units of {product.product_name} are available.",
+                'message': f"Only {int(product.qty)} units of {product.product_name} are available.",
                 'redirect_url': referer
             })
 
@@ -763,29 +775,19 @@ def add_product_to_cart(request, product_id):
         else:
             cart_item = Cart.objects.create(user=request.user, product=product, quantity=quantity)
             message = f"{product.product_name} has been added to your cart."
-
+        cart_counter = get_cart_counter(request)
+        chkCart_count = cart_item.quantity
+        print("chkCart_count ===> ", chkCart_count)
         return JsonResponse({
             'success': True,
-            'cart_counter': get_cart_counter(request),
+            'cart_counter': cart_counter['cart_count'],
+            'chkCart_count':chkCart_count,
             'redirect_url': referer
         })
 
     # --- Guest user (session cart) logic ---
     else:
         cart = request.session.get('cart', {})
-        # Remove all items from other vendors in the session cart
-        items_to_remove = []
-        for pid in cart:
-            try:
-                p = Product.objects.get(id=pid)
-                if p.vendor.id != vendor.id:
-                    items_to_remove.append(pid)
-            except Product.DoesNotExist:
-                items_to_remove.append(pid)  # Clean up any dangling entries
-
-        for pid in items_to_remove:
-            cart.pop(pid, None)
-
         product_id_str = str(product_id)
         existing_quantity = int(cart.get(product_id_str, 0))
         total_quantity = existing_quantity + quantity
@@ -807,12 +809,15 @@ def add_product_to_cart(request, product_id):
             message = f"{product.product_name} has been added to your cart."
         else:
             message = f"The quantity of {product.product_name} has been updated in your cart."
+        chkCart_count = total_quantity
 
         return JsonResponse({
             'success': True,
             'message': message,
             'cart_counter': sum(cart.values()),
-            'redirect_url': referer
+            'redirect_url': referer,
+            'chkCart_count':chkCart_count,
+
         })
 
 
@@ -833,9 +838,38 @@ def browse(request, category_slug):
         sections = browse_page.sections.all()
     except CategoryBrowsePage.DoesNotExist:
         return  redirect('filter_by_category', category_id=Category.objects.get(slug=category_slug).id)
+    
+    if request.user.is_authenticated:
+        cart_items = []
+        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
+            cart_items.append({
+                'product': cart_obj.product,
+                'quantity': cart_obj.quantity,
+                'cart_id': cart_obj.id,  # DB cart uses Cart PK
+            })
+    else:
+        cart = request.session.get('cart', {})
+        product_ids = list(cart.keys())
+        cart_products  = Product.objects.filter(id__in=product_ids)
+        cart_items = []
+        for product in cart_products :
+            print("product_id ===>", product.id)
+            quantity = cart.get(str(product.id))
+            cart_items.append({
+                'product': product,
+                'quantity': quantity,
+                'cart_id': product.id,  # session cart uses product id
+            })
+    print("cart_items", type(cart_items))
+    cart_product_ids = set(item['product'].id for item in cart_items)
+    print("cart_product_ids", cart_product_ids)
+    print("sections ===> ", sections)
+    print("browse_page ===> ", browse_page)
     context = {
         'page': browse_page,
         'sections': sections ,
+        'cart_items': cart_items,
+        'cart_product_ids': cart_product_ids,
     }
     
     return render(request, 'marketplace/browse.html', context)

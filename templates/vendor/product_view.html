@@ -178,7 +178,7 @@
                                                 {% if check_cart %}
                                                 <button  class="button add-to-cart-btn add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
                                                 {% else %} 
-                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ different_vendor_product_exists|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
                                                 {% endif %}
                                                 {% else %}
                                                 <button class="button button-add-to-cart add_to_cart" disabled style="background:#ccc;color:#666;">Out of Stock</button>
@@ -196,14 +196,14 @@
                                                 <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
                                                 
                                                 {% else %} 
-                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}" data-different-vendor="{{ different_vendor_product_exists|yesno:'true,false' }}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
                                                 {% endif %}
                                             </div>
-                                              {% if check_cart %}
-                                            <p class="text-success" style="font-weight: 600;">
-                                                {{ chkCart_count }} items added to the cart.
-                                            </p>
-                                            {% endif %}
+                                             
+                                            
+                                       <p class="text-success" id="product_count_main" style="font-weight: 600;{% if check_cart %} display: block;{% else %} display: none;{% endif %}">
+                                        <span id="product_count">{{ chkCart_count }}</span> items added to the cart.</p>
+
                                         </div>
                                          {% endif %}
                                     </div>
@@ -395,28 +395,9 @@ document.querySelectorAll('.add_to_cart').forEach(button => {
 
       const productId = button.getAttribute('data-id');
       const url = button.getAttribute('data-url');
-      const isDifferentVendor = button.getAttribute('data-different-vendor') === 'true';
-      const quantity = document.getElementById('quantity-input') ? 
-                       document.getElementById('quantity-input').value : 1;
+      const quantity = document.getElementById('quantity-input') ? document.getElementById('quantity-input').value : 1;
 
-      // Check if products from different vendors exist
-      if (isDifferentVendor) {
-          swal({
-              title: "Warning",
-              text: "You have added products from a different vendor to your cart. Adding this product will remove the previously added items. Do you want to proceed?",
-              icon: "warning",
-              buttons: ["Cancel", "OK"],
-              dangerMode: true,
-          }).then((willProceed) => {
-              if (willProceed) {
-                  // Proceed with adding the product to cart
-                  addProductToCart(url, productId, quantity);
-              }
-          });
-      } else {
-          // No vendor conflict, proceed normally
           addProductToCart(url, productId, quantity);
-      }
   });
 });
 
@@ -436,7 +417,16 @@ function addProductToCart(url, productId, quantity) {
   .then(response => response.json())
   .then(data => {
       if (data.success) {
-          window.location.href = data.redirect_url; // Redirect to cart if needed
+        console.log('Product added to cart:', data);
+        $('#cart_count').text(data.cart_counter);
+        $('#product_count_main').show();
+        $('#product_count').text(data.chkCart_count);
+        if (data.status == 'stock_out') {
+            console.log(data.message);
+          swal("Info",data.message, "info");
+        } else {
+        }
+
       } else {
           swal("Info", data.message || "Something went wrong!", "info");
       }

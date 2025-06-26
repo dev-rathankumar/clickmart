@@ -170,7 +170,7 @@ class Order(models.Model):
                             tax += float(decimal_to_float(amount))
 
         # Compile the final context
-        grand_total = float(subtotal)
+        grand_total = float(subtotal) + float(tax)
         print("processed_taxes:", processed_taxes)  
 
         context = {

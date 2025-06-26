@@ -136,5 +136,11 @@ table td, table th{
     width: 100%;
   }
 
-
-  
+.btn-fix-hover{
+color: #fff !important;
+}
+.btn-fix-hover:hover {
+    background-color: #DC3545;
+    color: #fff !important;
+    border: none !important;
+}
