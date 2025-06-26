@@ -1,267 +1,409 @@
-{% extends 'base.html' %}
-
-{% load static %}
-
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block content %}
 <style>
-	/* Hide arrow in most modern browsers */
-select {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	background: none; /* Optional: remove background */
-	background-color: white; /* Optional: set your desired background */
-	padding-right: 1rem; /* Make room for custom icon or no icon */
+  /* Hide arrow in most modern browsers */
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: none; /* Optional: remove background */
+    background-color: white; /* Optional: set your desired background */
+    padding-right: 1rem; /* Make room for custom icon or no icon */
   }
-  
+
   /* Remove default arrow in Internet Explorer */
   select::-ms-expand {
-	display: none;
+    display: none;
   }
- .vendor-image-up-btn{
-		width: 250px !important;
-		height: 32px !important;
-	}
+  .vendor-image-up-btn {
+    width: 250px !important;
+    height: 32px !important;
+  }
+  .custom-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; 
+    background-color: #ffffff; /* white background */
+    color: #777; 
+    border: 1px solid #ced4da; 
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px; 
+    user-select: none;
+    width: 220px;
+    height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Hide file inputs completely */
+  input[type="file"] {
+    display: none;
+  }
 </style>
 {% include 'includes/alerts.html' %}
 
 <!-- Main Section Start -->
 <div class="main-section">
-    {% include 'includes/cover.html' %}
-    <div class="page-section account-header buyer-logged-in">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12" style="background-color: #D1E8F2 !important;">
-                    <!-- Load the sidebar here -->
-                    {% include 'includes/v_sidebar.html' %}
-                </div>
-                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                    <div class="user-dashboard loader-holder">
-                        <div class="user-holder">
-                            <h5 class="text-uppercase">Manage Your Store</h5>
-									<!-- Store Form Start -->
-									<form action="{% url 'vprofile' %}" method="POST" enctype="multipart/form-data">
-                                        {% csrf_token %}
-										<div class="form-fields-set">
-											<ul>
-												<li>
-													<div class="row">
-														<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-															<div class="restaurant-info">
-																<div class="img-holder">
-																	<ul class="foodbakery-gallery-holder">
-																		<li class="gal-img">
-																			<div class="drag-list">
-																				<div class="item-thumb">
-																					{% if profile.profile_picture %}
-																					<img class="thumbnail" src="{{profile.profile_picture.url}}" alt="Profile Picture">
-																					{% else %}
-																					<img class="thumbnail" src="{% static 'images/default-profile-new.png' %}" alt="Profile Picture">
-																					{% endif %}
-																				</div>
-																			</div>
-																		</li>
-																	</ul>
-																</div>
-																<div class="text-holder">
-																	<label>Update Profile Picture</label>
-																	<div class="upload-gallery">
-																		{{profile_form.profile_picture}}
-																	</div>
-																</div>
-																<label class="text-danger">{{ profile_form.profile_picture.errors }}</label>
-															</div>
-														</div>
-														<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-															<div class="restaurant-info">
-																<div class="img-holder">
-																	<ul class="foodbakery-gallery-holder">
-																		<li class="gal-img">
-																			<div class="drag-list">
-																				<div class="item-thumb">
-																					{% if profile.cover_photo %}
-																					<img class="thumbnail" src="{{profile.cover_photo.url}}" alt="Cover Photo">
-																					{% else %}
-																					<img class="thumbnail" src="{% static 'images/default-cover-new.png' %}" alt="Cover Photo">
-																					{% endif %}
-																				</div>
-																			</div>
-																		</li>
-																	</ul>
-																</div>
-																<div class="text-holder">
-																	<label>Update Cover Photo</label>
-																	<div class="upload-gallery">
-																		{{profile_form.cover_photo}}
-																	</div>
-																	
-																</div>
-																<label class="text-danger">{{ profile_form.cover_photo.errors }}</label>
-															</div>
-														</div>
-														<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-															<div class="restaurant-info">
-																<div class="img-holder">
-																	<ul class="foodbakery-gallery-holder">
-																		<li class="gal-img">
-																			<div class="drag-list">
-																				<div class="item-thumb">
-																					<img class="thumbnail" src="{{vendor.vendor_license.url}}" alt="Vendor License">
-																				</div>
-																			</div>
-																		</li>
-																	</ul>
-																</div>
-																<div class="text-holder">
-																	<label>Update License</label>
-																	<div class="upload-gallery">
-																		{{vendor_form.vendor_license}}
-																	</div>
-																	
-																</div>
-																<label class="text-danger">{{ vendor_form.vendor_license.errors }}</label>
-															</div>
-														</div>
-
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Your First Name *</label>
-																{{user_form.first_name}}
-															</div>
-														</div>
-
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Your Last Name *</label>
-																{{user_form.last_name}}
-															</div>
-														</div>
-
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Email Address <i class="fa fa-info-circle" title="Your registered email address cannot be changed."></i></label>
-																<input type="text" value="{{ request.user.email }}" disabled readonly style="cursor: not-allowed;">
-															</div>
-														</div>
-
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Username <i class="fa fa-info-circle" title="Your username cannot be changed."></i></label>
-																<input type="text" value="{{ request.user.username }}" disabled readonly style="cursor: not-allowed;">
-															</div>
-														</div>
-
-														<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Store name *</label>
-																{{vendor_form.vendor_name}}
-															</div>
-														</div>
-
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Store Type</label>
-																{{vendor_form.store_type}}
-															</div>
-														</div>
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>GST Number</label>
-																{{vendor_form.gst_number}}
-															</div>
-														</div>
-
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>FSSAI Number</label>
-																{{vendor_form.fssai_number}}
-															</div>
-														</div>
-
-                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Address *</label>
-																{{profile_form.address}}
-																<small class="text-muted float-right">powered by Google</small>
-															</div>
-														</div>
-                                                        
-														<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Phone Number</label>
-																{{user_form.phone_number}}
-															</div>
-														</div>
-
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Country *</label>
-																{{profile_form.country}}
-															</div>
-														</div>
-
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>State *</label>
-																{{profile_form.state}}
-															</div>
-														</div>
-
-                                                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>City *</label>
-																{{profile_form.city}}
-															</div>
-														</div>
-
-                                                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
-															<div class="field-holder">
-																<label>Pin Code *</label>
-																{{profile_form.pin_code}}
-															</div>
-														</div>
-
-														
-															<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
-																<div class="field-holder">
-																	<label>Latitude *</label>
-																	{{profile_form.latitude}}
-																</div>
-															</div>
-	
-															<div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
-																<div class="field-holder">
-																	<label>Longitude *</label>
-																	{{profile_form.longitude}}
-																</div>
-															</div>
-															<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-																<div class="field-holder">
-																	<label>Delivery radius </label>
-																	{{vendor_form.delivery_radius}}
-																</div>
-															</div>
-														
-													</div>
-												</li>
-											</ul>
-											<div>
-												<div class="field-holder">
-													<div class="payment-holder input-button-loader">
-														<input type="submit" value="Update Marchant">
-													</div>
-												</div>
-											</div>
-										</div>
-									</form>
-									<!-- Store Form End -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+  {% include 'includes/cover.html' %}
+  <div class="page-section account-header buyer-logged-in">
+    <div class="container">
+      <div class="row">
+        <div
+          class="col-lg-3 col-md-3 col-sm-12 col-xs-12"
+          style="background-color: #d1e8f2 !important"
+        >
+          <!-- Load the sidebar here -->
+          {% include 'includes/v_sidebar.html' %}
         </div>
+        <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+          <div class="user-dashboard loader-holder">
+            <div class="user-holder">
+              <h5 class="text-uppercase pb-4">Manage Your Store</h5>
+              <!-- Store Form Start -->
+              <form
+                action="{% url 'vprofile' %}"
+                method="POST"
+                enctype="multipart/form-data"
+              >
+                {% csrf_token %}
+                <div class="form-fields-set">
+                  <ul>
+                    <li>
+                      <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                          <div class="restaurant-info">
+                            <div class="img-holder">
+                              <ul class="foodbakery-gallery-holder">
+                                <li class="gal-img">
+                                  <div class="drag-list">
+                                    <div class="item-thumb">
+                                      {% if profile.profile_picture %}
+                                      <img
+                                        class="thumbnail"
+                                        src="{{profile.profile_picture.url}}"
+                                        alt="Profile Picture"
+                                      />
+                                      {% else %}
+                                      <img
+                                        class="thumbnail"
+                                        src="{% static 'images/default-profile-new.png' %}"
+                                        alt="Profile Picture"
+                                      />
+                                      {% endif %}
+                                    </div>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>
+                            <div class="text-holder">
+                              <!-- Label acts as button -->
+                              <label
+                                for="profile-upload"
+                                id="profileLabel"
+                                class="custom-upload-btn"
+                              >
+                                <i class="fas fa-upload"></i> Update Profile
+                                Picture
+                              </label>
+                              <!-- Hidden file input -->
+                              <input
+                                type="file"
+                                id="profile-upload"
+                                name="profile_picture"
+                                accept="image/*"
+                              />
+                            </div>
+
+                            <!-- Optional: show errors from Django -->
+                            <label class="text-danger"
+                              >{{ profile_form.profile_picture.errors }}</label
+                            >
+                          </div>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                          <div class="restaurant-info">
+                            <div class="img-holder">
+                              <ul class="foodbakery-gallery-holder">
+                                <li class="gal-img">
+                                  <div class="drag-list">
+                                    <div class="item-thumb">
+                                      {% if profile.cover_photo %}
+                                      <img
+                                        class="thumbnail"
+                                        src="{{profile.cover_photo.url}}"
+                                        alt="Cover Photo"
+                                      />
+                                      {% else %}
+                                      <img
+                                        class="thumbnail"
+                                        src="{% static 'images/default-cover-new.png' %}"
+                                        alt="Cover Photo"
+                                      />
+                                      {% endif %}
+                                    </div>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>
+                            <div class="text-holder">
+                              <label
+                                for="cover-photo-upload"
+                                id="coverPhotoLabel"
+                                class="custom-upload-btn"
+                              >
+                               <i class="fas fa-upload"></i> Update Cover Photo
+                              </label>
+                              <div class="upload-gallery">
+                                <input
+                                  type="file"
+                                  id="cover-photo-upload"
+                                  name="cover_photo"
+                                  accept="image/*"
+                                  hidden
+                                />
+                              </div>
+                            </div>
+                            <label class="text-danger"
+                              >{{ profile_form.cover_photo.errors }}</label
+                            >
+                          </div>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                          <div class="restaurant-info">
+                            <div class="img-holder">
+                              <ul class="foodbakery-gallery-holder">
+                                <li class="gal-img">
+                                  <div class="drag-list">
+                                    <div class="item-thumb">
+                                      <img
+                                        class="thumbnail"
+                                        src="{{vendor.vendor_license.url}}"
+                                        alt="Vendor License"
+                                      />
+                                    </div>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>
+                            <div class="text-holder">
+                              <label
+                                for="vendor-license-upload"
+                                id="vendorLicenseLabel"
+                                class="custom-upload-btn"
+                              >
+                              <i class="fas fa-upload"></i>  Update License
+                              </label>
+                              <div class="upload-gallery">
+                                <input
+                                  type="file"
+                                  id="vendor-license-upload"
+                                  name="vendor_license"
+                                  accept="image/*"
+                                  hidden
+                                />
+                              </div>
+                            </div>
+                            <label class="text-danger"
+                              >{{ vendor_form.vendor_license.errors }}</label
+                            >
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Your First Name *</label>
+                            {{user_form.first_name}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Your Last Name *</label>
+                            {{user_form.last_name}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label
+                              >Email Address
+                              <i
+                                class="fa fa-info-circle"
+                                title="Your registered email address cannot be changed."
+                              ></i
+                            ></label>
+                            <input
+                              type="text"
+                              value="{{ request.user.email }}"
+                              disabled
+                              readonly
+                              style="cursor: not-allowed"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label
+                              >Username
+                              <i
+                                class="fa fa-info-circle"
+                                title="Your username cannot be changed."
+                              ></i
+                            ></label>
+                            <input
+                              type="text"
+                              value="{{ request.user.username }}"
+                              disabled
+                              readonly
+                              style="cursor: not-allowed"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Store name *</label>
+                            {{vendor_form.vendor_name}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Store Type</label>
+                            {{vendor_form.store_type}}
+                          </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>GST Number</label>
+                            {{vendor_form.gst_number}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>FSSAI Number</label>
+                            {{vendor_form.fssai_number}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Address *</label>
+                            {{profile_form.address}}
+                            <small class="text-muted float-right"
+                              >powered by Google</small
+                            >
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Phone Number</label>
+                            {{user_form.phone_number}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Country *</label>
+                            {{profile_form.country}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>State *</label>
+                            {{profile_form.state}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>City *</label>
+                            {{profile_form.city}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Pin Code *</label>
+                            {{profile_form.pin_code}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Latitude *</label>
+                            {{profile_form.latitude}}
+                          </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Longitude *</label>
+                            {{profile_form.longitude}}
+                          </div>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                          <div class="field-holder">
+                            <label>Delivery radius </label>
+                            {{vendor_form.delivery_radius}}
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                  <div>
+                    <div class="field-holder">
+                      <div class="payment-holder input-button-loader">
+                        <input type="submit" value="Update Marchant" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <!-- Store Form End -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 <!-- Main Section End -->
+
+<!-- JavaScript -->
+<script>
+  function setupFileInputLabel(inputId, labelId, defaultText) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+
+    input.addEventListener("change", function () {
+      const fileName = this.files[0]?.name || defaultText;
+      label.textContent = fileName;
+    });
+  }
+
+  setupFileInputLabel(
+    "profile-upload",
+    "profileLabel",
+    "Upload Profile Picture"
+  );
+  setupFileInputLabel(
+    "cover-photo-upload",
+    "coverPhotoLabel",
+    "Update Cover Photo"
+  );
+  setupFileInputLabel(
+    "vendor-license-upload",
+    "vendorLicenseLabel",
+    "Update License"
+  );
+</script>
+
 {% endblock %}
