@@ -15,6 +15,49 @@
     font-size: 12px;
     width: unset !important;
     }
+    /* Hide the real input, but keep it in DOM */
+input[type="file"]#id_products_file {
+  display: none;
+}
+
+.custom-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: #ffffff;
+  color: #555;
+  border: 1px solid #ced4da;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  height: 48px;
+  max-width: 200px; /* increase width if needed */
+  white-space: nowrap; /* keep text in one line */
+  overflow: hidden;   /* hide overflow */
+  text-overflow: ellipsis; /* add ... if text too long */
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+}
+
+
+.custom-upload-btn:hover {
+  background-color: #f1f1f1;
+}
+
+.custom-upload-btn i {
+  font-size: 18px;
+  color: #000;
+}
+
+#csv-filename {
+  font-size: 14px;
+  color: #555;
+  margin-left: 10px;
+  word-break: break-word;
+}
+
 </style>
 <!-- Main Section Start -->
 <div class="main-section">
@@ -37,15 +80,27 @@
                             <form action="{% url 'import_products' %}" method="POST" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="form-fields-set">
-                                    <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
-                                            <div class="field-holder">
-                                                <label >Upload CSV File *</label>
-                                                {{form.products_file}}
-                                            </div>
-                                        </div>
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12">
+                                    <div class="field-holder">
+                                        <label>Upload CSV File *</label>
+
+                                        <!-- Render Django's input normally -->
+                                        {{ form.products_file }}
+
+                                        <!-- Custom label that triggers file input -->
+                                        <label for="id_products_file" class="custom-upload-btn">
+                                        <i class="fas fa-upload"></i>
+                                        <span id="upload-btn-text">Select CSV File</span>
+                                        </label>
+
+                                        <!-- Filename display -->
+                                        <span id="csv-filename" style="margin-left: 10px; font-size: 14px; color: #555;"></span>
+                                    </div>
                                     </div>
                                 </div>
+                                </div>
+
 
                                 {% for field in form %}
                                     {% if field.errors %}
@@ -94,4 +149,22 @@
     </div>
 </div>
 <!-- Main Section End -->
+ <script>
+  document.addEventListener("DOMContentLoaded", function () {
+  const csvInput = document.getElementById("id_products_file");
+  const uploadBtnText = document.getElementById("upload-btn-text");
+
+  if (csvInput && uploadBtnText) {
+    csvInput.addEventListener("change", function () {
+      if (this.files.length > 0) {
+        uploadBtnText.textContent = this.files[0].name;
+      } else {
+        uploadBtnText.textContent = "Select CSV File";
+      }
+    });
+  }
+});
+
+</script>
+
 {% endblock %}
