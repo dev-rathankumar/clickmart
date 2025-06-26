@@ -148,34 +148,21 @@
 </section>
 
 <!-- Mobile Banner -->
-<div class="d-block d-md-none w-100">
+<div class="d-block d-md-none w-100" style="background-color: {{ current_event.home_color }};">
   <img 
-    src="{% static 'images/fathers-day.jpg' %}" 
+    src="{{ current_event.banner.url }}" 
     alt="Mobile Banner" 
     class="img-fluid w-100" 
     style="max-height: 250px; object-fit: cover;">
 </div>
 
-<div class="container px-3 pb-3 d-block d-md-none" style="background-color: #FFEBF0;">
+<div class="container pt-3 pb-3 d-block d-md-none" style="background-color: {{ current_event.home_color }};">
   <div class="row g-2">
+    {% for ad in ads %}
     <div class="col-4">
-      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a4ea0a738d06184170b3/asset-11-400x400.png" class="img-fluid w-100" alt="">
+      <a href="{% if ad.link %}{{ad.link}}{% else %}/{% endif %}"><img src="{{ ad.image.url }}" class="img-fluid w-100" alt=""></a>
     </div>
-    <div class="col-4">
-      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a500cfa48eb6459a6e69/asset-17-400x400.png" class="img-fluid w-100" alt="">
-    </div>
-    <div class="col-4">
-      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a520ccc4b4c233f5bf9a/asset-13-400x400.png" class="img-fluid w-100" alt="">
-    </div>
-    <div class="col-4">
-      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a537c914b0f9203a090d/asset-16-400x400.png" class="img-fluid w-100" alt="">
-    </div>
-    <div class="col-4">
-      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a54d70b4aec40237ecc3/asset-14-400x400.png" class="img-fluid w-100" alt="">
-    </div>
-    <div class="col-4">
-      <img src="https://www.mystore.in/s/62ea2c599d1398fa16dbae0a/g/6852a56127e3c691c8320a29/asset-15-400x400.png" class="img-fluid w-100" alt="">
-    </div>
+    {% endfor %}
   </div>
 </div>
 
