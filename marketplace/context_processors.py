@@ -2,6 +2,9 @@ from .models import Cart
 from menu.models import Product, Category
 from inventory.models import tax
 from vendor.models import StoreType
+from mobile.utils import get_current_event
+
+
 def get_cart_counter(request, session_cart=None):
 
     cart_count = 0
@@ -104,3 +107,7 @@ def store_type_processor(request):
 def categories_home_processor(request):
     categories_home = Category.objects.filter(parent=None, is_active=True)
     return {'categories_home': categories_home}
+
+def get_event_for_today(request):
+    current_event = get_current_event()
+    return {'current_event': current_event}

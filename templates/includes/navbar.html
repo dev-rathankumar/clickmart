@@ -471,7 +471,7 @@
 </header>
 
 <!-- Mobile Header -->
-<div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1; background-color: #FFEBF0;">
+<div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1; background-color: {{ current_event.home_color }};">
   
   <!-- Top Row: Location & User Icon (scrolls away) -->
   <div class="mobile-row w-100 top-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3" style="height: 55px;">
@@ -503,7 +503,7 @@
 
   <!-- Middle Row: Search Bar (Sticky) -->
    <div id="sticky-placeholder" style="height: 0;"></div>
-  <div class="mobile-header-section w-100" style="background-color: #FFEBF0;">
+  <div class="mobile-header-section w-100" style="background-color: {{ current_event.home_color }};">
     <div class="mobile-row w-100 middle-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3 py-0" style="height: 60px;">
       <div class="mobile-col w-100">
         <div class="mobile-col-item mobile-autocomplete flex-fill">

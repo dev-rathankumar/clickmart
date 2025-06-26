@@ -113,6 +113,7 @@ TEMPLATES = [
                 'marketplace.context_processors.store_type_processor',
                 'accounts.context_processors.get_store_types',
                 'marketplace.context_processors.categories_home_processor',
+                'marketplace.context_processors.get_event_for_today',
             ],
         },
     },

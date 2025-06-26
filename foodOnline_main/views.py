@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from mobile.utils import get_current_event
 from homepage.product_collections import get_products_for_collection
 from vendor.models import AdBanner, Vendor
 # from menu.models import Product
@@ -103,9 +104,12 @@ def home(request):
                 'quantity': quantity,
                 'cart_id': product.id,  # session cart uses product id
             })
-    print("cart_items", type(cart_items))
     cart_product_ids = set(item['product'].id for item in cart_items)
-    print("cart_product_ids", cart_product_ids)
+
+    # Mobile homepage banners
+    current_event = get_current_event()
+    ads = current_event.ads.all() if current_event else []
+
     context = {
         'products':products,
         'vendors': vendors,
@@ -116,5 +120,7 @@ def home(request):
         'collections': collection_data, 
         'cart_items': cart_items,
         'cart_product_ids': cart_product_ids,
+        'current_event': current_event,
+        'ads': ads,
     }
     return render(request, 'home.html', context)
