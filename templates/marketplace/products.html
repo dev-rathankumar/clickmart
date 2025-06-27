@@ -20,6 +20,10 @@
 .product-cart-wrap .product-card-bottom .add-cart .add:hover {
     background-color: #DC3545;
     color: #fff !important;}
+.search-style-2 form button {
+    right: 142px;
+    
+}
 </style>
 {% include 'includes/alerts.html' %}
 
@@ -125,8 +129,8 @@
                             <div class="col-lg-3 col-md-6 col-12 col-sm-6">
                                     <div class="vendor-wrap mb-40">
                                         <div class="vendor-img-action-wrap">
-                                            <div class="vendor-img">
-                                                <a href="{% url 'vendor_detail' vendor.vendor_slug %}">
+                                            <div class="vendor-img mb-4" style="max-width: 100%; height: 120px; object-fit: cover;">
+                                                <a href="{% url 'vendor_detail' vendor.vendor_slug %}" >
                                                     {% if vendor.user_profile.profile_picture %}
                                                         <img src="{{ vendor.user_profile.profile_picture.url }}" class="img-list wp-post-image" alt="" style="max-width: 100%;">
                                                         {% else %}
@@ -154,7 +158,18 @@
                                             </div>
                                             <div class="vendor-info mb-30">
                                                 <ul class="contact-infor text-muted">
-                                                    <li><strong>Address: </strong> <span>{{ vendor.user_profile.address }}</span></li>
+                                                   {% with vendor.user_profile.address.split as words %}
+                                                <li><strong>Address: </strong>
+                                                    <span>
+                                                        {% if words|length > 5 %}
+                                                            {{ words|slice:":5"|join:" " }}...
+                                                        {% else %}
+                                                            {{ vendor.user_profile.address }}
+                                                        {% endif %}
+                                                    </span>
+                                                </li>
+                                            {% endwith %}
+
                                                     <li><strong>Call Us:</strong><span>(+91) - 540-025-124553</span></li>
                                                 </ul>
                                             </div>
