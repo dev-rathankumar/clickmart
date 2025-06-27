@@ -1,3 +1,7 @@
+:root {
+  --accent-blue: #181970;
+}
+
 @keyframes show-toast{
     0% {bottom: -100%}
     20% {bottom: 100px}
