@@ -14,12 +14,14 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.views.decorators.csrf import csrf_exempt 
 from inventory.models import tax
 from django.contrib import messages
+from django.views.decorators.cache import never_cache
 
 
 
 
 
 @login_required(login_url='login')
+@never_cache
 def place_order(request):
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
     cart_count = cart_items.count()
