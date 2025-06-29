@@ -1,5 +1,7 @@
-{% extends 'base.html' %} {% load static %} {% block content %} {% include
-'includes/alerts.html' %}
+{% extends 'base.html' %} 
+{% load static %}
+ {% block content %} 
+ {% include 'includes/alerts.html' %}
 <style>
   input {
     border: unset;
@@ -150,20 +152,18 @@
                             <span>Upload Product Image</span>
                           </label>
                             <div class="col-lg-12">
-    <small style="color: #888;  margin-top: 8px;">
-     Recommended resolution: 500x500 pixels. Ensure the image is in square format for best results
-    </small>
-  </div>
-                          <input
+                        <small style="color: #888;  margin-top: 8px;">
+                        Recommended resolution: 500x500 pixels. Ensure the image is in square format for best results
+                        </small>
+                      </div>
+                           <input
                             type="file"
                             id="image-upload"
                             name="image"
                             accept="image/*"
                             style="display: none"
                           />
-                          {% comment %} {% if form.image.help_text %} {% endcomment %}
 
-{% comment %} {% endif %} {% endcomment %}
                         </div>
                       </div>
                     </div>

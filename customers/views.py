@@ -53,6 +53,8 @@ def order_detail(request, order_number):
         order = Order.objects.get(order_number=order_number, is_ordered=True)
         print(order)
         ordered_food = OrderedFood.objects.filter(order=order)
+        all_paid = all(item.status in ['Paid', 'Completed'] for item in ordered_food)
+
         subtotal = 0
         for item in ordered_food:
             subtotal += (item.price * item.quantity)
@@ -62,6 +64,7 @@ def order_detail(request, order_number):
             'ordered_food': ordered_food,
             'subtotal': subtotal,
             'tax_data': tax_data,
+            'all_paid': all_paid,
         }
         return render(request, 'customers/order_detail.html', context)
     except Exception as e:

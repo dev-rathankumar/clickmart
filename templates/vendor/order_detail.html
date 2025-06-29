@@ -86,18 +86,18 @@
                                                 <form id="change-order-status" method="POST">
                                                     {% csrf_token %}
                                                     <select name="order_status" id="order_status" onchange="changeOrderStatus(this)"
-                                                    {% if order.status == 'Paid' %} class="bg-success text-light" 
-                                                    {% elif order.status == 'Processing' %} class="bg-warning text-light" 
-                                                    {% elif order.status == 'Completed' %} class="bg-success text-light" 
-                                                    {% elif order.status == 'Cancelled' %} class="bg-danger text-light"
-                                                    {% elif order.status == 'Refunded' %} class="bg-danger text-light" 
+                                                    {% if vendor_status == 'Paid' %} class="bg-success text-light" 
+                                                    {% elif vendor_status == 'Processing' %} class="bg-warning text-light" 
+                                                    {% elif vendor_status == 'Completed' %} class="bg-success text-light" 
+                                                    {% elif vendor_status == 'Cancelled' %} class="bg-danger text-light"
+                                                    {% elif vendor_status == 'Refunded' %} class="bg-danger text-light" 
                                                     {% endif %}
                                                     >
-                                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
-                                                        <option value="Paid" {% if order.status == 'Paid' %}selected{% endif %}>Paid</option>
-                                                        <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
-                                                        <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-                                                        <option value="Refunded" {% if order.status == 'Refunded' %}selected{% endif %}>Refunded</option>
+                                                        <option value="Processing" {% if vendor_status == 'Processing' %}selected{% endif %}>Processing</option>
+                                                        <option value="Paid" {% if vendor_status == 'Paid' %}selected{% endif %}>Paid</option>
+                                                        <option value="Completed" {% if vendor_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                        <option value="Cancelled" {% if vendor_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                                        <option value="Refunded" {% if vendor_status == 'Refunded' %}selected{% endif %}>Refunded</option>
                                                     </select>
                                                     <input type="hidden" name="order_number" value="{{ order.order_number }}">
                                                 </form>
@@ -142,8 +142,8 @@
                             
                                             <div class="row mt-5">
                                                 <div class="d-flex justify-content-center col-md-6">
-                                                    {% if order.payment_method != 'COD' %}
-                                                    <img src="{% static 'images/paid.png' %}" width="200">
+                                                    {% if all_paid %}
+                                                    <img  src="{% static 'images/paid.png' %}" width="200">
                                                     {% endif %}
                                                 </div>
                                                 {% if order.payment_method == 'COD' %}
@@ -151,7 +151,7 @@
                                                 {% else %}
                                                 <div class="col-md-6">
                                                 {% endif %}
-                                                                                                        <ul>
+                                                                    <ul>
                                                     <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
                                                         Subtotal
                                                         <span class="price float-right">

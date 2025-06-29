@@ -799,16 +799,23 @@ def order_detail(request, order_number):
     try:
         order = Order.objects.get(order_number=order_number, is_ordered=True)
         ordered_food = OrderedFood.objects.filter(order=order, product__vendor=get_vendor(request))
+        # Just pick the first status of the vendor's ordered food
+        vendor_status = ordered_food.first().status if ordered_food.exists() else 'Processing'
         tax_data = json.loads(order.tax_data)
+
+        # Check if all items are Paid or Completed
+        all_paid = all(item.status in ['Paid', 'Completed'] for item in ordered_food)
 
         context = {
             'order': order,
             'ordered_food': ordered_food,
+            'vendor_status': vendor_status,
             'subtotal': order.get_total_by_vendor()['subtotal'],
             'tax_data': order.get_total_by_vendor()['tax_dict'],
             'grand_total': order.get_total_by_vendor()['grand_total'],
             'tax_data': tax_data,
-            'vendor': get_vendor(request)
+            'vendor': get_vendor(request),
+            'all_paid': all_paid,
         }
     except:
         return redirect('vendor')
@@ -828,56 +835,109 @@ def order_status(request):
     if request.method == "POST":
         status = request.POST.get('order_status')
         order_number = request.POST.get('order_number')
+
         try:
             order = Order.objects.get(order_number=order_number)
-            ordered_products = OrderedFood.objects.filter(order=order)
-            if order.status not in ['Cancelled', 'Refunded'] and status in ['Cancelled','Refunded']:
-                print("we are in cancel")
-                print(ordered_products)
-                for single_ordered_product in ordered_products:
-                    product = Product.objects.get(id=single_ordered_product.product.id)
-                    product.qty+=single_ordered_product.quantity
-                    product.save()
-                    print("Product", product)
-                    print(single_ordered_product.quantity)
-                    print(product.qty)
-            if order.status not in ['Paid', 'Completed', 'Processing'] and status in ['Paid', 'Completed', 'Processing']:
-                 print("current status ", order.status)
-                 for single_ordered_product in ordered_products:
-                    product = Product.objects.get(id=single_ordered_product.product.id)
-                    product.qty-=single_ordered_product.quantity
-                    product.save()
-                    print("Product", product)
-                    print(single_ordered_product.quantity)
-                    print(product.qty)
+
+            vendor = Vendor.objects.get(user=request.user)
+
+            ordered_products = OrderedFood.objects.filter(order = order, product__vendor = vendor)
+
+            if not ordered_products.exists():
+                return JsonResponse({'error': 'No items found for this vendor in the order.'})
             
- 
-            order.status = status 
-            order.save()
-            # Send email 
-            mail_subject = f'Your Order #{order_number} is {status}'
+            for item in ordered_products:
+                product = item.product
+                prev_status = item.status
+
+                # Stock adjustment
+                if prev_status not in ['Cancelled', 'Refunded'] and status in ['Cancelled', 'Refunded']:
+                    product.qty += item.quantity
+                elif prev_status not in ['Paid', 'Completed', 'Processing'] and status in ['Paid', 'Completed', 'Processing']:
+                    product.qty -= item.quantity
+
+                product.save()
+                item.status = status
+                item.save()
+            mail_subject = f'Order #{order_number} - Items from {vendor.vendor_name} updated to {status}'
             message = f"""
-            Dear {order.user.first_name},
-            
-            Your order with ID #{order_number} has been marked as {status}.
-            <br>
-            Thank you for shopping with us.
-            
-            <br><br>
-            Regards,
+            Dear {order.user.first_name},<br><br>
+            The items you ordered from <strong>{vendor.vendor_name}</strong> in order #{order_number} are now marked as <strong>{status}</strong>.<br><br>
+            Thank you,<br>
             Flickbasket
-        """
+            """
             recipient = order.user.email
             from_email = settings.DEFAULT_FROM_EMAIL
-            # Send the email
             mail = EmailMessage(mail_subject, message, from_email, to=[recipient])
             mail.content_subtype = "html"
             mail.send()
-            
-            return JsonResponse({'message': 'Status updated successfully.', 'status': order.status})
+
+            return JsonResponse({'message': 'Vendor items updated successfully.', 'status': status})
+
         except Order.DoesNotExist:
             return JsonResponse({'error': 'Order not found.'})
+            
     return JsonResponse({'error': 'Invalid request'})
+
+
+
+
+
+
+# def order_status(request):
+#     if request.method == "POST":
+#         status = request.POST.get('order_status')
+#         order_number = request.POST.get('order_number')
+#         try:
+#             order = Order.objects.get(order_number=order_number)
+#             ordered_products = OrderedFood.objects.filter(order=order)
+#             if order.status not in ['Cancelled', 'Refunded'] and status in ['Cancelled','Refunded']:
+#                 print("we are in cancel")
+#                 print(ordered_products)
+#                 for single_ordered_product in ordered_products:
+#                     product = Product.objects.get(id=single_ordered_product.product.id)
+#                     product.qty+=single_ordered_product.quantity
+#                     product.save()
+#                     print("Product", product)
+#                     print(single_ordered_product.quantity)
+#                     print(product.qty)
+#             if order.status not in ['Paid', 'Completed', 'Processing'] and status in ['Paid', 'Completed', 'Processing']:
+#                  print("current status ", order.status)
+#                  for single_ordered_product in ordered_products:
+#                     product = Product.objects.get(id=single_ordered_product.product.id)
+#                     product.qty-=single_ordered_product.quantity
+#                     product.save()
+#                     print("Product", product)
+#                     print(single_ordered_product.quantity)
+#                     print(product.qty)
+            
+ 
+#             order.status = status 
+#             order.save()
+#             # Send email 
+#             mail_subject = f'Your Order #{order_number} is {status}'
+#             message = f"""
+#             Dear {order.user.first_name},
+            
+#             Your order with ID #{order_number} has been marked as {status}.
+#             <br>
+#             Thank you for shopping with us.
+            
+#             <br><br>
+#             Regards,
+#             Flickbasket
+#         """
+#             recipient = order.user.email
+#             from_email = settings.DEFAULT_FROM_EMAIL
+#             # Send the email
+#             mail = EmailMessage(mail_subject, message, from_email, to=[recipient])
+#             mail.content_subtype = "html"
+#             mail.send()
+            
+#             return JsonResponse({'message': 'Status updated successfully.', 'status': order.status})
+#         except Order.DoesNotExist:
+#             return JsonResponse({'error': 'Order not found.'})
+#     return JsonResponse({'error': 'Invalid request'})
 
 
 def media_library(request):

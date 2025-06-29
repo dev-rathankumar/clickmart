@@ -63,54 +63,58 @@
         <div class="col-md-8">
             <div class="bg-white p-3">
                 <img src="{% static 'logo/flickbasket-logo.svg' %}" alt="flickbasket Logo" width="300" class="image-logo">
+                
                 <div class="row">
                     <div class="col-md-6">
-                        <h4 class="mt-2 mb-3">Thank you for your order.</h4>
+                        <h4 class="mt-2 mb-3">New Order Received</h4>
                     </div>
                     <div class="col-md-6 text-right">
-                        <p class="mb-0">{{ order.name }}</p>
-                        <p class="mb-0">{{ order.address }}</p>
+                        <p class="mb-0"><strong>Order No:</strong> {{ order.order_number }}</p>
+                        <p class="mb-0"><strong>Customer:</strong> {{ order.name }}</p>
                         <p class="mb-0">{{ order.phone }}</p>
                         <p class="mb-0">{{ order.email }}</p>
                     </div>
                 </div>
-                
-                <h6>Hello {{ order.name }}, </h6><span>Review your order details below.</span>
+
+                <h6 class="mt-3">You received an order. Below are the details for your products.</h6>
                 <hr>
 
                 <div class="d-flex justify-content-between custom-design-for-info">
                     <div>
-                        <span class="d-block">Order Date: </span><span class="font-weight-bold">{{ order.created_at }}</span>
+                        <span class="d-block">Order Date:</span><span class="font-weight-bold">{{ order.created_at }}</span>
                     </div>
                     <div>
-                        <span class="d-block">Order No: </span><span class="font-weight-bold">{{ order.order_number }}</span>
+                        <span class="d-block">Payment Method:</span><span class="font-weight-bold">{{ order.payment_method }}</span>
                     </div>
                     <div>
-                        <span class="d-block">Payment Method: </span><span class="font-weight-bold">{{ order.payment_method }}</span>
-                    </div>
-                    <div>
-                        <span class="d-block">Transaction ID: </span><span class="font-weight-bold">{{ order.payment.transaction_id }}</span>
+                        <span class="d-block">Transaction ID:</span><span class="font-weight-bold">{{ order.payment.transaction_id }}</span>
                     </div>
                 </div>
                 <hr>
+
                 <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Vendor</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Tax Category</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         {% for item in ordered_food %}
                         <tr>
-                            <td><img src="{{ item.product.image.url }}" width="60" alt="Prodcut Image"></td>
                             <td>
-                                <p class="mb-0"><b>{{ item.product }}</b></p>
-                                <a class="text-muted" href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}">{{ item.product.vendor.vendor_name }}</a>
+                                <img src="{{ item.product.image.url }}" width="60" alt="Product Image"><br>
+                                <b>{{ item.product }}</b>
                             </td>
-                            <td>{{ item.quantity }} QTY</td>
-                            
-                            {% if item.product.sales_price %}
-                                <td>₹{{ item.product.sales_price }}</td>
-                            {% else %}
-                                <td>₹{{ item.product.regular_price }}</td>
-                            {% endif %}
-                            <td>{{item.product.tax_category}}</td>
-                                
+                            <td>{{ item.product.vendor.vendor_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₹{{ item.price }}</td>
+                            <td>{{ item.product.tax_category }}</td>
+                            <td>{{ item.status }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -118,10 +122,10 @@
 
                 <div class="row mt-5">
                     <div class="d-flex justify-content-center col-md-6">
-                        {% if order.payment_method != 'COD' %}
-                        <img src="{% static 'images/paid.png' %}" width="200" class="status-img">
-                        {% elif order.payment_method == 'COD' %}
-                        <img src="{% static 'images/cod.svg' %}" width="200" class="status-img">
+                        {% if all_paid %}
+                            <img src="{% static 'images/paid.png' %}" width="200" class="status-img">
+                        {% else %}
+                            <img src="{% static 'images/cod.svg' %}" width="200" class="status-img">
                         {% endif %}
                     </div>
                     
@@ -130,41 +134,29 @@
                             <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
                                 Subtotal
                                 <span class="price float-right">
-                                    <span class="currency">₹</span>
-                                    <span id="subtotal">{{ subtotal }}</span>
+                                    ₹{{ subtotal }}
                                 </span>
                             </li>
-                            
-                            {% for single_tax_dict in tax_data %}
-                            {% for key, value in single_tax_dict.tax_info.items %}
-                                {% if value %}  
-                                    <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
-                                        <div style="font-size: 12px;">
-                                            {{ single_tax_dict.tax_category }} 
-                                            <small>({{ key }}%)</small>
-                                            {% for item in ordered_food %}
-                                            {% if item.product.id == single_tax_dict.product_id %}
-                                            <small>{{item.product | truncatechars:20}}</small>
-                                            {% endif %}
-                                            {% endfor %}
-                                        </div>
 
-                                        <span class="price float-right">
-                                            <span class="currency">₹</span>
-                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
-                                        </span>
-                                    </li>
-                                {% endif %}
+                            {% for tax_entry in tax_data %}
+                                {% for tax_name, tax_info in tax_entry.items %}
+                                    {% for rate, amount in tax_info.items %}
+                                        <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
+                                            <div style="font-size: 12px;">
+                                                {{ tax_name }} <small>({{ rate }}%)</small>
+                                            </div>
+                                            <span class="price float-right">
+                                                ₹{{ amount }}
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-
-
 
                             <li style="list-style-type: none; font-weight: 600;" class="d-flex justify-content-between align-items-center">
                                 TOTAL
                                 <span class="price float-right ">
-                                    <span class="currency">₹</span>
-                                    <span id="total">{{ order.total }}</span>
+                                    ₹{{ grand_total }}
                                 </span>
                             </li>
                         </ul>
@@ -173,13 +165,14 @@
                 <hr>
                 <div class="d-flex justify-content-between">
                     <div>
-                        <span class="d-block font-weight-bold">Thanks for ordering with us.</span>
-                        <span>Flickbasket Team</span>
+                        <span class="d-block font-weight-bold">Thanks for fulfilling your order!</span>
+                        <span>— Flickbasket Team</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 {% endblock %}

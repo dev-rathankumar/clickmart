@@ -82,6 +82,19 @@
    #id_category_image {
     display: none;
   }
+  .delete-btn {
+  background-color: red !important;
+  color: white !important;
+  border: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.delete-btn:hover {
+  background-color: red !important;
+  color: white !important;
+}
+
 
 </style>
 <!-- Main Section Start -->
@@ -194,7 +207,7 @@
                             
                                 <!-- Action Buttons -->
                                 <button type="submit" class="btn btn-info mb-3"><i class="fa fa-check" aria-hidden="true"></i> Update</button>
-                                <a href="{% url 'delete_subcategory' subcategory.id %}" onclick="return confirm('Are you sure you want to delete this subcategory?')" class="btn btn-danger mb-3"><i class="fa fa-trash" aria-hidden="true"></i> Delete</a>
+                                <a href="{% url 'delete_subcategory' subcategory.id %} " onclick="return confirm('Are you sure you want to delete this subcategory?')" class="btn btn-danger mb-3 delete-btn"><i class="fa fa-trash" aria-hidden="true"></i> Delete</a>
                             </form>
                         </div>
                     </div>

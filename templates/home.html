@@ -114,17 +114,15 @@
 #popular-products-slider-arrows{
   top:25% !important;
 }
+
+
 </style>
 {% include 'includes/alerts.html' %}
 
 <section class="popular-categories d-none d-md-block" style="padding-bottom: 0;">
 	<div class="container">
-
-		
-		<div class="section-title">
-			
-			<div class="slider-arrow slider-arrow-2 carausel-10-columns-arrow" id="carausel-10-columns-arrows">
-				
+		<div class="section-title">	
+			<div class="slider-arrow slider-arrow-2 carausel-10-columns-arrow" id="carausel-10-columns-arrows">	
 			</div>
 		</div>
 		<div class="carausel-10-columns-cover position-relative">
@@ -210,7 +208,7 @@
 									</a>
                     <div>
                       <!-- ADD button -->
-                      <a href="#" class="button-add-to-cart add_to_cart text-white"
+                      <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
                         id="add_to_cart_btn-{{product.id}}"
                         data-id="{{ product.id }}"
                         data-url="{% url 'add_to_cart' product.id %}"
@@ -292,7 +290,7 @@
 								<div class="banner-img wow animate__animated" data-wow-delay="0">
 									<img src="{{ banner.image.url }}" alt="" />
 									<div class="banner-text mt-3">
-										<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-xs text-light">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+										<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-xs text-light update_color">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
 									</div>
 								</div>
 							</div>
@@ -344,7 +342,7 @@
                       </a>
                                          <div>
                       <!-- ADD button -->
-                      <a href="#" class="button-add-to-cart add_to_cart text-white"
+                      <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
                         id="add_to_cart_btn-{{product.id}}-{{collection.slug}}"
                         data-id="{{ product.id }}"
                         data-url="{% url 'add_to_cart' product.id %}"
@@ -425,7 +423,7 @@
 							<div class="banner-img wow animate__animated" data-wow-delay="0">
 								<img src="{{ banner.image.url }}" alt="{{ banner.category.category_name }}" />
 								<div class="banner-text mt-3">
-									<a href="{{ banner.link }}" class="btn btn-xs text-light">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+									<a href="{{ banner.link }}" class="btn btn-xs text-light update_color">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
 								</div>
 							</div>
 						</div>

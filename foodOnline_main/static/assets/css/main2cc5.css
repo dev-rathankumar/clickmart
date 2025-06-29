@@ -284,7 +284,7 @@ input[type=number]:focus,
   transition: transform .5s,-webkit-transform .5s;
 }
 
-.hover-up {
+/* .hover-up {
   -webkit-transition: all 0.25s cubic-bezier(0.02, 0.01, 0.47, 1);
   transition: all 0.25s cubic-bezier(0.02, 0.01, 0.47, 1);
 }
@@ -294,7 +294,7 @@ input[type=number]:focus,
           transform: translateY(-5px);
   -webkit-transition: all 0.25s cubic-bezier(0.02, 0.01, 0.47, 1);
   transition: all 0.25s cubic-bezier(0.02, 0.01, 0.47, 1);
-}
+} */
 
 .text-brand {
   color: var(--accent-blue) !important;
@@ -3474,10 +3474,10 @@ table .product-thumbnail img {
   min-height: 100px;
 }
 
-.banner-img .banner-text:hover h4 {
+/* .banner-img .banner-text:hover h4 {
   -webkit-transform: translateY(-5px);
           transform: translateY(-5px);
-}
+} */
 
 .banner-img .banner-text a i {
   margin-left: 5px;
@@ -3486,11 +3486,11 @@ table .product-thumbnail img {
   font-size: 10px;
 }
 
-.banner-img .banner-text a:hover i {
+/* .banner-img .banner-text a:hover i {
   margin-left: 10px;
   -webkit-transition-duration: 0.3s;
           transition-duration: 0.3s;
-}
+} */
 
 .banner-img.style-2 {
   border-radius: 15px;
@@ -3949,7 +3949,7 @@ table .product-thumbnail img {
   transition: unset !important;
 }
 
-.product-cart-wrap:hover {
+/* .product-cart-wrap:hover {
   -webkit-box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
           box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
   border: 1px solid #FCD6D9;
@@ -3957,7 +3957,7 @@ table .product-thumbnail img {
   -moz-transition: .2s;
   -webkit-transition: .2s;
   -o-transition: .2s;
-}
+} */
 
 .product-cart-wrap .product-img-action-wrap {
   position: relative;
@@ -4954,7 +4954,7 @@ table .product-thumbnail img {
 }
 
 .slider-nav-thumbnails .slick-slide.slick-current img {
-  border: 2px solid #a2d2c9;
+  border: 2px solid #1b216a;
 }
 
 .slider-nav-thumbnails div.slick-slide {
@@ -6814,7 +6814,7 @@ h6.post-title {
   -o-transition: .2s;
 }
 
-.vendor-wrap:hover {
+/* .vendor-wrap:hover {
   -webkit-box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
           box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.05);
   border: 1px solid #FCD6D9;
@@ -6822,7 +6822,7 @@ h6.post-title {
   -moz-transition: .2s;
   -webkit-transition: .2s;
   -o-transition: .2s;
-}
+} */
 
 .vendor-wrap .vendor-img-action-wrap {
   padding: 25px 25px 0 25px;
@@ -12505,4 +12505,54 @@ footer .hotline img {
 
 .alert{
   padding: 0.5rem 0.5rem !important;
+}
+
+
+.update_color {
+  color: white !important;
+  background-color: #1b216a !important;
+
+}
+
+.update_color:hover{
+  color: white !important;
+  background-color: #1b216a !important;
+  transition: none !important;
+  animation: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.no_hover:hover{
+ color: white !important;
+  background-color: #1b216a !important;
+  transition: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  filter: none !important;
+  outline: none !important;
+  text-decoration: none !important;
+}
+
+.delete_icon_color{
+  color: #dc3545 !important;
+}
+
+.blue_color{
+  color: #1b216a !important;
+}
+
+.delete_media button {
+  color: white !important;
+  background-color: #dc3545 !important;
+  border: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.delete_media button:hover {
+  color: white !important;
+  background-color: #dc3545 !important;
+  
 }

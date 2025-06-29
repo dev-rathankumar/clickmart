@@ -128,28 +128,42 @@
                                                         <td>₹{{ item.product.regular_price }}</td>
                                                     {% endif %}
                                                         <td>{{item.product.tax_category}}</td>
+                                                        <td>
+                                                        <span class="btn btn-sm 
+                                                            {% if item.status == 'Paid' or item.status == 'Completed' %}
+                                                                update_color
+                                                            {% elif item.status == 'Pending' %}
+                                                                btn-warning
+                                                            {% else %}
+                                                                btn-secondary
+                                                            {% endif %}
+                                                        ">
+                                                            {{ item.status }}
+                                                        </span>
+                                                    </td>
                                                     </tr>
+                                                    
                                                     {% endfor %}
                                                 </tbody>
                                             </table>
                             
                                             <div class="row mt-5">
-                                                {% if order.status == 'Processing' %}
+                                                {% comment %} {% if order.status == 'Processing' %}
                                                 <div class="d-flex justify-content-center col-md-6">
                                                     <img src="{% static 'images/payment-pending.png' %}" width="200" class="status-img">
-                                                </div>
-                                                {% elif order.status == 'Paid' or order.status == 'Completed' %}
+                                                </div> {% endcomment %}
+                                                {% if all_paid %}
                                                 <div class="d-flex justify-content-center col-md-6">
                                                     <img src="{% static 'images/paid.png' %}" width="200" class="status-img">
                                                 </div>
-                                                {% elif order.status == 'Cancelled' %}
+                                                {% comment %} {% elif order.status == 'Cancelled' %}
                                                 <div class="d-flex justify-content-center col-md-6">
                                                     <img src="{% static 'images/order-cancelled.png' %}" width="200" class="status-img">
                                                 </div>
                                                 {% elif order.status == 'Refunded' %}
                                                 <div class="d-flex justify-content-center col-md-6">
                                                     <img src="{% static 'images/refunded.png' %}" width="200" class="status-img">
-                                                </div>
+                                                </div> {% endcomment %}
                                                 {% endif %}
                                                 <div class="col-md-6">
                                                     <ul>

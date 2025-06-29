@@ -39,14 +39,7 @@ class Payment(models.Model):
 
 
 class Order(models.Model):
-    STATUS = (
-        ('Processing', 'Processing'),
-        ('Paid', 'Paid'),
-        ('Completed', 'Completed'),
-        ('Cancelled', 'Cancelled'),
-        ('Refunded', 'Refunded'),
-    )
-
+ 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, blank=True, null=True)
     vendors = models.ManyToManyField(Vendor, blank=True)
@@ -65,7 +58,6 @@ class Order(models.Model):
     total_data = models.JSONField(blank=True, null=True)
     total_tax = models.FloatField()
     payment_method = models.CharField(max_length=25)
-    status = models.CharField(max_length=15, choices=STATUS, default='Processing')
     is_ordered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -185,6 +177,13 @@ class Order(models.Model):
         return self.order_number
 
 class OrderedFood(models.Model):
+    STATUS = (
+        ('Processing', 'Processing'),
+        ('Paid', 'Paid'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+        ('Refunded', 'Refunded'),
+    )
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -192,6 +191,7 @@ class OrderedFood(models.Model):
     quantity = models.IntegerField()
     price = models.FloatField()
     amount = models.FloatField()
+    status = models.CharField(max_length=15, choices=STATUS, default='Processing')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

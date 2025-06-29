@@ -48,6 +48,7 @@
     }
 }
 
+
     </style>
 
 <!-- Main Section Start -->
@@ -65,14 +66,14 @@
                         <div class="user-holder">
                             <h5 class="text-uppercase">Media Library</h5>
 							<hr>
-                            <button type="button" class="btn btn-accent text-light float-end" data-bs-toggle="modal" data-bs-target="#mediaUpload">
-                                <i class="fa fa-upload"></i> Upload Images
+                            <button type="button" class="btn  float-end update_color" data-bs-toggle="modal" data-bs-target="#mediaUpload">
+                                <i class="fa fa-upload "></i> Upload Images
                             </button>
                             <br><br>
 
                             <div class="row g-3 media-gallery">
                                 {% if images %}
-                                <button type="button" class="btn btn-accent text-light float-start w-25" id="select-all">
+                                <button type="button" class="btn update_color float-start w-25 " id="select-all">
                                     <i class="fa fa-check-square"></i> Select All
                                 </button>
                                 {% endif %}
@@ -95,8 +96,8 @@
                                         {% endfor %}
                                     </div>
                                     {% if images %}
-                                    <div class="col-12">
-                                        <button type="submit" class="btn btn-sm btn-danger float-end mt-3 mb-3"><i class="fa fa-trash"></i> Delete Selected Images</button>
+                                    <div class="col-12 delete_media">
+                                        <button type="submit" class="btn btn-sm   float-end mt-3 mb-3"><i class="fa fa-trash"></i> Delete Selected Images</button>
                                     </div>
                                     {% else %}
                                     <div class="text-center">

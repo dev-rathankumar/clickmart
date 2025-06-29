@@ -23,6 +23,8 @@ from django.views.decorators.cache import never_cache
 @login_required(login_url='login')
 @never_cache
 def place_order(request):
+    if request.method == "GET":
+        return redirect("checkout")
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
     cart_count = cart_items.count()
     if cart_count <= 0:
@@ -242,12 +244,14 @@ def order_complete(request):
             subtotal += (item.price * item.quantity)
 
         tax_data = json.loads(order.tax_data)
+        all_paid = all(item.status in ['Paid', 'Completed'] for item in ordered_food)
         print(tax_data)
         context = {
             'order': order,
             'ordered_food': ordered_food,
             'subtotal': subtotal,
             'tax_data': tax_data,
+            'all_paid': all_paid,
         }
         return render(request, 'orders/order_complete.html', context)
     except:

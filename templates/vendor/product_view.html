@@ -82,6 +82,19 @@
 @media (max-width: 600px) {
   .mobile-cart-info { display: block !important; }
 }
+.vendor-visit-link {
+  background-color: #3a4a99 !important; /* light blue */
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.vendor-visit-link a {
+  color: white !important;
+  text-decoration: none;
+}
+
+
 </style>
 {% include 'includes/alerts.html' %}
   <!-- content -->
@@ -129,7 +142,7 @@
                                 </div>
                                 <div class="col-md-6 col-sm-12 col-xs-12">
                                     <div class="detail-info pr-30 pl-30">
-                                        <span class="stock-status out-stock"> <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}" style="color: inherit;">Visit {{ product.vendor.vendor_name }}</a> </span>
+                                        <span class=" vendor-visit-link"> <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}" >Visit {{ product.vendor.vendor_name }}</a> </span>
                                         
                                         {% if vendor.kms %}
                                         <span>{{vendor.kms}} KM.</span>

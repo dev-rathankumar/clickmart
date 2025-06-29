@@ -3,6 +3,21 @@
 
 {% block content %}
 	<link href="{% static 'css/cart_style.css' %}" rel="stylesheet">
+    <style>
+        .cart-blue{
+            color: #1b216a !important;
+        }
+.store_name {
+  color: white !important;
+  background-color: #3a4a99 !important; /* light blue */
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+
+
+    </style>
 <!-- Main Section Start -->
 <div class="main-section pt-5 ">
     <div class="page-section">
@@ -11,8 +26,8 @@
                 
                 <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12 mb-30">
                     <div class="tabs-holder horizontal">
-                        <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger"></i>Cart Items</a></li>
+                        <ul class="cart-blue">
+                            <li class="active"><a data-toggle="tab" href="#home"><i class="fa fa-shopping-cart text-danger mr-5"></i><strong class="">Cart Items</strong> </a></li>
                             
                         </ul>
                         <div class="tab-content">
@@ -37,7 +52,7 @@
                                                     <div class="text-holder ms-3" style="width: 390px;">
                                                         <h6>{{ item.product }}</h6>
                                                         <span>{{item.product.product_desc | truncatewords:25}}</span>
-                                                        <a href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}" class="badge badge-warning text-dark bg-warning">{{ item.product.vendor }}</a>
+                                                        <a href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}" class="badge store_name">{{ item.product.vendor }}</a>
                                                     </div>
                                                     <div class="price-holder">
                                                         
@@ -48,18 +63,18 @@
                                                         {% endif %}
                                                             
                                                         {% if item.cart_id %}
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.cart_id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
+                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.cart_id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus blue_color"></i></a>
                                                         {% else %}
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.product.id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
+                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.product.id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus blue_color"></i></a>
                                                         {% endif %}
                                                         
                                                         <label id="qty-{{item.product.id}}">0</label>
-                                                        <a href="#" class="add_to_cart" data-id="{{ item.product.id }}" data-url="{% url 'add_to_cart' item.product.id %}"><i class="icon-plus4 text-color"></i></a>
+                                                        <a href="#" class="add_to_cart" data-id="{{ item.product.id }}" data-url="{% url 'add_to_cart' item.product.id %}"><i class="icon-plus4 blue_color"></i></a>
                                                         
                                                         {% if item.cart_id %}
-                                                        <a href="#" class="delete_cart" data-id="{{ item.cart_id }}" data-url="{% url 'delete_cart' item.cart_id %}" data-product-id="{{item.product.id}}"><i class="icon-delete text-color"></i></a>       
+                                                        <a href="#" class="delete_cart" data-id="{{ item.cart_id }}" data-url="{% url 'delete_cart' item.cart_id %}" data-product-id="{{item.product.id}}"><i class="icon-delete delete_icon_color"></i></a>       
                                                         {% else %}
-                                                        <a href="#" class="delete_cart" data-id="{{ item.product.id }}" data-url="{% url 'delete_cart' item.product.id %}" data-product-id="{{item.product.id}}"><i class="icon-delete text-color"></i></a>       
+                                                        <a href="#" class="delete_cart" data-id="{{ item.product.id }}" data-url="{% url 'delete_cart' item.product.id %}" data-product-id="{{item.product.id}}"><i class="icon-delete delete_icon_color"></i></a>       
                                                         {% endif %}
                                                             
                                                         
@@ -92,8 +107,8 @@
                 <!-- Your order section -->
                 <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
                     <div class="tabs-holder horizontal">
-                        <ul class="stickynav-tabs nav nav-tabs">
-                            <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i>Your Order</a></li>
+                        <ul class="cart-blue">
+                            <li class="active"><a data-toggle="tab" href="#home"><i class="icon- icon-room_service"></i><strong>Your Order</strong> </a></li>
                             
                         </ul>
                         <div class="tab-content">
@@ -144,7 +159,7 @@
                                                 </span>
                                             </li>
 
-                                            <a href="{% url 'checkout' %}" class="btn btn-danger w-100 p-2 mt-3 btn-fix-hover">PROCEED TO CHECKOUT</a>
+                                            <a href="{% url 'checkout' %}" class="btn  w-100 p-2 mt-3 update_color">PROCEED TO CHECKOUT</a>
                                         </ul>
                                     </div>
                                     

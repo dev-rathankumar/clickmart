@@ -192,6 +192,17 @@
   .mobile-navbar {
     display: none;
   }
+.cs-color {
+  color: red !important;
+}
+.cs-color:hover {
+  color: red !important;  
+}
+.cart_color {
+  color: white !important;
+  background-color: #5c6dc3 !important; /* lighter version of #1b216a */
+}
+
 </style>
 
 <!-- Desktop Header -->
@@ -274,7 +285,7 @@
           >
             <i class="fa fa-shopping-cart"></i>
             <!-- Optional: Cart item count badge -->
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color">
             <span id="cart_count">{{cart_count}}</span>  
               <span class="visually-hidden">cart items</span>
             </span>
@@ -294,7 +305,7 @@
           <a
             href="{% url 'login' %}"
             class="text-danger Become_a_seller_btn"
-            style="font-size: 1rem; font-weight: 600; border: 1px solid #dc3545"
+            style="font-size: 1rem; font-weight: 600; border: 1px solid #1b216a"
           >
             <i class="fa fa-sign-in" aria-hidden="true"></i> Login
           </a>
@@ -306,7 +317,7 @@
               class="Become_a_seller_btn"
               href="{% url 'registerVendor' %}"
               style="
-                background-color: #dc3545;
+                background-color: #1b216a;
                 color: #fff !important;
                 font-weight: 600;
               "
@@ -451,7 +462,7 @@
           >Marketplace</a
         >
         <a
-          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          class="btn text-uppercase font-weight-bold"
           href="{% url 'registerVendor' %}"
           style="background-color: #dc3545; color: #fff"
         >
