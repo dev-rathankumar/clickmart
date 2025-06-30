@@ -17,12 +17,50 @@
     margin-top: 6px !important;
     margin-bottom: 7px !important;
 }
-.product-cart-wrap .product-card-bottom .add-cart .add:hover {
+.product-cart-wrap .product-card-bottom .add:hover {
     background-color: #DC3545;
     color: #fff !important;}
 .search-style-2 form button {
     right: 142px;
     
+}
+
+  .quantity-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #ed3595; /* or #f53ca4 */
+    border-radius: 5px;
+    padding: 3px 11px;
+    font-weight: bold;
+    gap: 8px;
+}
+
+.quantity-box button {
+    text-decoration: none;
+    color: #ed3595;
+    font-weight: 300;
+    font-size: 12px;
+    border:none;
+    background:none;
+    cursor: pointer;
+}
+
+.quantity-box label {
+  margin: 0;
+  font-size: 12px;
+  color: #ed3595;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+#popular-products-slider-arrows{
+  top:25% !important;
+}
+.view-button{
+        font-size: 14px !important;
+        padding: 8px 30px !important;
+        font-weight: bold !important;
 }
 </style>
 {% include 'includes/alerts.html' %}
@@ -126,10 +164,10 @@
                     {% if search_type == 'stores' %}
                     <div class="row vendor-grid">
                         {% for vendor in vendors %}
-                            <div class="col-lg-3 col-md-6 col-12 col-sm-6">
-                                    <div class="vendor-wrap mb-40">
+                            <div class="col-lg-4 col-md-6 col-12 col-sm-6">
+                                    <div class="vendor-wrap mb-30">
                                         <div class="vendor-img-action-wrap">
-                                            <div class="vendor-img mb-4" style="max-width: 100%; height: 120px; object-fit: cover;">
+                                            <div class="vendor-img" style="max-width: 100%; height: 135px !important; object-fit: cover; overflow: hidden;">
                                                 <a href="{% url 'vendor_detail' vendor.vendor_slug %}" >
                                                     {% if vendor.user_profile.profile_picture %}
                                                         <img src="{{ vendor.user_profile.profile_picture.url }}" class="img-list wp-post-image" alt="" style="max-width: 100%;">
@@ -147,30 +185,24 @@
                                             </div>
                                         </div>
                                         <div class="vendor-content-wrap">
-                                            <div class="d-flex justify-content-between align-items-end mb-30">
+                                            <div class="d-flex justify-content-between align-items-end mb-10">
                                                 <div>
                                                     <div class="product-category">
                                                         <span class="text-muted">{{ vendor.store_type }}</span>
                                                     </div>
-                                                    <h4 class="mb-5"><a href="{% url 'vendor_detail' vendor.vendor_slug %}">{{ vendor.vendor_name }}</a></h4>
+                                                    <h5 class="mb-0"><a href="{% url 'vendor_detail' vendor.vendor_slug %}">{{ vendor.vendor_name | truncatechars:16 }}</a></h5>
                                                 </div>
                                                 
                                             </div>
-                                            <div class="vendor-info mb-30">
+                                            <div class="vendor-info mb-20">
                                                 <ul class="contact-infor text-muted">
-                                                   {% with vendor.user_profile.address.split as words %}
-                                                <li><strong>Address: </strong>
+                                               
+                                                <li style="min-height: 50px !important;"><strong>Address: </strong>
                                                     <span>
-                                                        {% if words|length > 5 %}
-                                                            {{ words|slice:":5"|join:" " }}...
-                                                        {% else %}
-                                                            {{ vendor.user_profile.address }}
-                                                        {% endif %}
+                                                        {{vendor.user_profile.address | truncatechars:25}}
                                                     </span>
                                                 </li>
-                                            {% endwith %}
-
-                                                    <li><strong>Call Us:</strong><span>(+91) - 540-025-124553</span></li>
+                                                    <li><strong>Call Us:</strong><span>{{vendor.user.phone_number | truncatechars:15}}</span></li>
                                                 </ul>
                                             </div>
                                             <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-xs text-light no_hover">Visit Store <i class="fi-rs-arrow-small-right"></i></a>
@@ -245,20 +277,52 @@
                                             <span>₹{{ product.sales_price }}</span>
                                             <span class="old-price">₹{{ product.regular_price }}</span>
                                         </div>
-                                        <div class="product-extra-link2">
+                                        {% comment %} <div class="product-extra-link2"> {% endcomment %}
                                             
                                             {% if product.qty > 0 %}
-                                            <button  class="button button-add-to-cart add_to_cart w-100" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
-                                            {% endif %}
+                                            <div>
+                                                <!-- ADD button -->
+                                                <button href="#" class="button button-add-to-cart add_to_cart text-white w-100 text-center"
+                                                    id="add_to_cart_btn-{{product.id}}"
+                                                    data-id="{{ product.id }}"
+                                                    data-url="{% url 'add_to_cart' product.id %}"
+                                                    style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
+                                                    Add to Cart
+                                                </button>
+                                                <!-- Quantity controls -->
+                                                <hr id="hr-above-qty-{{ product.id }}" style="margin: 5px 0px;width: 188px;margin-left: -7px; {% if product.id not in cart_product_ids %}display:none;{% endif %}">
+                                                <div class="quantity-box"
+                                                    id="quantity-btn-box-{{ product.id }}"
+                                                    style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
+                                                    <button href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
+                                                    <i class="icon-minus"></i>
+                                                    </button>
+                                                    <label id="qty-{{ product.id }}">
+                                                    {% for item in cart_items %}
+                                                        {% if product.id == item.product.id %}
+                                                        {{ item.quantity }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    </label>
+                                                    <button href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
+                                                    <i class="icon-plus"></i>
+                                                    </button>
+                                                </div>
+                                                </div>
+                                            {% comment %} <button  class="button button-add-to-cart add_to_cart w-100" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button> {% endcomment %}
+                                            {% else %}
+                                             <div class="add-cart">
+                                            <form action="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                                                <button type=submit class="button text-white w-100 text-center view-button">View Product </button>
+                                            </form>
                                             </div>
+                                            {% endif %}
                                               {% if check_cart %}
                                             <p class="text-success" style="font-weight: 600;">
                                                 {{ chkCart_count }} items added to the cart.
                                             </p>
                                             {% endif %}
-                                        <div class="add-cart">
-                                            <a class="add w-100 text-center" href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">View Product </a>
-                                        </div>
+                                        {% comment %} </div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>
@@ -367,69 +431,6 @@
 function switchType(type) {
     document.getElementById('searchType').value = type;
     document.getElementById('searchForm').submit();
-}
-</script>
-
-
-<script>
-document.querySelectorAll('.add_to_cart').forEach(button => {
-    button.addEventListener('click', function(event) {
-        event.preventDefault();
-
-        const productId = button.getAttribute('data-id');
-        const url = button.getAttribute('data-url');
-        const quantity = document.getElementById('quantity-input') ? document.getElementById('quantity-input').value : 1;
-            addProductToCart(url, productId, quantity);
-    });
-});
-
-// Function to Add Product to Cart
-function addProductToCart(url, productId, quantity) {
-  fetch(url, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({
-          product_id: productId,
-          quantity: parseInt(quantity)
-      })
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.success) {
-        console.log('Product added to cart:', data);
-        $('#cart_count').text(data.cart_counter);
-        if (data.status == 'stock_out') {
-            console.log(data.message);
-          swal("Info",data.message, "info");
-        } else {
-        }
-
-      } else {
-          swal("Info", data.message || "Something went wrong!", "info");
-      }
-  })
-  .catch(error => {
-      console.error('Error:', error);
-      swal("Error", "Something went wrong!", "error");
-  });
-}
-// Utility function to get CSRF token
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 }
 </script>
 

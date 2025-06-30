@@ -11,7 +11,8 @@
 	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Montserrat:400,700">
 	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,800">
 	<!-- Google Font Family Link End -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 	<!-- CSS -->
 	<link rel="stylesheet" href="{% static 'assets/css/plugins/animate.min.css' %}" />
 	
@@ -19,17 +20,17 @@
 	
 	<!-- JAVASCRIPT -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
-
+	
+	
 	
 	<link rel="stylesheet" href="{% static 'css/iconmoon.css' %}">
-
+	
 	<link rel="stylesheet" href="{% static 'css/custom.css' %}">
-
+	
 	
 	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 	<script src="{% static 'js/custom.js' %}"></script>
-
+	
 	{% if '/' == request.path or 'profile' in request.path %}
 	<script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API_KEY}}&libraries=places&callback=initAutoComplete" async defer></script>
 	<!-- <script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API_KEY}}&libraries=places" async defer></script> -->
@@ -39,26 +40,26 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/jquery.magnific-popup.min.js"></script>
 
-	<!-- Include the PayPal JavaScript SDK -->
-    {% comment %} <script src="https://www.paypal.com/sdk/js?client-id=&currency=USD"></script> {% endcomment %}
-	<script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&components=buttons&enable-funding=paylater,card&disable-funding=venmo" data-sdk-integration-source="integrationbuilder_sc"></script>
+<!-- Include the PayPal JavaScript SDK -->
+{% comment %} <script src="https://www.paypal.com/sdk/js?client-id=&currency=USD"></script> {% endcomment %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&components=buttons&enable-funding=paylater,card&disable-funding=venmo" data-sdk-integration-source="integrationbuilder_sc"></script>
 
-	<!-- Include Datatables plugin script and css -->
-	<link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
-	<script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<!-- Include Datatables plugin script and css -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.2/min/dropzone.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.2/min/dropzone.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.2/min/dropzone.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	
+	
 	<script>
 		$(document).ready( function () {
 			$('#myOrdersTable').DataTable({
 				"order": [[4, "desc"]] // Sort by the 5th column (index 4: "Date") in descending order
 			});
 		} );
-
+		
 		$(document).ready( function () {
 			$('#myProductsTable').DataTable({
 				"id": [[4, "desc"]] // Sort by the 5th column (index 4: "Date") in descending order
@@ -66,14 +67,14 @@
 		} );
 		  $(document).ready(function () {
     $('.popup-link').magnificPopup({
-      type: 'inline',
-      midClick: true
+		type: 'inline',
+		midClick: true
     });
-  });
-	</script>
+});
+</script>
 
-	<style>
-		body, .main-section p, .mce-content-body p{
+<style>
+	body, .main-section p, .mce-content-body p{
 			font:Normal  14px/24px "Open Sans", sans-serif;letter-spacing: 0px;text-transform: none;color: #515151 !important;
 		}
 	</style>
@@ -81,19 +82,19 @@
 </head>
 
 <body>
-
-    <!-- LOAD NAVBAR HERE -->
+	
+	<!-- LOAD NAVBAR HERE -->
     {% include 'includes/navbar.html' %}
-
+	
     <!-- LOAD CONTENT HERE -->
     {% block content %}
-        <!-- CONTENT GOES HERE -->
+	<!-- CONTENT GOES HERE -->
     {% endblock %}
 
     <!-- LOAD FOOTER HERE -->
     {% include 'includes/footer.html' %}
-
-
-  </body>
+	
+	
+</body>
 </html>
-		
+

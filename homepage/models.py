@@ -37,7 +37,7 @@ class CategoryBanner(models.Model):
     
 
 class ProductCollection(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, help_text="Enter a collection name that matches the logic (e.g., Lowest Price Guarantee).")
     slug = models.SlugField(unique=True)
     active = models.BooleanField(default=True)
     
