@@ -9,6 +9,9 @@
   position: relative;
 }
 
+
+
+
 .product-img-wrap .button-add-to-cart {
   position: absolute;
   bottom: 0;
@@ -114,6 +117,19 @@
 #popular-products-slider-arrows{
   top:25% !important;
 }
+
+#carausel-10-columns {
+  visibility: hidden;
+}
+#carausel-10-columns.slick-initialized {
+  visibility: visible;
+}
+
+.slider-btn:hover {
+  background-color: #1b216a !important; /* Blue background on hover */
+  color: white !important;
+}
+
 
 
 </style>
@@ -307,10 +323,10 @@
 	
 				<!-- Carousel Controls -->
 				<button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev" style="z-index: 9;">
-					<span class="carousel-control-prev-icon"></span>
+					<span class="carousel-control-prev-icon slider-btn"></span>
 				</button>
 				<button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-					<span class="carousel-control-next-icon"></span>
+					<span class="carousel-control-next-icon slider-btn"></span>
 				</button>
 			</div>
 		</div>
@@ -340,7 +356,7 @@
                       <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
                         <img class="product-img" src="{{ product.image.url }}" alt="" />
                       </a>
-                                         <div>
+                        <div>
                       <!-- ADD button -->
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
                         id="add_to_cart_btn-{{product.id}}-{{collection.slug}}"
@@ -435,11 +451,11 @@
 			</div>
 
 			<!-- Carousel Controls -->
-			<button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="prev" style="z-index: 9;">
-				<span class="carousel-control-prev-icon"></span>
+			<button class="carousel-control-prev " type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="prev" style="z-index: 9;">
+				<span class="carousel-control-prev-icon slider-btn"></span>
 			</button>
 			<button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="next">
-				<span class="carousel-control-next-icon"></span>
+				<span class="carousel-control-next-icon slider-btn"></span>
 			</button>
 		</div>
 	</div>

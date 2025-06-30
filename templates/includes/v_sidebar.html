@@ -1,3 +1,35 @@
+{% load static %}
+<style>
+/* Base link styles */
+.user-nav-list ul li a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Active link color */
+.user-nav-list ul li.active a,
+.user-nav-list ul li.active a i {
+    color: #4A90E2 !important;  /* light blue */
+}
+
+/* Disable hover color change for all links */
+.user-nav-list ul li a:hover,
+.user-nav-list ul li a:hover i {
+    color: inherit !important;
+    background: none !important;
+    text-decoration: none !important;
+}
+
+/* Make sure active links keep their color even on hover */
+.user-nav-list ul li.active a:hover,
+.user-nav-list ul li.active a:hover i {
+    color: #4A90E2 !important; /* keep light blue on hover */
+    cursor: default !important; /* optional */
+}
+
+
+</style>
+
 <div class="user-account-nav user-account-sidebar" style="background-color: #D1E8F2;">
     <div class="user-nav-list">
         <ul>
