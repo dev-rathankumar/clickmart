@@ -5,6 +5,17 @@
 {% block content %}
 {% include 'includes/alerts.html' %}
 {% load custom_tags %}
+<style>
+    /* Red border for rows with errors */
+    tr.error-row {
+        border: 2px solid red !important;
+    }
+    /* Light red background for empty cells in error rows */
+    tr.error-row td:empty {
+        background-color: #f8d7da;
+        min-width: 50px;
+    }
+</style>
 
 <!-- Main Section Start -->
 <div class="main-section">
@@ -27,6 +38,22 @@
                         <p class="text-muted mb-4 alert alert-info" style="padding: 6px 10px;">
                            <b>{{ count }}</b> products found in your file. Please check and review before saving.
                         </p>
+                        {% if errors %}
+                        <div class="alert alert-danger">
+                            <h5>Errors found in your CSV data:</h5>
+                            <ul>
+                                {% for error in errors %}
+                                    <li><strong>Row {{ error.row }}:</strong>
+                                        <ul>
+                                            {% for msg in error.messages %}
+                                                <li>{{ msg }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
 
                         <form method="post" action="">
                         {% csrf_token %}
@@ -42,7 +69,7 @@
                             </thead>
                             <tbody>
                             {% for row in products|slice:":20" %}
-                                <tr>
+                                <tr class="{% if forloop.counter0 in error_rows %}error-row{% endif %}">
                                 {% for key, info in field_mappings.items %}
                                     <td>{{ row|get_item:key }}</td>
                                 {% endfor %}
@@ -56,22 +83,21 @@
                         {% if count > 3 and not show_all %}
                         <p class="text-end">
                             Showing first 3 of {{ count }} products. 
-                            <a href="?show_all=1" class="btn btn-link">Show All</a>
+                            <a href="?show_all=1" class="btn update_color">Show All</a>
                         </p>
                         {% elif count > 3 %}
                         <p class="text-end">
                             Showing all {{ count }} products.
-                            <a href="?show_all=0" class="btn btn-link">Show Less</a>
+                            <a href="?show_all=0" class="btn btn-link update_color">Show Less</a>
                         </p>
                         {% endif %}
 
-                        <div class="d-flex justify-content-end mt-3">
+                        <div class="d-flex  justify-content-between mt-3">
+                            <button type="button" class="btn update_color" onclick="window.history.back();">Previous</button>
                         <button type="submit" class="btn btn-success">Save to Database</button>
                         </div>
                     </form>
-                        
-                       
-                            
+                             
                         
                     </div>
                 </div>

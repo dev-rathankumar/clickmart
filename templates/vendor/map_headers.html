@@ -4,7 +4,25 @@
 
 {% block content %}
 {% include 'includes/alerts.html' %}
+<style>
+    
+    .border-success {
+    border: 2px solid #28a745 !important; /* brighter green */
+}
 
+.border-danger {
+    border: 2px solid #e46060 !important; /* lighter red/pinkish */
+}
+
+.validation-error {
+    font-size: 0.85rem;
+    color: #dc3545;
+}
+</style>
+
+</style>
+
+</style>
 <!-- Main Section Start -->
 <div class="main-section">
     {% include 'includes/cover.html' %}
@@ -14,6 +32,7 @@
                 <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
                     <!-- Load the sidebar here -->
                     {% include 'includes/v_sidebar.html' %}
+                    
                 </div>
                 <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
                     <div class="user-dashboard loader-holder">
@@ -29,7 +48,7 @@
                             Please match them with your store’s fields below.
                         </p>
 
-                        <form method="post" action="{% url 'process_mapped_data' %}">
+                        <form method="post" action="{% url 'process_mapped_data' %}" id="mappingForm">
                             {% csrf_token %}
                             <div class="row">
                                 {% for key, info in internal_fields.items %}
@@ -37,12 +56,19 @@
                                     <label class="form-label">
                                     <strong>Which column has "{{ info.label }}"?</strong>
                                     </label>
-                                    <select name="mapping_{{ key }}" class="form-select" required>
+                                    <select 
+                                    name="mapping_{{ key }}"
+                                    class="form-select" 
+                                    data-required="{% if not info.optional %}true{% else %}false{% endif %}"
+                                    data-type="{{ info.type|default:'str' }}"
+                                    >
+                                    
                                     <option value="">-- Select from detected columns --</option>
                                     {% for header in csv_headers %}
                                     <option value="{{ header }}">{{ header }}</option>
                                     {% endfor %}
                                     </select>
+                                    <div class="text-danger small mt-1 validation-error" style="display:none;"></div>
                                     <small class="form-text text-muted">
                                     {{ info.help }}
                                     </small>
@@ -50,13 +76,12 @@
                                 {% endfor %}
                             </div>
 
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-success">Next: Validate</button>
-                            </div>
-                        </form>
+                            <div class="d-flex justify-content-between">
+                            <button type="button" class="btn update_color" onclick="window.history.back();">Previous</button>
+                            <button type="submit" class="btn update_color">Next: Validate</button>
+                        </div>
 
-                       
-                            
+                        </form>                                                
                         
                     </div>
                 </div>
@@ -65,5 +90,89 @@
     </div>
 </div>
 <!-- Main Section End -->
+
+<script>
+    const STORAGE_KEY = 'csv_field_mapping';
+    const CURRENT_FILE = "{{ csv_filename|escapejs }}";
+    const CSV_HEADERS = {{ csv_headers|safe }};
+    const SAMPLE_ROW = {{ sample_row|safe }};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        document.querySelectorAll('select').forEach(select => {
+            const fieldKey = select.name.replace('mapping_', '');
+            const isRequired = select.dataset.required === "true";
+            const savedValue = saved?.mappings?.[fieldKey];
+
+            select.classList.remove('border-success', 'border-danger');
+
+            if (saved.filename === CURRENT_FILE && savedValue) {
+                if (CSV_HEADERS.includes(savedValue)) {
+                    select.value = savedValue;
+                    select.classList.add('border-success');
+                } else {
+                    select.classList.add('border-danger');
+                }
+            }
+
+            if (!select.value && isRequired) {
+                select.classList.add('border-danger');
+            }
+        });
+    });
+
+    document.getElementById('mappingForm').addEventListener('submit', function (e) {
+        let isValid = true;
+        const mappings = {};
+        const numericFields = ['cost_price', 'regular_price', 'sale_price', 'qty', 'tax_category'];
+
+        document.querySelectorAll('select').forEach(select => {
+            const fieldKey = select.name.replace('mapping_', '');
+            const selectedColumn = select.value;
+            const isRequired = select.dataset.required === "true";
+            const errorDiv = select.nextElementSibling;
+            errorDiv.style.display = 'none';
+            errorDiv.innerText = '';
+            select.classList.remove('border-success', 'border-danger');
+
+            if (isRequired && !selectedColumn) {
+                select.classList.add('border-danger');
+                errorDiv.style.display = 'block';
+                errorDiv.innerText = 'This field is required.';
+                isValid = false;
+                return;
+            }
+
+            if (selectedColumn) {
+                select.classList.add('border-success');
+                mappings[fieldKey] = selectedColumn;
+
+                const headerIndex = CSV_HEADERS.indexOf(selectedColumn);
+                const sampleValue = SAMPLE_ROW[headerIndex]?.trim();
+
+                if (numericFields.includes(fieldKey)) {
+                    if (!sampleValue || isNaN(sampleValue)) {
+                        select.classList.add('border-danger');
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerText = 'This field must be a valid number.';
+                        isValid = false;
+                    }
+                }
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            return;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            filename: CURRENT_FILE,
+            mappings: mappings
+        }));
+    });
+</script>
+
 
 {% endblock %}
