@@ -12,8 +12,8 @@ class Category(models.Model):
     )
     store_type = models.ForeignKey(StoreType, on_delete=models.CASCADE, null=True, blank=True)
     category_name = models.CharField(max_length=50)
-    category_code = models.CharField(max_length=50, unique=True)  # e.g. 'GROC', 'BEV'
-    vendor_subcategory_reference_id  = models.IntegerField(null=True, blank=True) # This field only for subcategory use to track the vendor's subcategory we will store his id here (This is a indirect connection withn venodr) 
+    category_code = models.CharField(max_length=50, unique=True, help_text=("Enter category code(e.g. 'GROC', 'BEV')"))  # e.g. 'GROC', 'BEV'
+    vendor_subcategory_reference_id  = models.IntegerField(null=True, blank=True, help_text="This field is for a subcategory specific to a vendor. Leave it empty when adding a main category.") # This field only for subcategory use to track the vendor's subcategory we will store his id here (This is a indirect connection withn venodr) 
     slug = models.SlugField(max_length=100)
     category_image = models.ImageField(upload_to='store/categories/uploads', null=True, blank=True)
     description = models.TextField(max_length=250, blank=True)
@@ -173,6 +173,10 @@ class MediaUpload(models.Model):
 class CategoryBrowsePage(models.Model):
     category = models.OneToOneField(Category, on_delete=models.CASCADE)
     banner = models.ImageField(upload_to='browse-banners/', blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of the browse page in the category list. Lower numbers appear first.")
+    
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return f"{self.category.category_name} Browse Page"
@@ -188,7 +192,7 @@ class CategoryBrowseSection(models.Model):
     ]
 
     browse_page = models.ForeignKey(CategoryBrowsePage, on_delete=models.CASCADE, related_name='sections')
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, help_text="Enter a title for the section (e.g., Lowest Price Deal on Appliances, Shop by Category, etc).") 
     section_type = models.CharField(max_length=50, choices=PAGE_SECTION_TYPES)
     order = models.PositiveIntegerField(default=0)
 
@@ -201,7 +205,7 @@ class CategoryBrowseSection(models.Model):
 
 class ProductAssignment(models.Model):
     section = models.ForeignKey(CategoryBrowseSection, on_delete=models.CASCADE, related_name='products')
-    product = models.ManyToManyField(Product, blank=True)
+    product = models.ManyToManyField(Product, blank=True, help_text="Select products to display in this section.")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

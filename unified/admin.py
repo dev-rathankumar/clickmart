@@ -12,6 +12,7 @@ from django.utils.html import format_html
 from django import forms
 from django.contrib.admin import SimpleListFilter
 from dal import autocomplete
+from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 
 from django.contrib.admin.widgets import AutocompleteSelect
 
@@ -206,10 +207,10 @@ class MainCategoryFilter(SimpleListFilter):
             return queryset.filter(browse_page__category__id=self.value())
         return queryset
     
-class CategoryBrowseSectionAdmin(admin.ModelAdmin):
+class CategoryBrowseSectionAdmin(SortableAdminMixin,admin.ModelAdmin):
     list_display = ['title', 'get_category_name', 'section_type', 'browse_page', 'order']
     list_filter = [MainCategoryFilter, 'section_type', 'browse_page']
-    ordering = ['browse_page', 'order']
+    ordering = ['order']
     def get_category_name(self, obj):
         return obj.browse_page.category.category_name
     get_category_name.short_description = 'Category'
@@ -240,20 +241,22 @@ class CategoryBrowseSectionAdmin(admin.ModelAdmin):
         return inline_instances
 
 
-class CategoryBrowseSectionInline(admin.StackedInline):
+class CategoryBrowseSectionInline(SortableInlineAdminMixin,admin.StackedInline):
     model = CategoryBrowseSection
     extra = 1
     show_change_link = True
 
 
-class CategoryBrowsePageAdmin(admin.ModelAdmin):
+
+class CategoryBrowsePageAdmin(SortableAdminMixin,admin.ModelAdmin):
     form = CategoryBrowsePageForm
-    list_display = ['category']
+    list_display = ['category','order']
     inlines = [CategoryBrowseSectionInline]
 
 
-class ProductAssignmentAdmin(admin.ModelAdmin):
+class ProductAssignmentAdmin(SortableAdminMixin,admin.ModelAdmin):
     list_display = ['section', 'order']
+    ordering = ['order']
 
 
 class SubCategoryAssignmentAdmin(admin.ModelAdmin):

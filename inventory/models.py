@@ -59,9 +59,9 @@ class department(models.Model):
 
 
 class tax(models.Model):
-    tax_category    = models.CharField(max_length=32,null=False,blank=False)
+    tax_category    = models.CharField(max_length=32,null=False,blank=False,help_text="Enter a tax category name (e.g., VAT, GST, Service Tax).")
     tax_desc        = models.TextField(blank=True)
-    tax_percentage  = models.DecimalField(max_digits=6, decimal_places=2, validators=PERCENTAGE_VALIDATOR,null=False,blank=False)
+    tax_percentage  = models.DecimalField(max_digits=6, decimal_places=2, validators=PERCENTAGE_VALIDATOR,null=False,blank=False,help_text="Enter the tax percentage (e.g., 5.00 for 5%).")
 
     def clean(self):
         # Custom validation logic to prevent duplicate category + percentage combinations

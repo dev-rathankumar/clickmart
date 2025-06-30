@@ -36,9 +36,18 @@ from foodOnline_main.views import get_or_set_current_location
 
 
 def marketplace(request):
-    vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
-    vendor_count = vendors.count()
+    if get_or_set_current_location(request) is not None:
 
+            pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
+
+            vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+
+            for v in vendors:
+                v.kms = round(v.distance.km, 1)
+    else:
+        vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
+
+    vendor_count = vendors.count()
     search_query = request.GET.get('search', None)
     
     if search_query:
@@ -48,6 +57,8 @@ def marketplace(request):
             Q(store_type__name__icontains=search_query)
         )
 
+    vendors = list(vendors)  # evaluate queryset
+    vendors.sort(key=lambda v: v.is_open() or False, reverse=True)  # Open vendors first
     paginator = Paginator(vendors, 10)
     page_number = request.GET.get('page')
     page_vendors = paginator.get_page(page_number)
@@ -147,6 +158,31 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
             if v.id == vendor.id: 
                 vendor.kms = round(v.distance.km, 1)
 
+      
+
+    if request.user.is_authenticated:
+        cart_items = []
+        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
+            cart_items.append({
+                'product': cart_obj.product,
+                'quantity': cart_obj.quantity,
+                'cart_id': cart_obj.id,  # DB cart uses Cart PK
+            })
+    else:
+        cart = request.session.get('cart', {})
+        product_ids = list(cart.keys())
+        cart_products  = Product.objects.filter(id__in=product_ids)
+        cart_items = []
+        for product in cart_products :
+            print("product_id ===>", product.id)
+            quantity = cart.get(str(product.id))
+            cart_items.append({
+                'product': product,
+                'quantity': quantity,
+                'cart_id': product.id,  # session cart uses product id
+            })
+    cart_product_ids = list(item['product'].id for item in cart_items)
+
     context = {
         'vendor': vendor,
         'categories': categories,
@@ -155,7 +191,9 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         'current_opening_hours': current_opening_hours,
         'products': page_obj,
         'search_query': search_query, 
-        'show_pagination':show_pagination
+        'show_pagination':show_pagination,
+        'cart_product_ids': cart_product_ids,
+        'cart_items': cart_items,
 
     }
     return render(request, 'marketplace/vendor_detail.html', context)
@@ -213,7 +251,7 @@ def view_Product(request, vendor_slug, product_slug):
         'chkCart_count':chkCart_count,
         'product_gallery':product_gallery,
         'different_vendor_product_exists':different_vendor_product_exists,
-        'address':address
+        'address':address,
     }
     
     return render(request, 'vendor/product_view.html', context)
@@ -452,7 +490,7 @@ def search(request):
 
             vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_products) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True),
             user_profile__location__distance_lte=(pnt, D(km=radius))
-            ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+            ).annotate(distance=Distance("user_profile__location", pnt)).order_by("is_open","distance")
 
             for v in vendors:
                 v.kms = round(v.distance.km, 1)
@@ -586,7 +624,10 @@ def All_products(request, category_id=None, subcategory_id=None):
                 models.Q(vendor_name__icontains=search_query) |
                 models.Q(store_type__name__icontains=search_query)
             )
-        paginator = Paginator(vendors, 20)
+
+        vendors = list(vendors)  # evaluate queryset
+        vendors.sort(key=lambda v: v.is_open() or False, reverse=True)  # Open vendors first
+        paginator = Paginator(vendors, 200)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         context.update({
@@ -632,13 +673,31 @@ def All_products(request, category_id=None, subcategory_id=None):
             products = products.order_by('-sales_price')
         if sort_type == "asec":
             products = products.order_by('sales_price')
-        user_cart = Cart.objects.filter(user=request.user) if request.user.is_authenticated else []
-        cart_vendors = set(item.product.vendor_id for item in user_cart)
 
-        for product in products:
-            # True if cart is not empty and this product's vendor is NOT in the cart's vendors
-            product.is_different_vendor_for_cart = bool(cart_vendors) and (product.vendor_id not in cart_vendors)
 
+        if request.user.is_authenticated:
+            cart_items = []
+            for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
+                cart_items.append({
+                    'product': cart_obj.product,
+                    'quantity': cart_obj.quantity,
+                    'cart_id': cart_obj.id,  # DB cart uses Cart PK
+                })
+        else:
+            cart = request.session.get('cart', {})
+            product_ids = list(cart.keys())
+            cart_products  = Product.objects.filter(id__in=product_ids)
+            cart_items = []
+            for product in cart_products :
+                print("product_id ===>", product.id)
+                quantity = cart.get(str(product.id))
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'cart_id': product.id,  # session cart uses product id
+                })
+        cart_product_ids = list(item['product'].id for item in cart_items)
+    
         paginator = Paginator(products, 20)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -646,6 +705,8 @@ def All_products(request, category_id=None, subcategory_id=None):
         context.update({
             'products': page_obj,
             'show_pagination': paginator.num_pages > 1,
+            'cart_product_ids': cart_product_ids,
+            'cart_items': cart_items,
         })
 
     return render(request, 'marketplace/products.html', context)

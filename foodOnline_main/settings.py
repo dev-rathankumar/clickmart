@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ['172.105.253.185', '127.0.0.1', 'clickmall.in', 'www.clickmall.
 
 INSTALLED_APPS = [
     # "admin_interface",
+    'jazzmin',
     "colorfield",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -157,6 +158,31 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+#  JazzMin settings
+JAZZMIN_SETTINGS = {
+    "site_title": "Flickbasket Admin",
+    # Welcome text on the login screen
+    "welcome_sign": "Welcome to the Flickbasket Admin Panel",
+    # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
+    "login_logo": 'logo/flickbasket-logo.svg',
+
+     # Hide these models when generating side menu (e.g auth.user)
+    "hide_models": ['group', 'permission', 'contenttypes.ContentType', 'auth.User'],
+
+    "order_with_respect_to": ["auth", "books", "books.author", "books.book"],
+    "custom_css": "common/css/admin_pannel_style.css",
+
+}
+
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "cyborg",
+}
+
+
+
 
 
 # Internationalization
