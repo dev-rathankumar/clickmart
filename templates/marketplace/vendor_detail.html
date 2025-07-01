@@ -159,7 +159,7 @@
         </div>
 
         <div class="row flex-row-reverse">
-            <div class="col-lg-9">
+            <div class="col-lg-8">
                 <div class="shop-product-fillter">
                     <div class="totall-product">
                         {% if products %}
@@ -218,12 +218,14 @@
                 </div>
                 <div class="row product-grid">
                     {% for product in products %}
-                    <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                    <div class="col-lg-4 col-md-4 col-12 col-sm-6">
                         <div class="product-cart-wrap mb-30">
                             <div class="product-img-action-wrap">
                                 <div class="product-img product-img-zoom">
                                     <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
-                                        <img class="default-img" src="{{ product.image.url }}" alt="{{ product.product_name }}" />
+                                       <div class="img-box-cs">
+                                            <img class="default-img-cs" src="{{ product.image.url }}" alt="{{ product.product_name }}" />
+                                        </div>
                                     </a>
                                 </div>
                                 {% if product.get_discount_percentage > 0 %}
@@ -236,7 +238,7 @@
                                 <div class="product-category">
                                     <a href="shop-grid-right.html">{{ product.category }}</a>
                                 </div>
-                                <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name }}</a></h2>
+                                <h2 style="min-height:34px;"><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name | truncatechars:55 }}</a></h2>
                                 
                                 <div class="product-card-bottom d-block mt-0">
                                     <div class="product-price">
@@ -254,7 +256,7 @@
                                                     Add to Cart
                                                 </button>
                                                 <!-- Quantity controls -->
-                                                <hr id="hr-above-qty-{{ product.id }}" style="margin: 5px 0px;width: 188px;margin-left: -7px; {% if product.id not in cart_product_ids %}display:none;{% endif %}">
+                                                <hr id="hr-above-qty-{{ product.id }}" style="margin: 5px 0px;width: 105% !important;margin-left: -7px; {% if product.id not in cart_product_ids %}display:none;{% endif %}">
                                                 <div class="quantity-box"
                                                     id="quantity-btn-box-{{ product.id }}"
                                                     style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
@@ -335,7 +337,7 @@
                     {% endif %}
                 <!--End Deals-->
             </div>
-            <div class="col-lg-3 primary-sidebar sticky-sidebar">
+            <div class="col-lg-4 primary-sidebar sticky-sidebar">
                 {% if opening_hours %}
                 <div class="sidebar-widget widget-store-info mb-30 bg-3 border-0">
                     
@@ -376,18 +378,43 @@
                     </div>
                 </div>
                 {% endif %}
-                <div class="sidebar-widget widget-category-2 mb-30">
-                    <h5 class="section-title style-1 mb-30">Category</h5>
-                    <ul>
-                                    {% for cat in categories %}
-                                    <li class="px-0">
-                                        <a href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}"> <img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" />{{ cat.category_name }}</a><span class="count p-0 me-1">{{ cat.product_count }}</span>
+                   <div class="sidebar-widget widget-category-2 mb-30">
+                        <h5 class="section-title style-1 mb-30">Category</h5>
+                        <ul class="list-unstyled">
+                            {% for cat in categories %}
+                            <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
+                                {% if cat.subcategories.all %}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <!-- Main category name links to its page -->
+                                    <a class="text-dark fw-bold text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}">
+                                        {{ cat.category_name }} 
+                                    </a>
+
+                                    <!-- Arrow icon toggles collapse only -->
+                                    <a data-bs-toggle="collapse" href="#subcats-{{ cat.id }}" role="button" aria-expanded="false" aria-controls="subcats-{{ cat.id }}">
+                                        <i class="fa fa-chevron-down" style="font-size: 12px;"></i>
+                                    </a>
+                                </div>
+                                <ul class="collapse mt-2 ps-3" id="subcats-{{ cat.id }}">
+                                    {% for sub in cat.subcategories.all %}
+                                    <li class="small">
+                                        <a class="text-decoration-none" href="{% url 'vendor_detail_filter_by_subcategory' vendor_slug=vendor.vendor_slug subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
                                     </li>
                                     {% endfor %}
-                    </ul>
-                </div>
-                
-                
+                                </ul>
+                                {% else %}
+                                <!-- No subcategories -->
+                                <div>
+                                    <a class="fw-bold text-dark text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_slug=cat.slug %}">
+                                        {{ cat.category_name }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
             </div>
         </div>
     </div>
