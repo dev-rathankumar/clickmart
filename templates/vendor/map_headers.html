@@ -99,6 +99,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        const isSameFile = saved.filename === CURRENT_FILE;
 
         document.querySelectorAll('select').forEach(select => {
             const fieldKey = select.name.replace('mapping_', '');
@@ -107,7 +108,7 @@
 
             select.classList.remove('border-success', 'border-danger');
 
-            if (saved.filename === CURRENT_FILE && savedValue) {
+            if (isSameFile && savedValue) {
                 if (CSV_HEADERS.includes(savedValue)) {
                     select.value = savedValue;
                     select.classList.add('border-success');
@@ -116,7 +117,8 @@
                 }
             }
 
-            if (!select.value && isRequired) {
+            // ✅ Only apply red border to required empty fields if same file
+            if (isSameFile && !select.value && isRequired) {
                 select.classList.add('border-danger');
             }
         });
@@ -125,7 +127,7 @@
     document.getElementById('mappingForm').addEventListener('submit', function (e) {
         let isValid = true;
         const mappings = {};
-        const numericFields = ['cost_price', 'regular_price', 'sale_price', 'qty', 'tax_category'];
+        const numericFields = ['cost_price', 'regular_price', 'sale_price', 'qty', 'tax_percentage'];
 
         document.querySelectorAll('select').forEach(select => {
             const fieldKey = select.name.replace('mapping_', '');

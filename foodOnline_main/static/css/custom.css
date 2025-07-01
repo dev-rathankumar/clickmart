@@ -140,3 +140,19 @@ table td, table th{
     width: 100%;
   }
 
+
+
+/* Code for products.html and vendor_detail.html  */
+
+ .img-box-cs {
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.default-img-cs {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}

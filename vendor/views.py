@@ -43,7 +43,7 @@ import io
 
 import simplejson as json
 
-
+from django.core.paginator import Paginator
 
 def get_vendor(request):
     vendor = Vendor.objects.get(user=request.user)
@@ -1023,59 +1023,122 @@ def map_headers(request):
     })
 
 
+# def process_mapped_data(request):
+#     if request.method == 'POST':
+#         mappings = {}
+#         for key in CSV_FIELD_MAPPINGS.keys():
+#             mapped_header = request.POST.get(f'mapping_{key}')
+#             if mapped_header:
+#                 mappings[key] = mapped_header
+#         request.session['mappings'] = mappings
+#     else:
+#         mappings = request.session.get('mappings', {})
+
+#     csv_data = request.session.get('csv_data')
+#     if not csv_data or not mappings:
+#         return redirect('upload_csv')
+
+#     io_string = io.StringIO(csv_data)
+#     reader = csv.DictReader(io_string)
+#     products = []
+#     errors = []
+#     error_rows = set()
+
+#     for idx, row in enumerate(reader, start=1):
+#         product = {}
+#         missing_fields = []
+#         for internal_field, csv_header in mappings.items():
+#             value = row.get(csv_header, '').strip() if csv_header else ''
+#             product[internal_field] = value
+#             if not value:
+#                 missing_fields.append(CSV_FIELD_MAPPINGS[internal_field]['label'])
+
+#         if missing_fields:
+#             error_rows.add(idx - 1)
+#             errors.append({'row': idx, 'messages': [f"Missing value for {', '.join(missing_fields)}"]})
+
+#         products.append(product)
+
+#     show_all = request.GET.get('show_all') == '1'
+#     products_to_display = products if show_all else products[:5]
+#     field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
+
+#     return render(request, 'vendor/validate_import_data.html', {
+#         'products': products_to_display,
+#         'field_mappings': field_mappings_filtered,
+#         'count': len(products),
+#         'show_all': show_all,
+#         'errors': errors,
+#         'error_rows': error_rows,
+#     })
+    
+
 def process_mapped_data(request):
     if request.method == 'POST':
         mappings = {}
         for key in CSV_FIELD_MAPPINGS.keys():
             mapped_header = request.POST.get(f'mapping_{key}')
-            if mapped_header:  # Only keep mapped fields
+            if mapped_header:
                 mappings[key] = mapped_header
-        print('mappings==>', mappings)
+        request.session['mappings'] = mappings
+    else:
+        mappings = request.session.get('mappings', {})
 
-        csv_data = request.session.get('csv_data')
-        
-        if not csv_data or not mappings:
-            return redirect('upload_csv')
-        
-        io_string = io.StringIO(csv_data)
-        reader = csv.DictReader(io_string)
-        products = []
-        errors = []
-        error_rows = set()
+    csv_data = request.session.get('csv_data')
+    if not csv_data or not mappings:
+        return redirect('upload_csv')
 
-        for idx, row in enumerate(reader, start=1):
-            product = {}
-            missing_fields = []
-            for internal_field, csv_header in mappings.items():
-                value = row.get(csv_header, '').strip() if csv_header else ''
-                product[internal_field] = value
+    io_string = io.StringIO(csv_data)
+    reader = csv.DictReader(io_string)
+    products = []
+    errors = []
+    error_rows = set()
 
-                if not value:
-                    missing_fields.append(CSV_FIELD_MAPPINGS[internal_field]['label'])
+    for idx, row in enumerate(reader, start=1):
+        product = {}
+        missing_fields = []
+        for internal_field, csv_header in mappings.items():
+            value = row.get(csv_header, '').strip() if csv_header else ''
+            product[internal_field] = value
+            if not value:
+                missing_fields.append(CSV_FIELD_MAPPINGS[internal_field]['label'])
 
-            if missing_fields:
-                error_rows.add(idx - 1)
-                errors.append({'row': idx, 'messages': [f"Missing value for {', '.join(missing_fields)}"]})
+        if missing_fields:
+            error_rows.add(idx - 1)
+            errors.append({'row': idx, 'messages': [f"Missing value for {', '.join(missing_fields)}"]})
 
+        products.append(product)
 
-            products.append(product)
+    show_all = request.GET.get('show_all') == '1'
+    field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
 
-        show_all = request.GET.get('show_all') == '1'
-        products_to_display = products if show_all else products[:5]
+    if show_all:
+        page_number = request.GET.get('page', 1)
+        per_page = 20
+        paginator = Paginator(products, per_page)
+        try:
+            page_obj = paginator.page(page_number)
+        except Exception:
+            page_obj = paginator.page(1)
+        products_to_display = page_obj.object_list
+        offset = (page_obj.number - 1) * per_page
+    else:
+        products_to_display = products[:5]
+        page_obj = None
+        paginator = None
+        offset = 0
 
-        field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
-
-        return render(request, 'vendor/validate_import_data.html', {
-            'products': products_to_display,
-            'field_mappings': field_mappings_filtered,
-            'count': len(products),
-            'show_all': show_all,
-            'errors': errors,
-            'error_rows': error_rows,
-        })
-    return redirect('upload_csv')
-    
-    
+    return render(request, 'vendor/validate_import_data.html', {
+        'products': products_to_display,
+        'field_mappings': field_mappings_filtered,
+        'count': len(products),
+        'show_all': show_all,
+        'errors': errors,
+        'error_rows': error_rows,
+        'offset': offset,
+        'page_obj': page_obj,
+        'paginator': paginator,
+    })
 
 def validate_import_data(request):
     pass

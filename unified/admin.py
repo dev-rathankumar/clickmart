@@ -157,8 +157,13 @@ class ProductAssignmentInline(admin.TabularInline):
     extra = 1
     max_num = 1
 
-    def get_formset(self, request, obj=None, **kwargs):
-        return super().get_formset(request, obj, **kwargs)
+    class Media:
+        css = {
+            'all': ('admin/css/my_admin_style.css',),
+        }
+
+    # def get_formset(self, request, obj=None, **kwargs):
+    #     return super().get_formset(request, obj, **kwargs)
     
 
 
