@@ -203,6 +203,23 @@
   background-color: #5c6dc3 !important; /* lighter version of #1b216a */
 }
 
+
+button.no-hover-bg,
+button.no-hover-bg:hover,
+button.no-hover-bg:focus,
+button.no-hover-bg:active,
+button.no-hover-bg:visited {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+
+
 </style>
 
 <!-- Desktop Header -->
@@ -247,7 +264,7 @@
 
         <!-- Middle: Search Bar -->
         <div class="flex-grow-1">
-          <div class="search-style-2 search-style-navbar ">
+          <div class="search-style-2">
             <form action="{% url 'all_products' %}" method="get" class="d-flex">
               <select
                 name="store_type"
@@ -267,11 +284,9 @@
                 class="form-control"
                 placeholder="What are you looking for?"
               />
-              <button
-                type="submit"
-                class="ml-2"
-                style="width: 65px; background-color: transparent !important"
-              ></button>
+             <button type="submit" class="btn no-hover-bg  d-flex align-items-center justify-content-center ml-10" >
+                                             <img src=" {% static 'assets/imgs/theme/icons/search.png' %}" alt="Search" style="width: 100%; height: 20px;">
+                                        </button>
             </form>
           </div>
         </div>

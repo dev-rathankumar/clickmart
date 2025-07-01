@@ -64,6 +64,12 @@ CSV_FIELD_MAPPINGS = {
         'label': 'Tax Category',
         'help': 'Optional: Product’s Tax Category (if available). Used for scanning.',
         'optional': True,
+        'type': 'str',
+    },
+    'tax_percentage': {
+        'label': 'Tax Percentage',
+        'help': 'Optional: Product’s Tax Percentage (if available). Used for scanning.',
+        'optional': True,
         'type': 'int',
     },
     'description': {
@@ -73,7 +79,7 @@ CSV_FIELD_MAPPINGS = {
        'type': 'str',
     },
     'full_specificatione': {
-        'label': 'Barcode',
+        'label': 'Full Specification',
         'help': 'Optional: Detailed specifications of the product.',
         'optional': True,
         'type': 'str',

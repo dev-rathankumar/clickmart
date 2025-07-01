@@ -166,13 +166,13 @@ JAZZMIN_SETTINGS = {
     # Welcome text on the login screen
     "welcome_sign": "Welcome to the Flickbasket Admin Panel",
     # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
-    "login_logo": 'logo/flickbasket-logo.svg',
+    # "login_logo": 'logo/flickbasket-logo.svg',
 
      # Hide these models when generating side menu (e.g auth.user)
     "hide_models": ['group', 'permission', 'contenttypes.ContentType', 'auth.User'],
 
     "order_with_respect_to": ["auth", "books", "books.author", "books.book"],
-    "custom_css": "common/css/admin_pannel_style.css",
+    "custom_css": "admin/css/admin_pannel_style.css",
 
 }
 
