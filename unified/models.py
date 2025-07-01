@@ -77,6 +77,9 @@ class Product(models.Model):
     
     unit_type = models.CharField(max_length=15, choices=UNIT_TYPE_CHOICES, default='pcs', help_text="Unit type for the product")
 
+    company = models.CharField(max_length=50, blank=True, null=True )
+    product_size = models.CharField(max_length=20, blank=True, null=True)
+
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 

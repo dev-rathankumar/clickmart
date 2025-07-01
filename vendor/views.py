@@ -993,6 +993,7 @@ def upload_csv(request):
             headers = next(reader)
 
             request.session['csv_data'] = decoded_file  # Save for later processing
+            request.session['csv_filename'] = file.name
 
             return redirect('map_headers')  # Redirect to map headers page
     else:
@@ -1002,18 +1003,23 @@ def upload_csv(request):
 
 def map_headers(request):
     csv_data = request.session.get('csv_data')
-    if not csv_data:
+    filename = request.session.get('csv_filename')
+    if not csv_data or not filename :
         return redirect('upload_csv')
+    print("filename", filename)
 
     io_string = io.StringIO(csv_data)
     reader = csv.reader(io_string)
     headers = next(reader)
-
+    first_data_row = next(reader, [])
+    
     internal_fields = CSV_FIELD_MAPPINGS
 
     return render(request, 'vendor/map_headers.html', {
         'csv_headers': headers,
         'internal_fields': internal_fields,
+        'csv_filename': filename,
+        'sample_row': first_data_row,
     })
 
 
@@ -1021,7 +1027,9 @@ def process_mapped_data(request):
     if request.method == 'POST':
         mappings = {}
         for key in CSV_FIELD_MAPPINGS.keys():
-            mappings[key] = request.POST.get(f'mapping_{key}')
+            mapped_header = request.POST.get(f'mapping_{key}')
+            if mapped_header:  # Only keep mapped fields
+                mappings[key] = mapped_header
         print('mappings==>', mappings)
 
         csv_data = request.session.get('csv_data')
@@ -1032,23 +1040,38 @@ def process_mapped_data(request):
         io_string = io.StringIO(csv_data)
         reader = csv.DictReader(io_string)
         products = []
+        errors = []
+        error_rows = set()
 
-        for row in reader:
+        for idx, row in enumerate(reader, start=1):
             product = {}
+            missing_fields = []
             for internal_field, csv_header in mappings.items():
-                product[internal_field] = row.get(csv_header, '').strip()
-                if csv_header:  # skip if user didn't map a field
-                    product[internal_field] = row.get(csv_header, '').strip()
+                value = row.get(csv_header, '').strip() if csv_header else ''
+                product[internal_field] = value
+
+                if not value:
+                    missing_fields.append(CSV_FIELD_MAPPINGS[internal_field]['label'])
+
+            if missing_fields:
+                error_rows.add(idx - 1)
+                errors.append({'row': idx, 'messages': [f"Missing value for {', '.join(missing_fields)}"]})
+
+
             products.append(product)
 
         show_all = request.GET.get('show_all') == '1'
-        products_to_display = products if show_all else products[:3]
+        products_to_display = products if show_all else products[:5]
+
+        field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
 
         return render(request, 'vendor/validate_import_data.html', {
             'products': products_to_display,
-            'field_mappings': CSV_FIELD_MAPPINGS,
+            'field_mappings': field_mappings_filtered,
             'count': len(products),
             'show_all': show_all,
+            'errors': errors,
+            'error_rows': error_rows,
         })
     return redirect('upload_csv')
     
