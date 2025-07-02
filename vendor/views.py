@@ -1022,55 +1022,6 @@ def map_headers(request):
         'sample_row': first_data_row,
     })
 
-
-# def process_mapped_data(request):
-#     if request.method == 'POST':
-#         mappings = {}
-#         for key in CSV_FIELD_MAPPINGS.keys():
-#             mapped_header = request.POST.get(f'mapping_{key}')
-#             if mapped_header:
-#                 mappings[key] = mapped_header
-#         request.session['mappings'] = mappings
-#     else:
-#         mappings = request.session.get('mappings', {})
-
-#     csv_data = request.session.get('csv_data')
-#     if not csv_data or not mappings:
-#         return redirect('upload_csv')
-
-#     io_string = io.StringIO(csv_data)
-#     reader = csv.DictReader(io_string)
-#     products = []
-#     errors = []
-#     error_rows = set()
-
-#     for idx, row in enumerate(reader, start=1):
-#         product = {}
-#         missing_fields = []
-#         for internal_field, csv_header in mappings.items():
-#             value = row.get(csv_header, '').strip() if csv_header else ''
-#             product[internal_field] = value
-#             if not value:
-#                 missing_fields.append(CSV_FIELD_MAPPINGS[internal_field]['label'])
-
-#         if missing_fields:
-#             error_rows.add(idx - 1)
-#             errors.append({'row': idx, 'messages': [f"Missing value for {', '.join(missing_fields)}"]})
-
-#         products.append(product)
-
-#     show_all = request.GET.get('show_all') == '1'
-#     products_to_display = products if show_all else products[:5]
-#     field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
-
-#     return render(request, 'vendor/validate_import_data.html', {
-#         'products': products_to_display,
-#         'field_mappings': field_mappings_filtered,
-#         'count': len(products),
-#         'show_all': show_all,
-#         'errors': errors,
-#         'error_rows': error_rows,
-#     })
     
 
 def process_mapped_data(request):
