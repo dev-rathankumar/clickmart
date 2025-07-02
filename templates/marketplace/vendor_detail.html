@@ -67,6 +67,21 @@
         padding: 8px 30px !important;
         font-weight: bold !important;
 }
+.vender_search_formno-hover {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .vender_search_form button:hover,
+    .vender_search_form button:focus,
+    .vender_search_form button:active {
+        background: none !important;
+        color: inherit !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
 </style>
 {% include 'includes/alerts.html' %}
 
@@ -147,10 +162,10 @@
             <div class="row">
                 <div class="col-lg-5 mx-auto">
                     <div class="sidebar-widget-2 widget_search mb-50">
-                        <div class="search-form">
+                        <div class="search-form vender_search_form">
                             <form method="get" class="d-flex">
                                 <input type="text" name=search placeholder="Search in this store..." />
-                                <button type="submit"><i class="fi-rs-search"></i></button>
+                                <button type="submit" class="no-hover"><i class="fi-rs-search"></i></button>
                             </form>
                         </div>
                     </div>
