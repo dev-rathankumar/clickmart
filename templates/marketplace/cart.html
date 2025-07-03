@@ -48,7 +48,14 @@
                                                     {% else %}
                                                             <li id="cart-item-{{item.product.id}}">
                                                     {% endif %}
-                                                    <div class="image-holder"> <img src="{{ item.product.image.url }}" alt=""></div>
+                                                   <div class="image-holder">
+                                                    {% if item.product.image %}
+                                                        <img src="{{ item.product.image.url }}" alt="">
+                                                    {% else %}
+                                                        <img src="{% static 'images/placeholder.jpg' %}" alt="No image available">
+                                                    {% endif %}
+                                                    </div>
+
                                                     <div class="text-holder ms-3" style="width: 390px;">
                                                         <h6>{{ item.product }}</h6>
                                                         <span>{{item.product.product_desc | truncatewords:25}}</span>

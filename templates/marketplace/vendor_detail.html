@@ -239,7 +239,12 @@
                                 <div class="product-img product-img-zoom">
                                     <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
                                        <div class="img-box-cs">
+                                            {% if product.image %}
                                             <img class="default-img-cs" src="{{ product.image.url }}" alt="{{ product.product_name }}" />
+                                            {% else %}
+                                            <img class="default-img-cs" src="{% static 'images/placeholder.jpg' %}" alt="No image available" />
+                                            {% endif %}
+
                                         </div>
                                     </a>
                                 </div>

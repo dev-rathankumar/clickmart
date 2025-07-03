@@ -110,11 +110,14 @@ def home(request):
     current_event = get_current_event()
     ads = current_event.ads.all() if current_event else []
 
+    print("this is bannar", banners)
+
     context = {
         'products':products,
         'vendors': vendors,
         'categories_home': categories_home,
         'banner_chunks': banner_chunks,
+        'all_banners': banners,
         'homepagebanners': homepagebanners,
         'grouped_banners_list': grouped_banners_list,
         'collections': collection_data, 

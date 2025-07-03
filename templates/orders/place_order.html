@@ -63,7 +63,14 @@
                                             <tbody>
                                                 {% for item in cart_items %}
                                                 <tr style="border:none;">
-                                                    <td><img src="{{ item.product.image.url }}" width="40" alt="Prodcut Image"></td>
+                                                    <td>
+                                                    {% if item.product.image %}
+                                                        <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
+                                                    {% else %}
+                                                        <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
+                                                    {% endif %}
+                                                    </td>
+
                                                     <td><b>{{ item.product }}</b></td>
                                                     <td>{{ item.quantity }}</td>
                                                     

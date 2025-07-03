@@ -192,11 +192,13 @@
 						{% else %}
 							<a href="{{ slide.link }}">
 					{% endif %}
-						<div class="single-hero-slider single-animation-wrap" style="background-image: url({{ slide.image.url }});">
+						<div style="height: 250px !important;">
+              <div class="single-hero-slider single-animation-wrap" style="background-image: url({{ slide.image.url }});">
 							<div class="slider-content">
 								<!-- Optional Content -->
 							</div>
 						</div>
+            </div>
 					</a>
 					{% endfor %}
 				</div>
@@ -219,9 +221,16 @@
 							<div class="product-cart-wrap wow animate__animated animate__fadeIn" data-wow-delay=".1s">
 								<div class="product-img-action-wrap">
 									<div class="product-img-wrap product-img-zoom position-relative">
-									<a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
-										<img class="product-img" src="{{ product.image.url }}" alt="" />
-									</a>
+									{% if product.image %}
+                    <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                      <img class="product-img" src="{{ product.image.url }}" alt="" />
+                    </a>
+                  {% else %}
+                    <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                      <img class="product-img" src="{% static 'images/placeholder.jpg' %}" alt="No image available" />
+                    </a>
+                  {% endif %}
+
                     <div>
                       <!-- ADD button -->
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
@@ -287,14 +296,15 @@
 	</section>
 
 
-	<section class="banners mb-25 pt-3">
+	<section class="banners mb-25 pt-3 ">
 		<div class="container">
 			<div class="section-title wow animate__animated animate__fadeIn mb-3">
 				<h3 class="">Flickbasket Top Collection</h3>
 			</div>
 	
 			<!-- Bootstrap Carousel for multiple banners -->
-			<div id="bannerCarousel" class="carousel slide">
+			<div class="d-none d-md-block">
+        <div id="bannerCarousel" class="carousel slide">
 				<div class="carousel-inner">
 	
 					<!-- Carousel Item 1 -->
@@ -329,9 +339,40 @@
 					<span class="carousel-control-next-icon slider-btn"></span>
 				</button>
 			</div>
+      </div>
 		</div>
 	</section>
 
+  <!-- Mobile View -->
+<div class="d-block d-md-none">
+	<div id="mobileBannerCarousel" class="carousel slide" data-bs-ride="carousel">
+		<div class="carousel-inner">
+			{% for banner in all_banners %}
+			<div class="carousel-item {% if forloop.first %}active{% endif %}">
+				<div class="banner-img text-center p-2">
+					<img src="{{ banner.image.url }}" alt="Banner" class="img-fluid w-100" style="max-height: 300px; object-fit: cover;" />
+					<div class="banner-text mt-2">
+						<a href="{% url 'vendor_detail' banner.vendor.vendor_slug %}" class="btn btn-sm text-light update_color">
+							Shop Now <i class="fi-rs-arrow-small-right"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+
+		<!-- Controls -->
+		<button class="carousel-control-prev" type="button" data-bs-target="#mobileBannerCarousel" data-bs-slide="prev">
+			<span class="carousel-control-prev-icon"></span>
+		</button>
+		<button class="carousel-control-next" type="button" data-bs-target="#mobileBannerCarousel" data-bs-slide="next">
+			<span class="carousel-control-next-icon"></span>
+		</button>
+	</div>
+</div>
+
+
+{% comment %} lowest price {% endcomment %}
   {% for collection in collections %}
 <section class="product-tabs section-padding position-relative d-none d-md-block">
   <div class="container">
@@ -354,8 +395,13 @@
                   <div class="product-img-action-wrap">
                     <div class="product-img-wrap product-img-zoom">
                       <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                      {% if product.image %}
                         <img class="product-img" src="{{ product.image.url }}" alt="" />
-                      </a>
+                      {% else %}
+                        <img class="product-img" src="{% static 'images/placeholder.jpg' %}" alt="No image available" />
+                      {% endif %}
+                    </a>
+
                       <div>
                       <!-- ADD button -->
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
@@ -427,36 +473,64 @@
 			<h3 class="">{{ category.category_name }}</h3>
 		</div>
 
-		<!-- Bootstrap Carousel for multiple banners -->
-		<div id="bannerCarousel_{{ forloop.counter }}" class="carousel slide" >
-			<div class="carousel-inner">
+		<!-- Desktop/Tablet Carousel: 3 banners per slide -->
+		<div class="d-none d-md-block">
+			<div id="bannerCarousel_{{ forloop.counter }}" class="carousel slide">
+				<div class="carousel-inner">
+					{% for chunk in chunks %}
+					<div class="carousel-item {% if forloop.first %}active{% endif %}">
+						<div class="row">
+							{% for banner in chunk %}
+							<div class="col-lg-4 col-md-6">
+								<div class="banner-img wow animate__animated" data-wow-delay="0">
+									<img src="{{ banner.image.url }}" alt="{{ banner.category.category_name }}" class="img-fluid" />
+									<div class="banner-text mt-3">
+										<a href="{{ banner.link }}" class="btn btn-xs text-light update_color">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+									</div>
+								</div>
+							</div>
+							{% endfor %}
+						</div>
+					</div>
+					{% endfor %}
+				</div>
 
-				{% for chunk in chunks %}
-				<div class="carousel-item {% if forloop.first %}active{% endif %}">
-					<div class="row">
+				<!-- Controls -->
+				<button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="prev">
+					<span class="carousel-control-prev-icon slider-btn"></span>
+				</button>
+				<button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="next">
+					<span class="carousel-control-next-icon slider-btn"></span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Mobile Carousel: 1 banner per slide -->
+		<div class="d-block d-md-none">
+			<div id="mobileBannerCarousel_{{ forloop.counter }}" class="carousel slide" data-bs-ride="carousel">
+				<div class="carousel-inner">
+					{% for chunk in chunks %}
 						{% for banner in chunk %}
-						<div class="col-lg-4 col-md-6">
-							<div class="banner-img wow animate__animated" data-wow-delay="0">
-								<img src="{{ banner.image.url }}" alt="{{ banner.category.category_name }}" />
-								<div class="banner-text mt-3">
-									<a href="{{ banner.link }}" class="btn btn-xs text-light update_color">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
+						<div class="carousel-item {% if forloop.parentloop.first and forloop.first %}active{% endif %}">
+							<div class="banner-img text-center p-2">
+								<img src="{{ banner.image.url }}" alt="{{ banner.category.category_name }}" class="img-fluid w-100" style="max-height: 300px; object-fit: cover;" />
+								<div class="banner-text mt-2 text-center">
+									<a href="{{ banner.link }}" class="btn btn-sm text-light update_color">Shop Now <i class="fi-rs-arrow-small-right"></i></a>
 								</div>
 							</div>
 						</div>
 						{% endfor %}
-					</div>
+					{% endfor %}
 				</div>
-				{% endfor %}
 
+				<!-- Controls -->
+				<button class="carousel-control-prev" type="button" data-bs-target="#mobileBannerCarousel_{{ forloop.counter }}" data-bs-slide="prev">
+					<span class="carousel-control-prev-icon slider-btn"></span>
+				</button>
+				<button class="carousel-control-next" type="button" data-bs-target="#mobileBannerCarousel_{{ forloop.counter }}" data-bs-slide="next">
+					<span class="carousel-control-next-icon slider-btn"></span>
+				</button>
 			</div>
-
-			<!-- Carousel Controls -->
-			<button class="carousel-control-prev " type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="prev" style="z-index: 9;">
-				<span class="carousel-control-prev-icon slider-btn"></span>
-			</button>
-			<button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel_{{ forloop.counter }}" data-bs-slide="next">
-				<span class="carousel-control-next-icon slider-btn"></span>
-			</button>
 		</div>
 	</div>
 </section>

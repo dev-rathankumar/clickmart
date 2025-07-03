@@ -86,22 +86,28 @@
     }
     .navbar-mobile-menu {
       position: fixed;
-      left: 0;
       top: 0;
-      width: 80vw;
-      max-width: 320px;
-      height: 100vh;
+      right: -100%; /* Start off-screen to the right */
+      width: 60%;
+      height: 100%;
       background: #fff;
-      z-index: 1100;
-      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.07);
-      transform: translateX(-100%);
-      transition: transform 0.3s;
-      padding: 2rem 1.5rem 1.5rem 1.5rem;
-      overflow-y: auto;
+      z-index: 1000;
+      transition: right 0.3s ease;
     }
     .navbar-mobile-menu.show {
-      transform: translateX(0);
+      right: 0;
+
     }
+  .navbar-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
+}
     .navbar-mobile-top {
       display: flex;
       align-items: center;
@@ -128,7 +134,8 @@
       margin-bottom: 1rem;
     }
     .mobile-navbar-links .btn {
-      width: 100%;
+      width: 80%;
+      margin: auto;
     }
     .mobile-navbar-links .badge {
       position: static !important;
@@ -141,6 +148,10 @@
     }
   }
   @media only screen and (max-width: 768px) {
+        .custom-offcanvas-zindex {
+    z-index: 2000 !important;
+  }
+
     .main-logo img {
       max-width: 95%;
     }
@@ -171,22 +182,27 @@
     }
   }
   @media only screen and (max-width: 575px) {
-    .navbar-mobile-menu {
-      width: 97vw;
-      max-width: 97vw;
-      padding: 1rem 0.5rem 1.5rem 0.5rem;
-    }
-    .navbar-mobile-top .logo img {
-      height: 55px;
-    }
-    .popular-categories .slider-btn.slider-prev {
-      right: 50px !important;
-      left: 20px !important;
-    }
-    option[name="store_type"] {
-      padding: 10px;
-      font-size: 10px;
-    }
+    .custom-offcanvas-zindex {
+    z-index: 2000 !important;
+  }
+
+    .mobile-sidebar-wrapper {
+        padding: 1rem 0.75rem 1.5rem 0.75rem;
+      }
+
+      .sidebar-logo {
+        height: 55px;
+      }
+
+      .offcanvas.offcanvas-end {
+        width: 70vw !important;
+        max-width: 70vw !important;
+      }
+
+      option[name="store_type"] {
+        padding: 10px;
+        font-size: 10px;
+      }
   }
   /* Hide mobile navbar on desktop */
   .mobile-navbar {
@@ -214,12 +230,20 @@ button.no-hover-bg:visited {
 
 }
 
-
+.small_screen_button{
+  border: 1px solid #1b216a;
+  padding: 10px 8px !important;
+  font-size: 1rem;
+}
+.s-logout{
+  background: red;
+  color: white !important;
+}
 
 </style>
 
 <!-- Desktop Header -->
-<header class="header-area header-style-1 header-height-2 large-header" style="position: sticky;top: 0;left: 0;width: 100%;z-index: 999;background-color: #fff;">
+<header class="header-area header-style-1 header-height-2 large-header" style="z-index: 1050 !important;position: sticky;top: 0;left: 0;width: 100%;z-index: 999;background-color: #fff;">
   <!-- Desktop Navbar -->
   <div
     class="header-middle d-none d-lg-block"
@@ -315,7 +339,7 @@ button.no-hover-bg:visited {
           <!-- <a href="{% url 'marketplace' %}" class="btn btn-outline-danger text-uppercase font-weight-bold">Marketplace</a> -->
           <a
             href="{% url 'login' %}"
-            class="text-danger Become_a_seller_btn"
+            class="text-dark Become_a_seller_btn"
             style="font-size: 1rem; font-weight: 600; border: 1px solid #1b216a"
           >
             <i class="fa fa-sign-in" aria-hidden="true"></i> Login
@@ -441,7 +465,7 @@ button.no-hover-bg:visited {
           onclick="getLocation()"
           style="cursor: pointer"
         >
-          <i class="icon-target5"></i> Use your current location
+          <i class="icon-target5" ></i> Use your current location
           <span
             class="dots-circle-spinner loading ms-2"
             style="display: none"
@@ -452,11 +476,11 @@ button.no-hover-bg:visited {
         {% if user.is_authenticated %}
         <a
           href="{% url 'marketplace' %}"
-          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          class="btn small_screen_button text-uppercase font-weight-bold"
           >Marketplace</a
         >
         <a
-          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          class="btn small_screen_button text-uppercase font-weight-bold"
           href="{% url 'myAccount' %}"
           >My Account</a
         >
@@ -469,19 +493,19 @@ button.no-hover-bg:visited {
         {% else %}
         <a
           href="{% url 'marketplace' %}"
-          class="btn btn-outline-danger text-uppercase font-weight-bold"
+          class="btn text-uppercase fw-bold small_screen_button"
           >Marketplace</a
         >
         <a
-          class="btn text-uppercase font-weight-bold"
+          class="btn text-uppercase fw-bold mt-2 small_screen_button"
           href="{% url 'registerVendor' %}"
-          style="background-color: #dc3545; color: #fff"
+          
         >
           Become a Seller
         </a>
         <a
           href="{% url 'login' %}"
-          class="text-danger"
+          class="mt-2"
           style="font-size: 1rem; font-weight: 600"
         >
           <i class="fa fa-sign-in" aria-hidden="true"></i> Login
@@ -493,7 +517,7 @@ button.no-hover-bg:visited {
 </header>
 
 <!-- Mobile Header -->
-<div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1; background-color: {{ current_event.home_color }};">
+<div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1050; background-color: {{ current_event.home_color }};">
   
   <!-- Top Row: Location & User Icon (scrolls away) -->
   <div class="mobile-row w-100 top-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3" style="height: 55px;">
@@ -502,51 +526,78 @@ button.no-hover-bg:visited {
         <div role="button" class="selected_mobile_location h-100">
           <a class="d-flex align-items-start" style="width: 100%;">
             <div class="loc_active text-muted flex-fill">
-              <h5 class="mb-1 fw-semibold ms-fs-18 text-dark" style="font-size: 18px;">400709</h5>
-              <p class="m-0 lh-1 d-inline-block w-100 d-flex align-items-center">
-                <span class="d-inline-block text-truncate text-dark" style="max-width: 100%; font-size: 14px;">Navi Mumbai, Maharashtra</span>
-                <i class="bi bi-caret-down-fill lh-1 ms-fs-10 ms-1"></i>
-              </p>
+               <div class="main-categori-wrap ">
+              <a
+                class="categories-button-active"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#locationModal"
+              >
+                <span class="fi-rs-marker"></span>
+                <span id="location-selector-mobile">Select Location</span>
+              </a>
+          </div>
             </div>
           </a>
         </div>
       </div>
     </div>
-    <div class="mobile-col flex-auto right">
-      <div class="mobile-col-item mobile-cart">
-        <a class="mobile-header-icon position-relative d-block ps-3" data-bs-toggle="offcanvas" data-bs-target="#humburgermenu">
-          <span class="bg-dark bg-opacity-75 d-inline-flex align-items-center justify-content-center rounded-circle" style="height: 35px; width: 35px;">
-            <i class="bi bi-person-fill lh-1 fs-4 text-white"></i>
-          </span>
-        </a>
+      <div class='d-flex align-items-center ms-3 gap-3'>
+             <a
+            href="{% url 'cart' %}"
+            class="text-dark position-relative mt-2"
+            style="font-size: 1.4rem"
+          >
+            <i class="fa fa-shopping-cart"></i>
+            <!-- Optional: Cart item count badge -->
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color">
+            <span id="cart_count">{{cart_count}}</span>  
+              <span class="visually-hidden">cart items</span>
+            </span>
+          </a>
+        <div class="mobile-col flex-auto right">
+          <div class="mobile-col-item mobile-cart">
+            <a class="mobile-header-icon position-relative d-block ps-3" data-bs-toggle="offcanvas" data-bs-target="#humburgermenu">
+              <span class="bg-dark bg-opacity-75 d-inline-flex align-items-center justify-content-center rounded-circle" style="height: 35px; width: 35px;">
+                <i class="bi bi-person-fill lh-1 fs-4 text-white"></i>
+              </span>
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
+    
   </div>
+  
 
   <!-- Middle Row: Search Bar (Sticky) -->
    <div id="sticky-placeholder" style="height: 0;"></div>
-  <div class="mobile-header-section w-100" style="background-color: {{ current_event.home_color }};">
-    <div class="mobile-row w-100 middle-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3 py-0" style="height: 60px;">
-      <div class="mobile-col w-100">
-        <div class="mobile-col-item mobile-autocomplete flex-fill">
-          <div class="autocomplete_mobile_container w-100">
-            <div class="autocomplete_mobile_inputgroup input-group position-relative rounded-3 overflow-hidden bg-white d-flex flex-row flex-nowrap" style="height: 40px; border: 1px solid #eee; box-shadow: 0 0 5px rgba(0,0,0,0.07);">
-              <div class="input-group">
-                <span class="input-group-text bg-white border-0">
-                  <i class="fi-rs-search"></i>
-                </span>
-                <input 
-                  type="text" 
-                  class="form-control border-0 bg-white px-2 py-1" 
-                  placeholder="Search for products, sellers and more"
-                  style="font-size: 14px; height: 100%;">
+    <div class="mobile-header-section w-100" style="background-color: {{ current_event.home_color }};">
+      <div class="mobile-row w-100 middle-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3 py-0" style="height: 60px;">
+        <div class="mobile-col w-100">
+          <div class="mobile-col-item mobile-autocomplete flex-fill">
+            <div class="autocomplete_mobile_container w-100">
+              <div class="autocomplete_mobile_inputgroup input-group position-relative rounded-3 overflow-hidden bg-white d-flex flex-row flex-nowrap" style="height: 40px; border: 1px solid #eee; box-shadow: 0 0 5px rgba(0,0,0,0.07);">
+               <form action="{% url 'all_products' %}" method="get">
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-0">
+                    <i class="fi-rs-search"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    name="search"  
+                    class="form-control border-0 bg-white px-2 py-1" 
+                    placeholder="Search for products, sellers and more"
+                    style="font-size: 14px; height: 100%;">
+                  <button type="submit" hidden></button> <!-- Optional: for Enter key to work -->
+                </div>
+              </form>
+
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
+  </div>
+    {% if request.path == '/' %}
     <div class="mobile-row w-100 bottom-mobile-row" style="height: 70px;">
     <div class="mobile-col h-100 w-100 d-flex flex-row flex-nowrap">
       <div id="mobile-header-categories" class="mobile-col-item mobile-header-categories overflow-hidden small border-bottom border-opacity-10 h-100" style="border-width: 0.5px !important;">
@@ -564,26 +615,60 @@ button.no-hover-bg:visited {
 
           <!-- Dynamic Categories -->
           {% for cat in categories_home %}
-          <div class="mobile-header-category-item animate text-center" data-id="{{ cat.id }}" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
-            <a role="button" class="d-block px-1 py-1 pb-2 position-relative overflow-hidden h-100">
-              <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
-                <img src="{{ cat.category_image.url }}" class="img-fluid" alt="{{ cat.category_name }}" style="width: 2rem; height: 2rem;">
-              </div>
-              <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12 text-truncate" style="font-size: 12px;">{{ cat.category_name }}</span>
-            </a>
-          </div>
+            <div class="mobile-header-category-item animate text-center" data-id="{{ cat.id }}" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
+              <a href="{% url 'browse' category_slug=cat.slug %}" class="d-block px-1 py-1 pb-2 position-relative overflow-hidden h-100">
+                <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
+                  <img src="{{ cat.category_image.url }}" class="img-fluid" alt="{{ cat.category_name }}" style="width: 2rem; height: 2rem;">
+                </div>
+                <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12 text-truncate" style="font-size: 12px;">{{ cat.category_name }}</span>
+              </a>
+            </div>
+
           {% endfor %}
           
         </div>
       </div>
     </div>
     </div>
+    {% endif %}
+  </div>
+  
+</div>
+
+<!-- Offcanva Slidebar -->
+<div class="offcanvas offcanvas-end custom-offcanvas-zindex" tabindex="-1" id="humburgermenu" aria-labelledby="offcanvasLabel">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title" id="offcanvasLabel">
+        <a href="/">
+            <img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" class="sidebar-logo">
+          </a>
+      </h5>
+      <button type="button" class="btn-close text-reset text-dark" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      <div class="mobile-sidebar-wrapper">
+
+        <!-- 🔷 Auth Buttons -->
+        <div class="d-flex flex-column gap-2 px-3 py-3">
+          {% if user.is_authenticated %}
+            <a href="{% url 'marketplace' %}" class="btn small_screen_button text-uppercase fw-bold">Marketplace</a>
+            <a href="{% url 'myAccount' %}" class="btn small_screen_button text-uppercase fw-bold">My Account</a>
+            <a href="{% url 'logout' %}" class="btn s-logout small_screen_button  fw-bold">
+              <i class="fa fa-power-off me-1"></i> Logout
+            </a>
+          {% else %}
+            <a href="{% url 'marketplace' %}" class="btn small_screen_button  fw-bold">Marketplace</a>
+            <a href="{% url 'registerVendor' %}" class="btn   small_screen_button update_color" >Become a Seller</a>
+            <a href="{% url 'login' %}" class="btn fw-semibold small_screen_button" style=": 1rem;">
+              <i class="fa fa-sign-in me-1"></i> Login
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
   </div>
 
-  <!-- Bottom Row: Categories (Sticky) -->
-  
-
-</div>
 
 
 <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true" style="z-index: 9999;">

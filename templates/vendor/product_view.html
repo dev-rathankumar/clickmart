@@ -121,7 +121,12 @@
                                     <!-- MAIN SLIDES -->
                                     <div class="product-image-slider">
                                         <figure class="border-radius-10">
-                                            <img src="{{ product.image.url }}" alt="product image" />
+                                            {% if product.image %}
+                                              <img src="{{ product.image.url }}" alt="product image" />
+                                            {% else %}
+                                              <img src="{% static 'images/placeholder.jpg' %}" alt="No image available" />
+                                            {% endif %}
+
                                         </figure>
                                         {% for img in product_gallery %}
                                         <figure class="border-radius-10">
@@ -132,11 +137,21 @@
                                 
                                     <!-- THUMBNAILS -->
                                     <div class="slider-nav-thumbnails">
-                                        <div><img src="{{ product.image.url }}" alt="product thumbnail" /></div>
-                                        {% for img in product_gallery %}
-                                        <div><img src="{{ img.image.url }}" alt="product gallery thumbnail" /></div>
-                                        {% endfor %}
-                                    </div>
+                                  {% if product.image %}
+                                      <div><img src="{{ product.image.url }}" alt="product thumbnail" /></div>
+                                  {% else %}
+                                      <div><img src="{% static 'images/placeholder.jpg' %}" alt="No product thumbnail" /></div>
+                                  {% endif %}
+
+                                  {% for img in product_gallery %}
+                                      {% if img.image %}
+                                          <div><img src="{{ img.image.url }}" alt="product gallery thumbnail" /></div>
+                                      {% else %}
+                                          <div><img src="{% static 'images/placeholder.jpg' %}" alt="No gallery image" /></div>
+                                      {% endif %}
+                                  {% endfor %}
+                              </div>
+
                                 </div>
                                     <!-- End Gallery -->
                                 </div>
@@ -173,13 +188,13 @@
                                                <!-- Only visible on mobile screens -->
                                                 <div class="mobile-cart-info" style="display:none;">
                                                 <div class="product-seller-cart-card" style="margin-top: 16px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 16px; display: flex; align-items: center; justify-content: space-between;">
-                                                    <a href="{% url 'cart' %}" style="display: flex; flex-direction: column; align-items: center; background: #23b03e; color: #fff; padding: 8px 18px; border-radius: 30px; font-weight: 500; text-decoration: none; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                                                    <span style="display: flex; align-items: center;">
+                                                    <a href="{% url 'cart' %}" style="display: flex; flex-direction: column; align-items: center; background: #63a94f; color: #fff; padding: 8px 18px; border-radius: 30px; font-weight: 500; text-decoration: none; font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                                    <span style="display: flex; align-items: center;color: #fff">
                                                         <i class="fi-rs-shopping-cart" style="margin-right: 8px;"></i>
                                                         View Cart
                                                         <i class="fi-rs-arrow-right ml-2"></i>
                                                     </span>
-                                                    <span style="font-size: 13px; font-weight: 400;">
+                                                    <span style="font-size: 13px; font-weight: 400;color: #fff">
                                                         {% if chkCart_count %}{{ chkCart_count }} Item{{ chkCart_count|pluralize }}{% else %}0 Item{% endif %}
                                                     </span>
                                                     </a>
@@ -256,8 +271,13 @@
                                                 <div class="product-img-action-wrap">
                                                     <div class="product-img product-img-zoom">
                                                         <a href="{% url 'view_product' product.vendor.vendor_slug similar_product.slug %}" tabindex="0">
-                                                            <img class="default-img" src="{{ similar_product.image.url }}" alt="" />
-                                                        </a>
+                                                        {% if similar_product.image %}
+                                                          <img class="default-img" src="{{ similar_product.image.url }}" alt="" />
+                                                        {% else %}
+                                                          <img class="default-img" src="{% static 'images/placeholder.jpg' %}" alt="No image available" />
+                                                        {% endif %}
+                                                      </a>
+
                                                     </div>
                                                     
                                                     
