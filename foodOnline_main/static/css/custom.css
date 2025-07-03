@@ -156,3 +156,10 @@ table td, table th{
   max-width: 100%;
   object-fit: contain;
 }
+
+
+/* import your data page */
+.btn-imp-data-size{
+   font-size: 16px !important;
+  font-weight: 500 !important;
+}

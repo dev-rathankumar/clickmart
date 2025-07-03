@@ -21,6 +21,57 @@
         background-color: #181970 !important;
         color: white !important;
     }
+    .cell-error {
+        background-color: #f8d7da !important;
+        color: #842029 !important;
+        border:0.5px #f8d7da !important;
+    }
+    .btn-blur {
+        filter: blur(0.5px) brightness(0.75);
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    .spinner-border.spinner-button {
+        width: 1.3rem;
+        height: 1.3rem;
+        margin-left: 8px;
+        vertical-align: middle;
+        display: inline-block;
+    }
+
+    .css-tooltip-row {
+    position: relative;
+}
+
+.css-tooltip-row .tooltiptext {
+    visibility: hidden;
+    max-width: 950px;
+    background-color: #c33332;
+    color: #fff;
+    text-align: center;
+    padding: 8px 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    text-align: start;
+    line-height: 28px;
+    top: -24px;
+    left: 82px;
+}
+
+.css-tooltip-row:hover .tooltiptext {
+    visibility: visible;
+}
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
 </style>
 <div class="main-section">
     {% include 'includes/cover.html' %}
@@ -36,7 +87,11 @@
                             <h4>Connect your <span style="color: #DC3545;">{{ source }}</span> account with Filckbasket</h4>
                             <hr>
                         </div>
-                        <h2 class="mb-3">Step 3: Review Products</h2>
+                        {% if SaveToDatabase %}
+                            <h2 class="mb-3">Step 4: Generate Images For Products</h2>
+                        {% else %}
+                            <h2 class="mb-3">Step 3: Review Products</h2>
+                        {% endif %}
                         <p class="text-muted mb-4 alert alert-info" style="padding: 6px 10px;">
                             <b>{{ count }}</b> products found in your file. Please check and review before saving.
                         </p>
@@ -44,20 +99,17 @@
                         <div class="alert alert-danger">
                             <h5>Errors found in your CSV data:</h5>
                             <ul>
+                                Rows: 
                                 {% for error in errors %}
-                                    <li><strong>Row {{ error.row }}:</strong>
-                                        <ul>
-                                            {% for msg in error.messages %}
-                                                <li>{{ msg }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
+                                    <strong>{{ error.row }}{% if not forloop.last %}, {% endif %}</strong>
                                 {% endfor %}
+                                ...
+                                <a href="?errors_only=1{% if show_all %}&show_all=1{% endif %}" class="ms-2 underline" style="color:red ;text-decoration:underline;">View All Errors</a>
                             </ul>
                         </div>
                         {% endif %}
 
-                        <form method="post" action="">
+                        <form method="post" action="" id="main-form">
                         {% csrf_token %}
                         <div class="table-responsive mb-4">
                             <table class="table table-bordered table-hover table-sm">
@@ -65,16 +117,46 @@
                                     <tr>
                                         <th>#</th>
                                         {% for key, info in field_mappings.items %}
-                                            <th>{{ info.label }}</th>
+                                            <th>
+                                                {% if key == 'image' %}Image{% else %}{{ info.label }}{% endif %}
+                                            </th>
                                         {% endfor %}
                                     </tr>
                                 </thead>
                                 <tbody>
                                 {% for row in products %}
-                                    <tr class="{% if forloop.counter0|add:offset in error_rows %}error-row{% endif %}">
-                                        <td>{{ forloop.counter|add:offset }}</td>
+                                   <tr class="{% if row.orig_idx in error_rows %}error-row css-tooltip-row{% endif %}">
+                                        <td>
+                                            {{ row.orig_idx|add:1 }}
+                                            {% if row.orig_idx in error_rows %}
+                                                <span class="tooltiptext">
+                                                    {% for e in errors %}
+                                                        {% if e.row == row.orig_idx|add:1 %}
+                                                            {% for msg in e.messages %}
+                                                             {{ msg }}{% if not forloop.last %},{% endif %}
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                            {% endif %}
+                                        </td>
                                         {% for key, info in field_mappings.items %}
-                                            <td>{{ row|get_item:key }}</td>
+                                           {% with cell_value=row|get_item:key %}
+                                           
+                                            <td {% if not cell_value|is_valid_field:info.type %}class="cell-error"{% endif %} {% for missing_filed in missing_fields %}{% if missing_filed.row == row.orig_idx|add:1 and missing_filed.field == key %} class="cell-error" {% endif %}{% endfor %}>
+                                                {% if key == 'image' and cell_value %}
+                                                    <img src="{{ cell_value }}" 
+                                                        alt="Product Image"
+                                                        class="img-thumbnail"
+                                                        style="max-width: 60px; max-height: 60px; border-radius: 4px; cursor:pointer;"
+                                                        data-img-url="{{ cell_value }}"
+                                                        data-row-id="{{ row.orig_idx }}"
+                                                        onclick="showImageModal(this)">
+                                                {% else %}
+                                                    {{ cell_value }}
+                                                {% endif %}
+                                            </td>
+                                            {% endwith %}
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}
@@ -83,9 +165,9 @@
                         </div>
                         <div class="text-end mb-3">
                             {% if not show_all and count > 5 %}
-                                <a href="?show_all=1" class="btn update_color">Show All</a>
+                                <a href="?show_all=1{% if errors_only %}&errors_only=1{% endif %}" class="btn update_color">Show All</a>
                             {% elif show_all and count > 20 %}
-                                <a href="?" class="btn btn-link update_color">Show Less</a>
+                                <a href="?{% if errors_only %}errors_only=1{% endif %}" class="btn btn-link update_color">Show Less</a>
                             {% endif %}
                         </div>
 
@@ -94,7 +176,7 @@
                                 <ul class="pagination justify-content-end">
                                     {% if page_obj.has_previous %}
                                         <li class="page-item">
-                                            <a class="page-link" href="?show_all=1&page={{ page_obj.previous_page_number }}">Previous</a>
+                                            <a class="page-link" href="?show_all=1{% if errors_only %}&errors_only=1{% endif %}&page={{ page_obj.previous_page_number }}">Previous</a>
                                         </li>
                                     {% else %}
                                         <li class="page-item disabled"><span class="page-link">Previous</span></li>
@@ -104,13 +186,13 @@
                                         {% if page_obj.number == num %}
                                             <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                                         {% else %}
-                                            <li class="page-item"><a class="page-link" href="?show_all=1&page={{ num }}">{{ num }}</a></li>
+                                            <li class="page-item"><a class="page-link" href="?show_all=1{% if errors_only %}&errors_only=1{% endif %}&page={{ num }}">{{ num }}</a></li>
                                         {% endif %}
                                     {% endfor %}
 
                                     {% if page_obj.has_next %}
                                         <li class="page-item">
-                                            <a class="page-link" href="?show_all=1&page={{ page_obj.next_page_number }}">Next</a>
+                                            <a class="page-link" href="?show_all=1{% if errors_only %}&errors_only=1{% endif %}&page={{ page_obj.next_page_number }}">Next</a>
                                         </li>
                                     {% else %}
                                         <li class="page-item disabled"><span class="page-link">Next</span></li>
@@ -118,15 +200,152 @@
                                 </ul>
                             </nav>
                         {% endif %}
+
                         <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn update_color" onclick="window.history.back();">Previous</button>
-                            <button type="submit" class="btn btn-success">Save to Database</button>
-                        </div>
+                            <button type="button" class="btn update_color btn-imp-data-size" onclick="window.history.back();">Previous</button>
                         </form>
+                        {% if SaveToDatabase %}
+                            <form action="{% url 'save_to_database' %}" method="post" id="save-db-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn update_color" id="save-db-btn">
+                                    Save to Database
+                                    <span class="spinner-border spinner-border-sm spinner-button" id="save-db-spinner" style="display:none;" role="status" aria-hidden="true"></span>
+                                </button>
+                            </form>
+                            {% else %}
+                            <form action="{% url 'set_image_to_mapped_data' %}" method="post" id="image-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn update_color" id="generate-images-btn"
+                                    {% if errors %}disabled{% endif %}>
+                                    Generate Product Images
+                                    <span class="spinner-border spinner-border-sm spinner-button" id="spinner" style="display:none;" role="status" aria-hidden="true"></span>
+                                </button>
+                            </form>
+                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Product Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" alt="Product Image" class="img-fluid mb-3" />
+        <input type="text" id="imageUrlInput" class="form-control mb-2" placeholder="Enter new image URL">
+        <button class="btn btn-primary" onclick="updateImageUrl()">Change Image</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+    // For CSRF
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+let currentImgElem = null;
+let currentRowId = null;
+
+function showImageModal(imgElem) {
+  currentImgElem = imgElem;
+  currentRowId = imgElem.getAttribute("data-row-id");
+  const imgUrl = imgElem.getAttribute("data-img-url");
+  document.getElementById("modalImage").src = imgUrl;
+  document.getElementById("imageUrlInput").value = '';
+  var modal = new bootstrap.Modal(document.getElementById('imageModal'));
+  modal.show();
+}
+
+function updateImageUrl() {
+  const newUrl = document.getElementById("imageUrlInput").value;
+  if (currentImgElem && currentRowId !== null) {
+    currentImgElem.src = newUrl;
+    currentImgElem.setAttribute("data-img-url", newUrl);
+    document.getElementById("modalImage").src = newUrl;
+
+    // AJAX call to backend to update session
+    fetch("{% url 'update_image_url_in_session' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie('csrftoken'),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        row_id: currentRowId,
+        new_url: newUrl
+      })
+    }).then(response => {
+      if (!response.ok) {
+        alert("Failed to update image in session.");
+      }
+    });
+  }
+  var modal = bootstrap.Modal.getInstance(document.getElementById('imageModal'));
+  modal.hide();
+}
+
+// JS validation for "Generate Product Images"
+document.addEventListener('DOMContentLoaded', function () {
+    var genBtn = document.getElementById('generate-images-btn');
+    if (genBtn) {
+        genBtn.addEventListener('click', function (e) {
+            if (genBtn.hasAttribute('disabled')) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Generate Product Images spinner
+    var imageForm = document.getElementById('image-form');
+    if(imageForm){
+        imageForm.addEventListener('submit', function(e) {
+            var btn = document.getElementById('generate-images-btn');
+            var spinner = document.getElementById('spinner');
+            if (btn && spinner && !btn.disabled) {
+                btn.classList.add('btn-blur');
+                spinner.style.display = 'inline-block';
+                btn.disabled = true;
+            }
+        });
+    }
+
+    // Save to Database spinner
+    var saveDbForm = document.getElementById('save-db-form');
+    if(saveDbForm){
+        saveDbForm.addEventListener('submit', function(e) {
+            var btn = document.getElementById('save-db-btn');
+            var spinner = document.getElementById('save-db-spinner');
+            if (btn && spinner && !btn.disabled) {
+                btn.classList.add('btn-blur');
+                spinner.style.display = 'inline-block';
+                btn.disabled = true;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -16,7 +16,7 @@
 
 .validation-error {
     font-size: 0.85rem;
-    color: #dc3545;
+    color: #dc3545 !important;
 }
 </style>
 
@@ -68,7 +68,7 @@
                                     <option value="{{ header }}">{{ header }}</option>
                                     {% endfor %}
                                     </select>
-                                    <div class="text-danger small mt-1 validation-error" style="display:none;"></div>
+                                    <div class="small mt-1 validation-error" style="display:none;"></div>
                                     <small class="form-text text-muted">
                                     {{ info.help }}
                                     </small>
@@ -77,7 +77,7 @@
                             </div>
 
                             <div class="d-flex justify-content-between">
-                            <button type="button" class="btn update_color" onclick="window.history.back();">Previous</button>
+                            <button type="button" class="btn update_color btn-imp-data-size" onclick="window.history.back();">Previous</button>
                             <button type="submit" class="btn update_color">Next: Validate</button>
                         </div>
 
@@ -99,7 +99,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        const isSameFile = saved.filename === CURRENT_FILE;
 
         document.querySelectorAll('select').forEach(select => {
             const fieldKey = select.name.replace('mapping_', '');
@@ -108,7 +107,7 @@
 
             select.classList.remove('border-success', 'border-danger');
 
-            if (isSameFile && savedValue) {
+            if (savedValue) {
                 if (CSV_HEADERS.includes(savedValue)) {
                     select.value = savedValue;
                     select.classList.add('border-success');
@@ -118,7 +117,7 @@
             }
 
             // Only apply red border to required empty fields if same file
-            if (isSameFile && !select.value && isRequired) {
+            if (!select.value && isRequired) {
                 select.classList.add('border-danger');
             }
         });
