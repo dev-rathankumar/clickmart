@@ -148,3 +148,25 @@ color: #fff !important;
     border: none !important;
     color: #fff !important;
 }
+
+/* Code for products.html and vendor_detail.html  */
+
+ .img-box-cs {
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.default-img-cs {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+
+/* import your data page */
+.btn-imp-data-size{
+   font-size: 16px !important;
+  font-weight: 500 !important;
+}

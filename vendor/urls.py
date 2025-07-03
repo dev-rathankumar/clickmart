@@ -54,6 +54,10 @@ urlpatterns = [
     path('import-your-data/map_headers/', views.map_headers, name='map_headers'),
     path('import-your-data/process_mapped_data/', views.process_mapped_data, name='process_mapped_data'),
     path('import-your-data/validate_import_data/', views.process_mapped_data, name='validate_import_data'),
+    path('import-your-data/set_image_to_mapped_data/', views.set_image_to_mapped_data, name='set_image_to_mapped_data'),
+    path('import-your-data/process_mapped_data_with_images/', views.process_mapped_data_with_images, name='process_mapped_data_with_images'),
+    path('update-image-url-in-session/', views.update_image_url_in_session, name='update_image_url_in_session'),
+    path('import-your-data/save_to_database/', views.save_to_database, name='save_to_database'),
     path('product-by-category-autocomplete/',ProductByCategoryAutocomplete.as_view(),name='product-by-category-autocomplete'),
     path('subcategory-by-category-autocomplete/',SubCategoryByCategoryAutocomplete.as_view(),name='subcategory-by-category-autocomplete'),
 

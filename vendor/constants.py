@@ -1,9 +1,11 @@
 
-
-
-# your_app/constants.py
-
 CSV_FIELD_MAPPINGS = {
+     'image': {
+        'label': 'Image',
+        'help': 'Optional: The image file of the product.',
+        'optional': True,
+        'type': 'str',  # Assuming you handle file uploads separately
+    },
     'product_name': {
         'label': 'Product Name',
         'help': 'The name of the product.',
@@ -72,13 +74,13 @@ CSV_FIELD_MAPPINGS = {
         'optional': True,
         'type': 'int',
     },
-    'description': {
+    'product_desc': {
         'label': 'Description',
         'help': 'Optional: A short description of the product',
        'optional': True,
        'type': 'str',
     },
-    'full_specificatione': {
+    'full_specification': {
         'label': 'Full Specification',
         'help': 'Optional: Detailed specifications of the product.',
         'optional': True,
@@ -102,5 +104,6 @@ CSV_FIELD_MAPPINGS = {
         'optional': True,
         'type': 'str',
     },
+   
 }
 

@@ -45,6 +45,21 @@ import simplejson as json
 
 from django.core.paginator import Paginator
 
+import csv, io, os
+from urllib.parse import urlparse
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.http import HttpResponse
+from django.db import transaction
+from unified.models import Product, Category
+from inventory.models import tax as TaxCategory
+from inventory.models import deposit as DepositCategory
+from vendor.models import Vendor
+from django.template.defaultfilters import slugify
+import decimal
+
+
 def get_vendor(request):
     vendor = Vendor.objects.get(user=request.user)
     return vendor
@@ -1044,24 +1059,175 @@ def process_mapped_data(request):
     products = []
     errors = []
     error_rows = set()
+    missing_fields_for_frontend = []
 
     for idx, row in enumerate(reader, start=1):
         product = {}
         missing_fields = []
+        field_errors = []
         for internal_field, csv_header in mappings.items():
             value = row.get(csv_header, '').strip() if csv_header else ''
             product[internal_field] = value
-            if not value:
-                missing_fields.append(CSV_FIELD_MAPPINGS[internal_field]['label'])
 
-        if missing_fields:
+            field_cfg = CSV_FIELD_MAPPINGS[internal_field]
+            label = field_cfg['label']
+            optional = field_cfg.get('optional', False)
+            typ = field_cfg.get('type')
+
+            # Required field check
+            if not value and not optional:
+                missing_fields.append(label)
+                print(f"Missing field: {label} in row {idx}")
+                missing_fields_for_frontend.append({'row': idx, 'field': internal_field})
+                continue
+            # Type checks for non-empty values
+            if value:
+                if typ == 'decimal':
+                    try:
+                        decimal.Decimal(value)
+                    except Exception:
+                        field_errors.append(f"{label} must be a number (e.g. 12.99)")
+                elif typ == 'int':
+                    try:
+                        int(value)
+                    except ValueError:
+                        field_errors.append(f"{label} must be a whole number (e.g. 15)")
+        # Gather errors
+        if missing_fields or field_errors:
             error_rows.add(idx - 1)
-            errors.append({'row': idx, 'messages': [f"Missing value for {', '.join(missing_fields)}"]})
-
+            messages = []
+            if missing_fields:
+                messages.append("Missing value for " + ", ".join(missing_fields))
+            messages.extend(field_errors)
+            errors.append({'row': idx, 'messages': messages})
+        product['orig_idx'] = idx - 1
         products.append(product)
 
+    request.session['products'] = products
+    request.session['errors'] = errors  # Save errors for error-only view
+
+    show_all = request.GET.get('show_all') == '1'
+    errors_only = request.GET.get('errors_only') == '1'
+    field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
+    if 'image' in field_mappings_filtered:
+        # Move 'image' to the start
+        field_mappings_filtered = {'image': field_mappings_filtered['image'], **{k: v for k, v in field_mappings_filtered.items() if k != 'image'}}
+
+    if errors_only:
+        filtered_products = []
+        for idx, p in enumerate(products):
+            if idx in error_rows:
+                filtered_products.append(p)
+        count = len(filtered_products)
+    else:
+        filtered_products = products
+        count = len(products)
+
+    if show_all:
+        page_number = request.GET.get('page', 1)
+        per_page = 20
+        paginator = Paginator(filtered_products, per_page)
+        try:
+            page_obj = paginator.page(page_number)
+        except Exception:
+            page_obj = paginator.page(1)
+        products_to_display = page_obj.object_list
+        offset = (page_obj.number - 1) * per_page
+    else:
+        products_to_display = filtered_products[:5]
+        page_obj = None
+        paginator = None
+        offset = 0
+    
+    print("misssing fields=====>>>", missing_fields)
+    print("misssing fields=====>>>", missing_fields_for_frontend)
+    print("errro ===>>>", errors)
+    print("error row fields=====>>>", error_rows)
+    return render(request, 'vendor/validate_import_data.html', {
+        'products': products_to_display,
+        'field_mappings': field_mappings_filtered,
+        'count': count,
+        'show_all': show_all,
+        'errors': errors,
+        'error_rows': error_rows,
+        'offset': offset,
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'errors_only': errors_only,
+        'missing_fields': missing_fields_for_frontend 
+    })
+
+def validate_import_data(request):
+    pass
+
+
+# Image generate section 
+def set_image_to_mapped_data(request):
+    if request.method == 'POST':
+        products = request.session.get('products', [])
+        mappings = request.session.get('mappings', {})
+
+        if not products:
+            messages.error(request, "No data to process. Please upload a CSV file and map the headers first.")
+            return redirect('upload_csv')
+
+        for product in products:
+            product_name = product.get('product_name', '').strip()
+            if not product_name:
+                messages.error(request, "Product name is required for image search.")
+                return redirect('upload_csv')
+
+            # Save the image URL back to the product data
+            if product.get('image') is None or product.get('image') == '':
+                # Search for images using the product name
+                image_url = search_images(request, product_name)
+                if not image_url:
+                    messages.error(request, f"No image found for product: {product_name}")
+                    continue
+                product['image'] = image_url
+            else:
+                continue  # If image already exists, skip searching
+
+        # Save the updated products and mappings back to the session
+        request.session['products'] = products
+        if 'image' not in mappings:
+            mappings['image'] = 'image'
+        request.session['mappings'] = mappings
+
+        return redirect('process_mapped_data_with_images')
+
+    return redirect('upload_csv')
+
+
+def search_images(request, product_name):
+ 
+    if product_name:
+        url = (
+            f"https://www.googleapis.com/customsearch/v1"
+            f"?q={product_name}&cx={settings.GOOGLE_CX_ID}&searchType=image"
+            # f"&rights=cc_publicdomain|cc_attribute"  # License filter for legal reuse
+            f"&key={settings.GOOGLE_API_KEYS}&num=1"
+        )
+        response = requests.get(url)
+        data = response.json()
+        print("data", data)
+        return data.get("items", [{}])[0].get("link", "")  # Return the first image link if available
+
+
+
+
+
+def process_mapped_data_with_images(request):
+    products = request.session.get('products', [])
+    mappings = request.session.get('mappings', {})
+    # print("mappings", mappings)
+    # print("products", products)
+    
     show_all = request.GET.get('show_all') == '1'
     field_mappings_filtered = {k: CSV_FIELD_MAPPINGS[k] for k in mappings.keys()}
+    if 'image' in field_mappings_filtered:
+        # Move 'image' to the start
+        field_mappings_filtered = {'image': field_mappings_filtered['image'], **{k: v for k, v in field_mappings_filtered.items() if k != 'image'}}
 
     if show_all:
         page_number = request.GET.get('page', 1)
@@ -1078,18 +1244,168 @@ def process_mapped_data(request):
         page_obj = None
         paginator = None
         offset = 0
-
+    
     return render(request, 'vendor/validate_import_data.html', {
         'products': products_to_display,
         'field_mappings': field_mappings_filtered,
         'count': len(products),
         'show_all': show_all,
-        'errors': errors,
-        'error_rows': error_rows,
         'offset': offset,
         'page_obj': page_obj,
         'paginator': paginator,
+        'SaveToDatabase': True,
     })
 
-def validate_import_data(request):
-    pass
+
+
+
+
+
+def download_image_to_field(product_obj, image_url):
+    print("image_url", image_url)
+    print("image function enter ")
+    if not image_url:
+        return
+    try:
+        main_image_filename = image_url.split('/')[-1].split("?")[0]
+        response = requests.get(image_url, timeout=10)
+        if response.status_code == 200:
+            main_content_file = ContentFile(response.content, name=main_image_filename)
+            print("Downloaded image:", main_image_filename)
+            product_obj.image.save(main_image_filename, main_content_file, save=False)
+        else:
+            print(f"Image download failed: HTTP {response.status_code}")
+    except Exception as e:
+        print(f"Image download error: {e}")
+
+def safe_decimal(val, default=Decimal(0), field_name=None):
+    try:
+        print("typeof val", field_name, type(val))
+        val = str(val).strip()
+        return Decimal(val) if val not in (None, '', '-') else default
+    except Exception:
+        return default
+
+def save_to_database(request):
+    if request.method != 'POST':
+        return HttpResponse("Invalid request method.")
+
+    products = request.session.get('products', [])
+    mappings = request.session.get('mappings', {})
+
+    if not products or not mappings:
+        messages.error(request, "No data to save. Please upload a CSV file and map the headers first.")
+        return redirect('upload_csv')
+
+    vendor = get_vendor(request)
+    products_to_create = []
+    errors = []
+    row_num = 1
+    for row in products:
+        print("row", row)
+        print("mappings", mappings)
+        try:
+            product_name = row.get('product_name', '').strip()
+            print("prodcut name", product_name)
+            regular_price = safe_decimal(row.get('regular_price',0), 'regular_price')
+            tax_cat_name = row.get('tax_category', '').strip()
+            category_name = row.get('category','').strip()
+            subcategory_name = row.get('subcategory', '').strip()
+            image_url = row.get('image', '').strip()
+
+            # ... your checks for required fields ...
+
+            category_obj, _ = Category.objects.get_or_create(
+                category_name__iexact=category_name,
+                defaults={'category_name': category_name, 'slug': slugify(category_name)}
+            )
+            subcategory_obj = None
+            if subcategory_name:
+                subcategory_obj, _ = Category.objects.get_or_create(
+                    category_name__iexact=subcategory_name,
+                    parent=category_obj,
+                    defaults={'category_name': subcategory_name, 'parent': category_obj, 'slug': slugify(subcategory_name)}
+                )
+
+            tax_category_obj = TaxCategory.objects.filter(tax_category__iexact=tax_cat_name).first()
+            if not tax_category_obj:
+                errors.append(f"Row {row_num}: Tax category '{tax_cat_name}' not found.")
+                continue
+
+            deposit_category_obj = DepositCategory.objects.filter(deposit_category__iexact='Clickmall').first()
+    
+            cost_price = safe_decimal(row.get('cost_price', 0), 'cost_price')
+            qty = safe_decimal(row.get('qty',  0),'qty')
+            sales_price_val = row.get('sales_price',  '')
+            sales_price = safe_decimal(sales_price_val, None, 'sales_price')
+
+            product_obj = Product(
+                vendor=vendor,
+                product_name=product_name,
+                slug=slugify(product_name),
+                product_desc=row.get('description', '').strip(),
+                full_specification=row.get('full_specification', '').strip(),
+                hsn_number=row.get('hsn_number','').strip(),
+                model_number=row.get('model_number','').strip(),
+                cost_price=cost_price,
+                regular_price=regular_price,
+                sales_price=sales_price,
+                is_available=True,
+                category=category_obj,
+                subcategory=subcategory_obj,
+                is_popular=False,
+                is_top_collection=False,
+                is_active=True,
+                barcode=row.get('barcode','').strip() or None,
+                qty=qty,
+                tax_category=tax_category_obj,
+                deposit_category=deposit_category_obj,
+                unit_type=row.get('unit_type','pcs').strip() or 'pcs',
+                company=row.get('company', '').strip() or None,
+                product_size=row.get('product_size','').strip() or None,
+            )
+            print("product_obj", product_obj)
+            download_image_to_field(product_obj, image_url)
+            products_to_create.append(product_obj)
+            row_num += 1
+        except Exception as e:
+            errors.append(f"Row {row_num}: {str(e)}")
+
+    # Save all products one by one (required for ImageField)
+    success_count = 0
+    with transaction.atomic():
+        for product_obj in products_to_create:
+            try:
+                product_obj.save()
+                success_count += 1
+            except Exception as e:
+                errors.append(f"Error saving product '{product_obj.product_name}': {str(e)}")
+
+    if success_count:
+        messages.success(request, f"{success_count} products imported successfully.")
+
+    if errors:
+        for error in errors:
+            print("error", error)
+            messages.error(request, error)
+
+    return redirect('import_your_data')
+
+
+
+def update_image_url_in_session(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            row_id = int(data.get("row_id", -1))
+            new_url = data.get("new_url", "")
+            products = request.session.get("products", [])
+            if 0 <= row_id < len(products):
+                products[row_id]["image"] = new_url
+                request.session["products"] = products
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "error": "Invalid row id"}, status=400)
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+    return JsonResponse({"success": False, "error": "Bad request"}, status=400)
