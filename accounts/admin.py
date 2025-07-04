@@ -17,5 +17,5 @@ class DeliveryAddressAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'full_name', 'city')
 
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(DeliveryAddress, DeliveryAddressAdmin)
+# admin.site.register(DeliveryAddress, DeliveryAddressAdmin)
 admin.site.register(UserProfile)

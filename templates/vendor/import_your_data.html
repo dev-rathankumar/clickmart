@@ -36,7 +36,7 @@
 
                             <form method="get" action="{% url 'connect_erp' %}" >
                                 <div class="row text-center">
-                                  <div class="col-12 col-md-4 mb-4">
+                                  {% comment %} <div class="col-12 col-md-4 mb-4">
                                     <input type="radio" class="btn-check" name="source" id="tally" value="Tally" autocomplete="off" required >
                                     <label class="card h-100 shadow-sm btn" for="tally">
                                       <div class="card-body">
@@ -45,8 +45,8 @@
                                         <p class="card-text">Connect to your Tally account and import data automatically.</p>
                                       </div>
                                     </label>
-                                  </div>
-
+                                  </div> {% endcomment %}
+{% comment %} 
                                   <div class="col-12 col-md-4 mb-4">
                                     <input type="radio" class="btn-check" name="source" id="marg" value="Marg ERP" autocomplete="off" style="width: unset;">
                                     <label class="card h-100 shadow-sm btn" for="marg">
@@ -56,10 +56,10 @@
                                         <p class="card-text">Connect with Marg ERP to fetch your data automatically.</p>
                                       </div>
                                     </label>
-                                  </div>
+                                  </div> {% endcomment %}
 
                                   <div class="col-12 col-md-4 mb-4">
-                                    <input type="radio" class="btn-check" name="source" id="custom" value="Custom" autocomplete="off" style="width: unset;">
+                                    <input type="radio" class="btn-check" checked name="source" id="custom" value="Custom" autocomplete="off" style="width: unset;">
                                     <label class="card h-100 shadow-sm btn" for="custom">
                                       <div class="card-body">
                                         <img src="{% static 'images/custom-erp.jpg' %}" alt="Custom Import" class="mb-3 img-fluid" style="height: 80px;">

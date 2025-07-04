@@ -32,7 +32,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ['172.105.253.185', '127.0.0.1', 'clickmall.in', 'www.clickmall.in']
+ALLOWED_HOSTS = ['172.105.253.185', '127.0.0.1', 'clickmall.in', 'www.clickmall.in','https://efb1-103-144-42-71.ngrok-free.app','efb1-103-144-42-71.ngrok-free.app']
 
 
 # Application definition
@@ -163,8 +163,12 @@ AUTH_PASSWORD_VALIDATORS = [
 #  JazzMin settings
 JAZZMIN_SETTINGS = {
     "site_title": "Flickbasket Admin",
+    "site_header": "Flickbasket Admin",
+    "site_brand": "Flickbasket",
     # Welcome text on the login screen
     "welcome_sign": "Welcome to the Flickbasket Admin Panel",
+    "copyright": "Flickbasket",
+    
     # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
     # "login_logo": 'logo/flickbasket-logo.svg',
 
@@ -173,6 +177,16 @@ JAZZMIN_SETTINGS = {
 
     "order_with_respect_to": ["auth", "books", "books.author", "books.book"],
     "custom_css": "admin/css/admin_pannel_style.css",
+
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "unified.Product": "fas fa-box",
+        "orders.Order": "fas fa-shopping-cart",
+    },
+    "related_modal_active": True,
+
 
 }
 

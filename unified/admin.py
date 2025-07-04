@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from inventory.models import tax
 from vendor.models import Vendor
-from .models import Product as UnifieldProduct, CategoryBrowsePage, CategoryBrowseSection, ProductAssignment, SubCategoryAssignment
+from .models import Product as UnifieldProduct, CategoryBrowsePage, CategoryBrowseSection, ProductAssignment, SubCategoryAssignment,ProductCloneTable
 from .models import ProductGallery, Category, MediaUpload
 import admin_thumbnails
 from import_export.admin import ImportExportModelAdmin
@@ -277,3 +277,4 @@ admin.site.register(CategoryBrowsePage, CategoryBrowsePageAdmin)
 admin.site.register(CategoryBrowseSection, CategoryBrowseSectionAdmin)
 admin.site.register(ProductAssignment, ProductAssignmentAdmin)
 admin.site.register(SubCategoryAssignment)
+admin.site.register(ProductCloneTable)

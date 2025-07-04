@@ -92,6 +92,12 @@ CSV_FIELD_MAPPINGS = {
         'optional': True,
         'type': 'str',
     },
+    'unit_type': {
+        'label': 'Unit Type',
+        'help': 'Optional: The type of the product.(Default:pcs)',
+        'optional': True,
+        'type': 'str',
+    },
     'company': {
         'label': 'Company',
         'help': 'Optional: The name of the company that makes the product.',
