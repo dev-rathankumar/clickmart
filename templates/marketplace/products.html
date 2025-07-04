@@ -79,14 +79,15 @@
 
 <div class="container my-4">
     <main class="main">
-        <div class="page-header mt-30 mb-50">
+        <div class="page-header d-none d-xl-block mt-30 mb-50">
             <div class="container">
                 <div class="archive-header">
                     <div class="row align-items-center">
                         <div class="col-xl-3">
                             <h1 class="mb-15">Products</h1>
+                            
                         </div>
-                        <div class="col-xl-9 text-end d-none d-xl-block">
+                        <div class="col-xl-9 text-end ">
                             <div class="flex-grow-1">
                                 <div class="search-style-2">
                                     <form method="get" class="d-flex" id="searchForm">
@@ -122,6 +123,7 @@
                             {% else %}
                                 <p>We found <strong class="text-brand">{{ products|length }}</strong> products for you!</p>
                             {% endif %}
+                            
                         </div>
                         <div class="sort-by-product-area">
                             {% comment %} <div class="sort-by-cover mr-10">
@@ -144,8 +146,8 @@
                                 </div>
                             </div> {% endcomment %}
                             {% if search_type != 'stores' %}
-                            <div class="sort-by-cover">
-                                <div class="sort-by-product-wrap">
+                            <div class="sort-by-cover d-flex align-items-center justify-content-between gap-2">
+                                <div class="sort-by-product-wrap" id="sortDropdownToggle">
                                     <div class="sort-by">
                                         <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
                                     </div>
@@ -170,11 +172,66 @@
                                         <li><a href="#">Avg. Rating</a></li> {% endcomment %}
                                     </ul>
                                 </div>
-                            </div>
+                                
+                                </div>
+                                <button id="filterToggleBtn"
+                                    class="btn d-lg-none sort-by-product-wrap ml-10 d-flex align-items-center justify-content-center"
+                                    style="width: 150px; height: 40px;font-size: 14px" 
+                                    type="button"
+                                    aria-expanded="false"
+                                    aria-controls="category-ul">
+                                    <i class="fa fa-filter mr-2"></i> Filter
+                                </button>
+
 
                             {% endif %}
+                            
+                        </div>
+                        <div class="d-lg-none d-block">
+                             <div class="col-lg-4 primary-sidebar sticky-sidebar " id="category-ul">
+                                    
+                                    <div class="sidebar-widget widget-category-2 mb-30">
+                                    <h5 class="section-title style-1 mb-30">Category</h5>
+                                    <ul class="list-unstyled">
+                                        {% for cat in categories %}
+                                        <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
+                                            {% if cat.subcategories.all %}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <!-- Main category name links to its page -->
+                                                <a class="text-dark fw-bold text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}">
+                                                    {{ cat.category_name }} 
+                                                </a>
+
+                                                <!-- Arrow icon toggles collapse only -->
+                                                <a data-bs-toggle="collapse" href="#subcats-{{ cat.id }}" role="button" aria-expanded="false" aria-controls="subcats-{{ cat.id }}">
+                                                    <i class="fa fa-chevron-down" style="font-size: 12px;"></i>
+                                                </a>
+                                            </div>
+                                            <ul class="collapse mt-2 ps-3" id="subcats-{{ cat.id }}">
+                                                {% for sub in cat.subcategories.all %}
+                                                <li class="small">
+                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% else %}
+                                            <!-- No subcategories -->
+                                            <div>
+                                                <a class="fw-bold text-dark text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}">
+                                                    {{ cat.category_name }}
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                
+                                
+                            </div>
                         </div>
                     </div>
+                    
                     {% if search_type == 'stores' %}
                     <div class="row vendor-grid">
                         {% for vendor in vendors %}
@@ -400,7 +457,8 @@
                         {% endif %}
                         
                     </div>
-                    <div class="col-lg-4 primary-sidebar sticky-sidebar">
+                 <div class="col-lg-4 primary-sidebar sticky-sidebar d-none d-lg-block" id="category-ul">
+                        
                          <div class="sidebar-widget widget-category-2 mb-30">
                         <h5 class="section-title style-1 mb-30">Category</h5>
                         <ul class="list-unstyled">
@@ -437,12 +495,15 @@
                             {% endfor %}
                         </ul>
                     </div>
+                    
+                    
                 </div>
             </div>
         </div>
     </main>
 </div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
     function toggleCategories(event) {
         event.preventDefault(); // Prevent default behavior of the button/link
         const category = document.getElementById('category-ul');
@@ -460,25 +521,50 @@
         
         if (window.innerWidth <= 990) {
             category.style.display = 'none';
-            icon.classList.remove("icon-restaurant_menu");
-            icon.classList.add("fa", "fa-bars");
+            if (icon) {
+                icon.classList.remove("icon-restaurant_menu");
+                icon.classList.add("fa", "fa-bars");
+            }
         } else {
             category.style.display = 'block';
-            icon.classList.remove("fa", "fa-bars");
-            icon.classList.add("icon-restaurant_menu");
+            if (icon) {
+                icon.classList.remove("fa", "fa-bars");
+                icon.classList.add("icon-restaurant_menu");
+            }
         }
     }
 
-    // Run on initial load
-    updateCategoryIcon();
+     updateCategoryIcon();
 
     // Add event listener to handle window resize
     window.addEventListener("resize", updateCategoryIcon);
 
-function switchType(type) {
-    document.getElementById('searchType').value = type;
-    document.getElementById('searchForm').submit();
-}
+
+    const filterBtn = document.getElementById('filterToggleBtn');
+    if (filterBtn) {
+        filterBtn.addEventListener('click', function () {
+            const categoryMenu = document.getElementById('category-ul');
+            const isHidden = categoryMenu.style.display === 'none' || categoryMenu.style.display === '';
+
+            if (isHidden) {
+                categoryMenu.style.display = 'block';
+                this.setAttribute('aria-expanded', 'true');
+            } else {
+                categoryMenu.style.display = 'none';
+                this.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+});
+</script>
+<script>
+     function switchType(type) {
+        document.getElementById('searchType').value = type;
+        document.getElementById('searchForm').submit();
+    }
+     updateCategoryIcon();
+    window.addEventListener("resize", updateCategoryIcon);
+
 </script>
 
 {% endblock %}

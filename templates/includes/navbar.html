@@ -96,18 +96,17 @@
     }
     .navbar-mobile-menu.show {
       right: 0;
-
     }
-  .navbar-mobile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: none;
-}
+    .navbar-mobile-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
     .navbar-mobile-top {
       display: flex;
       align-items: center;
@@ -148,9 +147,9 @@
     }
   }
   @media only screen and (max-width: 768px) {
-        .custom-offcanvas-zindex {
-    z-index: 2000 !important;
-  }
+    .custom-offcanvas-zindex {
+      z-index: 2000 !important;
+    }
 
     .main-logo img {
       max-width: 95%;
@@ -183,67 +182,75 @@
   }
   @media only screen and (max-width: 575px) {
     .custom-offcanvas-zindex {
-    z-index: 2000 !important;
-  }
+      z-index: 2000 !important;
+    }
 
     .mobile-sidebar-wrapper {
-        padding: 1rem 0.75rem 1.5rem 0.75rem;
-      }
+      padding: 1rem 0.75rem 1.5rem 0.75rem;
+    }
 
-      .sidebar-logo {
-        height: 55px;
-      }
+    .sidebar-logo {
+      height: 55px;
+    }
 
-      .offcanvas.offcanvas-end {
-        width: 70vw !important;
-        max-width: 70vw !important;
-      }
+    .offcanvas.offcanvas-end {
+      width: 70vw !important;
+      max-width: 70vw !important;
+    }
 
-      option[name="store_type"] {
-        padding: 10px;
-        font-size: 10px;
-      }
+    option[name="store_type"] {
+      padding: 10px;
+      font-size: 10px;
+    }
   }
   /* Hide mobile navbar on desktop */
   .mobile-navbar {
     display: none;
   }
-.cs-color {
-  color: red !important;
-}
-.cs-color:hover {
-  color: red !important;  
-}
-.cart_color {
-  color: white !important;
-  background-color: #5c6dc3 !important; /* lighter version of #1b216a */
-}
+  .cs-color {
+    color: red !important;
+  }
+  .cs-color:hover {
+    color: red !important;
+  }
+  .cart_color {
+    color: white !important;
+    background-color: #5c6dc3 !important; /* lighter version of #1b216a */
+  }
 
+  button.no-hover-bg,
+  button.no-hover-bg:hover,
+  button.no-hover-bg:focus,
+  button.no-hover-bg:active,
+  button.no-hover-bg:visited {
+    background: none !important;
+    background-color: transparent !important;
+  }
 
-button.no-hover-bg,
-button.no-hover-bg:hover,
-button.no-hover-bg:focus,
-button.no-hover-bg:active,
-button.no-hover-bg:visited {
-  background: none !important;
-  background-color: transparent !important;
-
-}
-
-.small_screen_button{
-  border: 1px solid #1b216a;
-  padding: 10px 8px !important;
-  font-size: 1rem;
-}
-.s-logout{
-  background: red;
-  color: white !important;
-}
-
+  .small_screen_button {
+    border: 1px solid #1b216a;
+    padding: 10px 8px !important;
+    font-size: 1rem;
+  }
+  .s-logout {
+    background: red;
+    color: white !important;
+  }
 </style>
 
 <!-- Desktop Header -->
-<header class="header-area header-style-1 header-height-2 large-header" style="z-index: 1050 !important;position: sticky;top: 0;left: 0;width: 100%;z-index: 999;background-color: #fff;">
+<header
+  class="header-area header-style-1 header-height-2 large-header"
+  style="
+    z-index: 1050 !important;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background-color: #fff;
+  "
+>
   <!-- Desktop Navbar -->
   <div
     class="header-middle d-none d-lg-block"
@@ -280,8 +287,6 @@ button.no-hover-bg:visited {
           </div>
         </div>
 
-        
-
         <!-- Middle: Search Bar -->
         <div class="flex-grow-1">
           <div class="search-style-2">
@@ -304,8 +309,15 @@ button.no-hover-bg:visited {
                 class="form-control"
                 placeholder="What are you looking for?"
               />
-             <button type="submit" class="btn no-hover-bg  d-flex align-items-center justify-content-center ml-10" >
-                  <img src=" {% static 'assets/imgs/theme/icons/search.png' %}" alt="Search" style="width: 100%; height: 20px;">
+              <button
+                type="submit"
+                class="btn no-hover-bg d-flex align-items-center justify-content-center ml-10"
+              >
+                <img
+                  src=" {% static 'assets/imgs/theme/icons/search.png' %}"
+                  alt="Search"
+                  style="width: 100%; height: 20px"
+                />
               </button>
             </form>
           </div>
@@ -320,8 +332,10 @@ button.no-hover-bg:visited {
           >
             <i class="fa fa-shopping-cart"></i>
             <!-- Optional: Cart item count badge -->
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color">
-            <span id="cart_count">{{cart_count}}</span>  
+            <span
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color"
+            >
+              <span id="cart_count">{{cart_count}}</span>
               <span class="visually-hidden">cart items</span>
             </span>
           </a>
@@ -465,7 +479,7 @@ button.no-hover-bg:visited {
           onclick="getLocation()"
           style="cursor: pointer"
         >
-          <i class="icon-target5" ></i> Use your current location
+          <i class="icon-target5"></i> Use your current location
           <span
             class="dots-circle-spinner loading ms-2"
             style="display: none"
@@ -499,7 +513,6 @@ button.no-hover-bg:visited {
         <a
           class="btn text-uppercase fw-bold mt-2 small_screen_button"
           href="{% url 'registerVendor' %}"
-          
         >
           Become a Seller
         </a>
@@ -517,194 +530,357 @@ button.no-hover-bg:visited {
 </header>
 
 <!-- Mobile Header -->
-<div class="mobile-header d-block d-md-none mobile-main-row position-relative" style="z-index: 1050; background-color: {{ current_event.home_color }};">
-  
+<div
+  class="mobile-header d-block d-md-none mobile-main-row position-relative"
+  style="z-index: 1050; background-color: {{ current_event.home_color }};"
+>
   <!-- Top Row: Location & User Icon (scrolls away) -->
-  <div class="mobile-row w-100 top-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3" style="height: 55px;">
-    <div class="mobile-col flex-fill left text-dark d-flex flex-row flex-nowrap align-items-center justify-content-start h-100">
-      <div class="mobile-col-item mobile-location flex-fill">
-        <div role="button" class="selected_mobile_location h-100">
-          <a class="d-flex align-items-start" style="width: 100%;">
-            <div class="loc_active text-muted flex-fill">
-               <div class="main-categori-wrap ">
-              <a
-                class="categories-button-active"
-                href="#"
-                data-bs-toggle="modal"
-                data-bs-target="#locationModal"
-              >
-                <span class="fi-rs-marker"></span>
-                <span id="location-selector-mobile">Select Location</span>
-              </a>
-          </div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
-      <div class='d-flex align-items-center ms-3 gap-3'>
-             <a
-            href="{% url 'cart' %}"
-            class="text-dark position-relative mt-2"
-            style="font-size: 1.4rem"
-          >
-            <i class="fa fa-shopping-cart"></i>
-            <!-- Optional: Cart item count badge -->
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color">
-            <span id="cart_count">{{cart_count}}</span>  
-              <span class="visually-hidden">cart items</span>
-            </span>
-          </a>
-        <div class="mobile-col flex-auto right">
-          <div class="mobile-col-item mobile-cart">
-            <a class="mobile-header-icon position-relative d-block ps-3" data-bs-toggle="offcanvas" data-bs-target="#humburgermenu">
-              <span class="bg-dark bg-opacity-75 d-inline-flex align-items-center justify-content-center rounded-circle" style="height: 35px; width: 35px;">
-                <i class="bi bi-person-fill lh-1 fs-4 text-white"></i>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
+  <div
+    class="mobile-row w-100 top-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3"
+    style="height: 55px"
+  >
+    <div
+      class="mobile-col flex-fill left text-dark d-flex flex-row flex-nowrap align-items-center justify-content-start h-100"
+    >
     
-  </div>
-  
-
-  <!-- Middle Row: Search Bar (Sticky) -->
-   <div id="sticky-placeholder" style="height: 0;"></div>
-    <div class="mobile-header-section w-100" style="background-color: {{ current_event.home_color }};">
-      <div class="mobile-row w-100 middle-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3 py-0" style="height: 60px;">
-        <div class="mobile-col w-100">
-          <div class="mobile-col-item mobile-autocomplete flex-fill">
-            <div class="autocomplete_mobile_container w-100">
-              <div class="autocomplete_mobile_inputgroup input-group position-relative rounded-3 overflow-hidden bg-white d-flex flex-row flex-nowrap" style="height: 40px; border: 1px solid #eee; box-shadow: 0 0 5px rgba(0,0,0,0.07);">
-               <form action="{% url 'all_products' %}" method="get">
-                <div class="input-group">
-                  <span class="input-group-text bg-white border-0">
-                    <i class="fi-rs-search"></i>
-                  </span>
-                  <input 
-                    type="text" 
-                    name="search"  
-                    class="form-control border-0 bg-white px-2 py-1" 
-                    placeholder="Search for products, sellers and more"
-                    style="font-size: 14px; height: 100%;">
-                  <button type="submit" hidden></button> <!-- Optional: for Enter key to work -->
-                </div>
-              </form>
+     <div class="mobile-col-item mobile-location flex-fill">
+        <div role="button" class="selected_mobile_location h-100">
+          <a class="d-flex align-items-start" style="width: 100%">
+            <div class="loc_active text-muted flex-fill">
+              {% if request.path == '/' %}
+              <div class="main-categori-wrap">
+                <a
+                  class="categories-button-active"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#locationModal"
+                >
+                  <span class="fi-rs-marker"></span>
+                  <span id="location-selector-mobile">Select Location</span>
+                </a>
+              </div>
+              {% else %}
+              <div class="main-categori-wrap">
+                <a href="#" onclick="window.history.back()" class="back-button" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M19 12H6m0 0l6-6m-6 6l6 6"/>
+                </svg>
+              </a>
 
               </div>
+                {% endif %}
             </div>
-          </div>
-        </div>
-  </div>
-    {% if request.path == '/' %}
-    <div class="mobile-row w-100 bottom-mobile-row" style="height: 70px;">
-    <div class="mobile-col h-100 w-100 d-flex flex-row flex-nowrap">
-      <div id="mobile-header-categories" class="mobile-col-item mobile-header-categories overflow-hidden small border-bottom border-opacity-10 h-100" style="border-width: 0.5px !important;">
-        <div class="d-flex flex-row flex-nowrap text-nowrap overflow-auto px-3 h-100 mobile-header-scroll" style="scroll-snap-type: x mandatory;">
-          
-          <!-- Static 'All' Category -->
-         <div class="mobile-header-category-item animate text-center" data-id="sample-id" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
-          <a href="/marketplace/products/" class="d-block text-center px-2 py-1 pb-2 position-relative overflow-hidden h-100">
-            <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
-              <img src="{% static 'images/all.svg' %}" class="img-fluid" alt="All" style="width: 2rem; height: 2rem;">
-            </div>
-            <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12">All</span>
           </a>
         </div>
-
-
-          <!-- Dynamic Categories -->
-          {% for cat in categories_home %}
-            <div class="mobile-header-category-item animate text-center" data-id="{{ cat.id }}" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
-              <a href="{% url 'browse' category_slug=cat.slug %}" class="d-block px-1 py-1 pb-2 position-relative overflow-hidden h-100">
-                <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
-                  <img src="{{ cat.category_image.url }}" class="img-fluid" alt="{{ cat.category_name }}" style="width: 2rem; height: 2rem;">
-                </div>
-                <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12 text-truncate" style="font-size: 12px;">{{ cat.category_name }}</span>
-              </a>
-            </div>
-
-          {% endfor %}
-          
+      </div>
+  
+     
+    </div>
+    <div class="d-flex align-items-center ms-3 gap-3">
+      <a
+        href="{% url 'cart' %}"
+        class="text-dark position-relative mt-2"
+        style="font-size: 1.4rem"
+      >
+        <i class="fa fa-shopping-cart"></i>
+        <!-- Optional: Cart item count badge -->
+        <span
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color"
+        >
+          <span id="cart_count">{{cart_count}}</span>
+          <span class="visually-hidden">cart items</span>
+        </span>
+      </a>
+      <div class="mobile-col flex-auto right">
+        <div class="mobile-col-item mobile-cart">
+          <a
+            class="mobile-header-icon position-relative d-block ps-3"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#humburgermenu"
+          >
+            <span
+              class="bg-dark bg-opacity-75 d-inline-flex align-items-center justify-content-center rounded-circle"
+              style="height: 35px; width: 35px"
+            >
+              <i class="bi bi-person-fill lh-1 fs-4 text-white"></i>
+            </span>
+          </a>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Middle Row: Search Bar (Sticky) -->
+  <div id="sticky-placeholder" style="height: 0"></div>
+  <div
+    class="mobile-header-section w-100"
+    style="background-color: {{ current_event.home_color }};"
+  >
+    <div
+      class="mobile-row w-100 middle-mobile-row d-flex flex-nowrap align-items-center justify-content-between px-3 py-0"
+      style="height: 60px"
+    >
+      <div class="mobile-col w-100">
+        <div class="mobile-col-item mobile-autocomplete flex-fill">
+         <div class="autocomplete_mobile_container w-100">
+            <div
+              class="autocomplete_mobile_inputgroup input-group position-relative rounded-3 overflow-hidden bg-white d-flex flex-row flex-nowrap"
+              style="
+                height: 40px;
+                border: 1px solid #eee;
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.07);
+              "
+            >
+              <form action="{% url 'all_products' %}" method="get" style="width: 100%;">
+                <div class="input-group" style="width: 100%;">
+                  <span class="input-group-text bg-white border-0" style="height: 40px; display: flex; align-items: center;">
+                    <i class="fi-rs-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    name="search"
+                    class="form-control border-0 bg-white px-2"
+                    placeholder="Search for products, sellers and more"
+                    style="font-size: 14px; height: 40px; line-height: 40px; padding-top: 0; padding-bottom: 0;"
+                  />
+                  <button type="submit" hidden></button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+        
+    {% if request.path == '/' or '/marketplace/browse/' in request.path or '/marketplace/products/category/' in request.path or '/marketplace/products/' in request.path %}
+    <div class="mobile-row w-100 bottom-mobile-row" style="height: 70px">
+      <div class="mobile-col h-100 w-100 d-flex flex-row flex-nowrap">
+        <div
+          id="mobile-header-categories"
+          class="mobile-col-item mobile-header-categories overflow-hidden small border-bottom border-opacity-10 h-100"
+          style="border-width: 0.5px !important"
+        >
+          <div
+            class="d-flex flex-row flex-nowrap text-nowrap overflow-auto px-3 h-100 mobile-header-scroll"
+            style="scroll-snap-type: x mandatory"
+          >
+            <!-- Static 'All' Category -->
+            <div
+              class="mobile-header-category-item animate text-center"
+              data-id="sample-id"
+              style="
+                min-width: 20%;
+                max-width: 20%;
+                padding: 0 5px;
+                scroll-snap-align: start;
+              "
+            >
+              <a
+                href="/marketplace/products/"
+                class="d-block text-center px-2 py-1 pb-2 position-relative overflow-hidden h-100"
+              >
+                <div
+                  class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2"
+                >
+                  <img
+                    src="{% static 'images/all.svg' %}"
+                    class="img-fluid"
+                    alt="All"
+                    style="width: 2rem; height: 2rem"
+                  />
+                </div>
+                
+                <span
+                  class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12"
+                  >All</span
+                >
+                 {% if request.path == '/marketplace/products/' %}
+                <span class="activebar bg-dark position-absolute start-0 end-0 bottom-0" style="border-radius: 2px 2px 0px 0px; height: 2.5px;"></span>
+                {% endif %}
+              </a>
+            </div>
+
+            <!-- Dynamic Categories -->
+            {% for cat in categories_home %}
+            {% url 'browse' category_slug=cat.slug as cat_url %}
+            
+            <div
+              class="mobile-header-category-item animate text-center"
+              data-id="{{ cat.id }}"
+              style="
+                min-width: 20%;
+                max-width: 20%;
+                padding: 0 5px;
+                scroll-snap-align: start;
+              "
+            >
+              <a
+                href="{% url 'browse' category_slug=cat.slug %}"
+                class="d-block px-1 py-1 pb-2 position-relative overflow-hidden h-100"
+              >
+                <div
+                  class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2"
+                >
+                  <img
+                    src="{{ cat.category_image.url }}"
+                    class="img-fluid"
+                    alt="{{ cat.category_name }}"
+                    style="width: 2rem; height: 2rem"
+                  />
+                </div>
+                <span
+                  class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12 text-truncate"
+                  style="font-size: 12px"
+                  >{{ cat.category_name }}</span
+                >
+                {% if request.path == cat_url or cat.id == current_category_id%}
+                <span class="activebar bg-dark position-absolute start-0 end-0 bottom-0" style="border-radius: 2px 2px 0px 0px; height: 2.5px;"></span>
+                {% endif %}
+              </a>
+            </div>
+
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
     {% endif %}
   </div>
-  
 </div>
 
 <!-- Offcanva Slidebar -->
-<div class="offcanvas offcanvas-end custom-offcanvas-zindex" tabindex="-1" id="humburgermenu" aria-labelledby="offcanvasLabel">
-    <div class="offcanvas-header border-bottom">
-      <h5 class="offcanvas-title" id="offcanvasLabel">
-        <a href="/">
-            <img src="{% static 'logo/flickbasket-logo.svg' %}" alt="logo" class="sidebar-logo">
-          </a>
-      </h5>
-      <button type="button" class="btn-close text-reset text-dark" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body p-0">
-      <div class="mobile-sidebar-wrapper">
-
-        <!-- 🔷 Auth Buttons -->
-        <div class="d-flex flex-column gap-2 px-3 py-3">
-          {% if user.is_authenticated %}
-            <a href="{% url 'marketplace' %}" class="btn small_screen_button text-uppercase fw-bold">Marketplace</a>
-            <a href="{% url 'myAccount' %}" class="btn small_screen_button text-uppercase fw-bold">My Account</a>
-            <a href="{% url 'logout' %}" class="btn s-logout small_screen_button  fw-bold">
-              <i class="fa fa-power-off me-1"></i> Logout
-            </a>
-          {% else %}
-            <a href="{% url 'marketplace' %}" class="btn small_screen_button  fw-bold">Marketplace</a>
-            <a href="{% url 'registerVendor' %}" class="btn   small_screen_button update_color" >Become a Seller</a>
-            <a href="{% url 'login' %}" class="btn fw-semibold small_screen_button" style=": 1rem;">
-              <i class="fa fa-sign-in me-1"></i> Login
-            </a>
-          {% endif %}
-        </div>
-
+<div
+  class="offcanvas offcanvas-end custom-offcanvas-zindex"
+  tabindex="-1"
+  id="humburgermenu"
+  aria-labelledby="offcanvasLabel"
+>
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title" id="offcanvasLabel">
+      <a href="/">
+        <img
+          src="{% static 'logo/flickbasket-logo.svg' %}"
+          alt="logo"
+          class="sidebar-logo"
+        />
+      </a>
+    </h5>
+    <button
+      type="button"
+      class="btn-close text-reset text-dark"
+      data-bs-dismiss="offcanvas"
+      aria-label="Close"
+    ></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <div class="mobile-sidebar-wrapper">
+      <!-- 🔷 Auth Buttons -->
+      <div class="d-flex flex-column gap-2 px-3 py-3">
+        {% if user.is_authenticated %}
+        <a
+          href="{% url 'marketplace' %}"
+          class="btn small_screen_button text-uppercase fw-bold"
+          >Marketplace</a
+        >
+        <a
+          href="{% url 'myAccount' %}"
+          class="btn small_screen_button text-uppercase fw-bold"
+          >My Account</a
+        >
+        <a
+          href="{% url 'logout' %}"
+          class="btn s-logout small_screen_button fw-bold"
+        >
+          <i class="fa fa-power-off me-1"></i> Logout
+        </a>
+        {% else %}
+        <a
+          href="{% url 'marketplace' %}"
+          class="btn small_screen_button fw-bold"
+          >Marketplace</a
+        >
+        <a
+          href="{% url 'registerVendor' %}"
+          class="btn small_screen_button update_color"
+          >Become a Seller</a
+        >
+        <a
+          href="{% url 'login' %}"
+          class="btn fw-semibold small_screen_button"
+          style=":1rem "
+        >
+          <i class="fa fa-sign-in me-1"></i> Login
+        </a>
+        {% endif %}
       </div>
     </div>
   </div>
+</div>
 
-
-
-<div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true" style="z-index: 9999;">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="locationModalLabel">Select Your Location</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <ul>
-                  <li class="location-has-children choose-location">
-                    <form action="#">
-                      <input type="text" value="" name="location" id="location" placeholder="Your current location" autocomplete="off">
-                    </form>
-                  </li>
-                  <li class="mt-3">
-                    <div>
-                      <div class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2">
-                        <div>
-                          <span id="foodbakery_radius_location_open" class="foodbakery-radius-location" onclick="getLocation()" style="cursor: pointer;">
-                            <i class="icon-target5"></i>
-                            Use your current location 
-                            <span class="dots-circle-spinner loading ms-2" style="display: none;"></span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
+<div
+  class="modal fade"
+  id="locationModal"
+  tabindex="-1"
+  aria-labelledby="locationModalLabel"
+  aria-hidden="true"
+  style="z-index: 9999"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="locationModalLabel">
+          Select Your Location
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <li class="location-has-children choose-location">
+            <form action="#">
+              <input
+                type="text"
+                value=""
+                name="location"
+                id="location"
+                placeholder="Your current location"
+                autocomplete="off"
+              />
+            </form>
+          </li>
+          <li class="mt-3">
+            <div>
+              <div
+                class="d-flex align-items-center p-3 pt-0 gps_relocaters gap-2"
+              >
+                <div>
+                  <span
+                    id="foodbakery_radius_location_open"
+                    class="foodbakery-radius-location"
+                    onclick="getLocation()"
+                    style="cursor: pointer"
+                  >
+                    <i class="icon-target5"></i>
+                    Use your current location
+                    <span
+                      class="dots-circle-spinner loading ms-2"
+                      style="display: none"
+                    ></span>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   // Toggle dropdown display when clicking the button

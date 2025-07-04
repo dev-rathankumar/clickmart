@@ -702,11 +702,14 @@ def All_products(request, category_id=None, subcategory_id=None):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
+        
+
         context.update({
             'products': page_obj,
             'show_pagination': paginator.num_pages > 1,
             'cart_product_ids': cart_product_ids,
             'cart_items': cart_items,
+            'current_category_id': category_id,
         })
 
     return render(request, 'marketplace/products.html', context)

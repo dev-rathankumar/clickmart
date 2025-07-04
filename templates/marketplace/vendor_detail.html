@@ -73,6 +73,11 @@
         cursor: pointer;
     }
 
+    .vender_search_form input[type="text"]:focus {
+        border: transparent !important;
+        outline: none;
+    }
+
     .vender_search_form button:hover,
     .vender_search_form button:focus,
     .vender_search_form button:active {
@@ -233,7 +238,7 @@
                 </div>
                 <div class="row product-grid">
                     {% for product in products %}
-                    <div class="col-lg-4 col-md-4 col-12 col-sm-6">
+                    <div class="col-lg-4 col-md-4 col-6 col-sm-6">
                         <div class="product-cart-wrap mb-30">
                             <div class="product-img-action-wrap">
                                 <div class="product-img product-img-zoom">
