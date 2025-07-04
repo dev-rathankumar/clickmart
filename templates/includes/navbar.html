@@ -235,6 +235,9 @@
   .s-logout {
     background: red;
     color: white !important;
+    border: none !important;
+    padding: 10px 8px !important;
+    font-size: 1rem;
   }
 </style>
 
@@ -790,7 +793,7 @@
         >
         <a
           href="{% url 'logout' %}"
-          class="btn s-logout small_screen_button fw-bold"
+          class="btn s-logout  fw-bold"
         >
           <i class="fa fa-power-off me-1"></i> Logout
         </a>
