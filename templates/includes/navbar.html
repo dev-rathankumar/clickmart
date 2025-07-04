@@ -604,14 +604,15 @@ button.no-hover-bg:visited {
         <div class="d-flex flex-row flex-nowrap text-nowrap overflow-auto px-3 h-100 mobile-header-scroll" style="scroll-snap-type: x mandatory;">
           
           <!-- Static 'All' Category -->
-          <div class="mobile-header-category-item animate text-center" data-id="sample-id" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
-            <a role="button" class="d-block text-center px-2 py-1 pb-2 position-relative overflow-hidden h-100">
-              <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
-                <img src="{% static 'images/all.svg' %}" class="img-fluid" alt="All" style="width: 2rem; height: 2rem;">
-              </div>
-              <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12">All</span>
-            </a>
-          </div>
+         <div class="mobile-header-category-item animate text-center" data-id="sample-id" style="min-width: 20%; max-width: 20%; padding: 0 5px; scroll-snap-align: start;">
+          <a href="/marketplace/products/" class="d-block text-center px-2 py-1 pb-2 position-relative overflow-hidden h-100">
+            <div class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2">
+              <img src="{% static 'images/all.svg' %}" class="img-fluid" alt="All" style="width: 2rem; height: 2rem;">
+            </div>
+            <span class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12">All</span>
+          </a>
+        </div>
+
 
           <!-- Dynamic Categories -->
           {% for cat in categories_home %}
