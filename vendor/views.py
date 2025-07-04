@@ -31,7 +31,7 @@ from inventory.models import tax as Tax
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
-from unified.models import MediaUpload
+from unified.models import MediaUpload, ProductCloneTable
 
 from django.forms import modelformset_factory
 
@@ -1059,7 +1059,7 @@ def process_mapped_data(request):
     products = []
     errors = []
     error_rows = set()
-    missing_fields_for_frontend = []
+    error_fields_for_frontend = []
 
     for idx, row in enumerate(reader, start=1):
         product = {}
@@ -1078,7 +1078,7 @@ def process_mapped_data(request):
             if not value and not optional:
                 missing_fields.append(label)
                 print(f"Missing field: {label} in row {idx}")
-                missing_fields_for_frontend.append({'row': idx, 'field': internal_field})
+                error_fields_for_frontend.append({'row': idx, 'field': internal_field})
                 continue
             # Type checks for non-empty values
             if value:
@@ -1092,6 +1092,19 @@ def process_mapped_data(request):
                         int(value)
                     except ValueError:
                         field_errors.append(f"{label} must be a whole number (e.g. 15)")
+            # print("field_cfg=====>", internal_field)
+            if value and internal_field == 'category':
+                cat_vendor = get_vendor(request)
+                categories = Category.objects.filter(store_type=cat_vendor.store_type)
+                # print('categories==>', categories)
+
+                if not categories.filter(category_name__iexact=value).exists():
+                    field_errors.append(f"{label} must be the correct category based on your store type.")
+                    error_fields_for_frontend.append({'row': idx, 'field': internal_field})
+
+
+
+
         # Gather errors
         if missing_fields or field_errors:
             error_rows.add(idx - 1)
@@ -1139,10 +1152,15 @@ def process_mapped_data(request):
         paginator = None
         offset = 0
     
-    print("misssing fields=====>>>", missing_fields)
-    print("misssing fields=====>>>", missing_fields_for_frontend)
-    print("errro ===>>>", errors)
-    print("error row fields=====>>>", error_rows)
+    # print("misssing fields=====>>>", missing_fields)
+    # print("misssing fields=====>>>", error_fields_for_frontend)
+    # print("errro ===>>>", errors)
+    # print("error row fields=====>>>", error_rows)
+
+    if len(error_rows) == 0 and len(errors) == 0 and len(error_fields_for_frontend) == 0:
+        vendor = get_vendor(request)
+        save_to_clone_products_table(request, products, vendor)
+
     return render(request, 'vendor/validate_import_data.html', {
         'products': products_to_display,
         'field_mappings': field_mappings_filtered,
@@ -1154,42 +1172,68 @@ def process_mapped_data(request):
         'page_obj': page_obj,
         'paginator': paginator,
         'errors_only': errors_only,
-        'missing_fields': missing_fields_for_frontend 
+        'error_fields': error_fields_for_frontend 
     })
 
 def validate_import_data(request):
     pass
 
-
-# Image generate section 
 def set_image_to_mapped_data(request):
     if request.method == 'POST':
-        products = request.session.get('products', [])
+        session_products = request.session.get('products', [])
         mappings = request.session.get('mappings', {})
+        vendor = get_vendor(request)
 
-        if not products:
-            messages.error(request, "No data to process. Please upload a CSV file and map the headers first.")
+        if not session_products:
+            messages.error(request, "No product data available. Please upload and validate your CSV first.")
             return redirect('upload_csv')
 
-        for product in products:
+        # Fetch existing products for this vendor from DB
+        existing_products = ProductCloneTable.objects.filter(vendor=vendor)
+        existing_product_map = {
+            (p.product_name.strip().lower()): p.image_url
+            for p in existing_products if p.image_url
+        }
+
+        updated_products = []
+
+        for product in session_products:
             product_name = product.get('product_name', '').strip()
             if not product_name:
-                messages.error(request, "Product name is required for image search.")
-                return redirect('upload_csv')
+                continue  # Skip products without a name
 
-            # Save the image URL back to the product data
-            if product.get('image') is None or product.get('image') == '':
-                # Search for images using the product name
-                image_url = search_images(request, product_name)
-                if not image_url:
-                    messages.error(request, f"No image found for product: {product_name}")
-                    continue
+            existing_image_url = product.get('image', '').strip()
+
+            # If image already present in session, skip
+            if existing_image_url:
+                updated_products.append(product)
+                continue
+
+            # Check if DB product has an image
+            existing_image_from_db = existing_product_map.get(product_name.lower())
+            if existing_image_from_db:
+                product['image'] = existing_image_from_db
+                updated_products.append(product)
+                continue
+
+            # Otherwise, try to generate
+            image_url = search_images(request, product_name)
+            if image_url:
                 product['image'] = image_url
+                # Update DB as well
+                try:
+                    clone_product = ProductCloneTable.objects.get(vendor=vendor, product_name=product_name)
+                    clone_product.image_url = image_url
+                    clone_product.save()
+                except ProductCloneTable.DoesNotExist:
+                    pass  # Skip if not yet saved to DB
             else:
-                continue  # If image already exists, skip searching
+                messages.warning(request, f"No image found for product: {product_name}")
+            
+            updated_products.append(product)
 
-        # Save the updated products and mappings back to the session
-        request.session['products'] = products
+        # Save updated session data
+        request.session['products'] = updated_products
         if 'image' not in mappings:
             mappings['image'] = 'image'
         request.session['mappings'] = mappings
@@ -1200,6 +1244,7 @@ def set_image_to_mapped_data(request):
 
 
 def search_images(request, product_name):
+    print("im called")
  
     if product_name:
         url = (
@@ -1285,7 +1330,6 @@ def safe_decimal(val, default=Decimal(0), field_name=None):
         return Decimal(val) if val not in (None, '', '-') else default
     except Exception:
         return default
-
 def save_to_database(request):
     if request.method != 'POST':
         return HttpResponse("Invalid request method.")
@@ -1298,88 +1342,124 @@ def save_to_database(request):
         return redirect('upload_csv')
 
     vendor = get_vendor(request)
-    products_to_create = []
     errors = []
     row_num = 1
-    for row in products:
-        print("row", row)
-        print("mappings", mappings)
-        try:
-            product_name = row.get('product_name', '').strip()
-            print("prodcut name", product_name)
-            regular_price = safe_decimal(row.get('regular_price',0), 'regular_price')
-            tax_cat_name = row.get('tax_category', '').strip()
-            category_name = row.get('category','').strip()
-            subcategory_name = row.get('subcategory', '').strip()
-            image_url = row.get('image', '').strip()
-
-            # ... your checks for required fields ...
-
-            category_obj, _ = Category.objects.get_or_create(
-                category_name__iexact=category_name,
-                defaults={'category_name': category_name, 'slug': slugify(category_name)}
-            )
-            subcategory_obj = None
-            if subcategory_name:
-                subcategory_obj, _ = Category.objects.get_or_create(
-                    category_name__iexact=subcategory_name,
-                    parent=category_obj,
-                    defaults={'category_name': subcategory_name, 'parent': category_obj, 'slug': slugify(subcategory_name)}
-                )
-
-            tax_category_obj = TaxCategory.objects.filter(tax_category__iexact=tax_cat_name).first()
-            if not tax_category_obj:
-                errors.append(f"Row {row_num}: Tax category '{tax_cat_name}' not found.")
-                continue
-
-            deposit_category_obj = DepositCategory.objects.filter(deposit_category__iexact='Clickmall').first()
-    
-            cost_price = safe_decimal(row.get('cost_price', 0), 'cost_price')
-            qty = safe_decimal(row.get('qty',  0),'qty')
-            sales_price_val = row.get('sales_price',  '')
-            sales_price = safe_decimal(sales_price_val, None, 'sales_price')
-
-            product_obj = Product(
-                vendor=vendor,
-                product_name=product_name,
-                slug=slugify(product_name),
-                product_desc=row.get('description', '').strip(),
-                full_specification=row.get('full_specification', '').strip(),
-                hsn_number=row.get('hsn_number','').strip(),
-                model_number=row.get('model_number','').strip(),
-                cost_price=cost_price,
-                regular_price=regular_price,
-                sales_price=sales_price,
-                is_available=True,
-                category=category_obj,
-                subcategory=subcategory_obj,
-                is_popular=False,
-                is_top_collection=False,
-                is_active=True,
-                barcode=row.get('barcode','').strip() or None,
-                qty=qty,
-                tax_category=tax_category_obj,
-                deposit_category=deposit_category_obj,
-                unit_type=row.get('unit_type','pcs').strip() or 'pcs',
-                company=row.get('company', '').strip() or None,
-                product_size=row.get('product_size','').strip() or None,
-            )
-            print("product_obj", product_obj)
-            download_image_to_field(product_obj, image_url)
-            products_to_create.append(product_obj)
-            row_num += 1
-        except Exception as e:
-            errors.append(f"Row {row_num}: {str(e)}")
-
-    # Save all products one by one (required for ImageField)
     success_count = 0
+
     with transaction.atomic():
-        for product_obj in products_to_create:
+        for row in products:
             try:
+                product_name = row.get('product_name', '').strip()
+                if not product_name:
+                    errors.append(f"Row {row_num}: Product name is required.")
+                    continue
+                regular_price = safe_decimal(row.get('regular_price',0), 'regular_price')
+                tax_cat_name = row.get('tax_category', '').strip()
+                category_name = row.get('category','').strip()
+                subcategory_name = row.get('subcategory', '').strip()
+                image_url = row.get('image', '').strip()
+
+                # Category lookup/creation (same as before)
+                try:
+                    category_obj = Category.objects.get(category_name__iexact=category_name)
+                except Category.DoesNotExist:
+                    messages.error(request,"Please enter the correct category based on your store type.")
+                    return redirect('import_your_data')
+
+                subcategory_obj = None
+                if subcategory_name:
+                    category_code = f"SUB-{slugify(subcategory_name)}-{category_obj.category_code}-{vendor.id}"
+                    try:
+                        subcategory_obj = Category.objects.get(
+                            category_name=subcategory_name,
+                            parent=category_obj,
+                            vendor_subcategory_reference_id=vendor.id,
+                            category_code=category_code,
+                        )
+                    except Category.DoesNotExist:
+                        subcategory_obj = Category.objects.create(
+                            category_name=subcategory_name.strip(),
+                            parent=category_obj,
+                            vendor_subcategory_reference_id=vendor.id,
+                            category_code=category_code,
+                            slug=slugify(f"{subcategory_name}{category_obj}{vendor.id}")
+                        )
+
+                tax_category_obj = TaxCategory.objects.filter(tax_category__iexact=tax_cat_name).first()
+                if not tax_category_obj:
+                    errors.append(f"Row {row_num}: Tax category '{tax_cat_name}' not found.")
+                    continue
+
+                deposit_category_obj = DepositCategory.objects.filter(deposit_category__iexact='Clickmall').first()
+                cost_price = safe_decimal(row.get('cost_price', 0), 'cost_price')
+                qty = safe_decimal(row.get('qty',  0),'qty')
+                sales_price_val = row.get('sales_price',  0)
+                sales_price = safe_decimal(sales_price_val, None, 'sales_price')
+
+                slug_val = slugify(product_name)
+
+                # --- UPSERT LOGIC START ---
+                product_obj = None
+                try:
+                    product_obj = Product.objects.get(vendor=vendor, slug=slug_val)
+                    # Update existing
+                    product_obj.product_name = product_name
+                    product_obj.product_desc = row.get('description', '').strip()
+                    product_obj.full_specification = row.get('full_specification', '').strip()
+                    product_obj.hsn_number = row.get('hsn_number','').strip()
+                    product_obj.model_number = row.get('model_number','').strip()
+                    product_obj.cost_price = cost_price
+                    product_obj.regular_price = regular_price
+                    product_obj.sales_price = sales_price
+                    product_obj.is_available = True
+                    product_obj.category = category_obj
+                    product_obj.subcategory = subcategory_obj
+                    product_obj.is_popular = False
+                    product_obj.is_top_collection = False
+                    product_obj.is_active = True
+                    product_obj.barcode = row.get('barcode','').strip() or None
+                    product_obj.qty = qty
+                    product_obj.tax_category = tax_category_obj
+                    product_obj.deposit_category = deposit_category_obj
+                    product_obj.unit_type = row.get('unit_type','pcs').strip() or 'pcs'
+                    product_obj.company = row.get('company', '').strip() or None
+                    product_obj.product_size = row.get('product_size','').strip() or None
+                except Product.DoesNotExist:
+                    # Create new
+                    product_obj = Product(
+                        vendor=vendor,
+                        product_name=product_name,
+                        slug=slug_val,
+                        product_desc=row.get('description', '').strip(),
+                        full_specification=row.get('full_specification', '').strip(),
+                        hsn_number=row.get('hsn_number','').strip(),
+                        model_number=row.get('model_number','').strip(),
+                        cost_price=cost_price,
+                        regular_price=regular_price,
+                        sales_price=sales_price,
+                        is_available=True,
+                        category=category_obj,
+                        subcategory=subcategory_obj,
+                        is_popular=False,
+                        is_top_collection=False,
+                        is_active=True,
+                        barcode=row.get('barcode','').strip() or None,
+                        qty=qty,
+                        tax_category=tax_category_obj,
+                        deposit_category=deposit_category_obj,
+                        unit_type=row.get('unit_type','pcs').strip() or 'pcs',
+                        company=row.get('company', '').strip() or None,
+                        product_size=row.get('product_size','').strip() or None,
+                    )
+                # --- UPSERT LOGIC END ---
+
+                download_image_to_field(product_obj, image_url)
                 product_obj.save()
                 success_count += 1
+                row_num += 1
             except Exception as e:
-                errors.append(f"Error saving product '{product_obj.product_name}': {str(e)}")
+                errors.append(f"Row {row_num}: {str(e)}")
+                row_num += 1
 
     if success_count:
         messages.success(request, f"{success_count} products imported successfully.")
@@ -1394,6 +1474,7 @@ def save_to_database(request):
 
 
 def update_image_url_in_session(request):
+    vendor=get_vendor(request)
     if request.method == "POST":
         try:
             data = json.loads(request.body)
@@ -1402,6 +1483,13 @@ def update_image_url_in_session(request):
             products = request.session.get("products", [])
             if 0 <= row_id < len(products):
                 products[row_id]["image"] = new_url
+                print(new_url)
+                print(products[row_id])
+                product_name = products[row_id]['product_name']
+                product = ProductCloneTable.objects.get(product_name=product_name, vendor=vendor)
+                product.image_url = new_url
+                product.save()
+                print(product.image_url)
                 request.session["products"] = products
                 return JsonResponse({"success": True})
             else:
@@ -1409,3 +1497,44 @@ def update_image_url_in_session(request):
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=400)
     return JsonResponse({"success": False, "error": "Bad request"}, status=400)
+
+
+
+
+# Save clone Data 
+from django.utils.text import slugify
+
+def save_to_clone_products_table(request, products, vendor):
+    bulk_objs = []
+    seen_slugs = set()  # To avoid duplicate slugs within this bulk
+
+    for row in products:
+        product_name = row['product_name']
+        slug = slugify(product_name)
+        key = (vendor.id, slug)
+
+        # Skip if already seen in this loop
+        if key in seen_slugs:
+            continue
+
+        # Skip if already in DB
+        if ProductCloneTable.objects.filter(vendor=vendor, slug=slug).exists():
+            continue
+
+        seen_slugs.add(key)
+
+        bulk_objs.append(ProductCloneTable(
+            vendor=vendor,
+            slug=slug,
+            product_name=product_name,
+            regular_price=row.get('regular_price', 0),
+            image_url=row.get('image', ''),
+            category_name=row.get('category', ''),
+            qty=row.get('qty', 0),
+            tax_category_name=row.get('tax_category', ''),
+            deposit_category_name=row.get('deposit_category', ''),
+            unit_type=row.get('unit_type', 'pcs'),
+        ))
+
+    if bulk_objs:
+        ProductCloneTable.objects.bulk_create(bulk_objs)
