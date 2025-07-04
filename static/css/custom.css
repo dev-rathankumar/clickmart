@@ -1,3 +1,7 @@
+:root {
+  --accent-blue: #181970;
+}
+
 @keyframes show-toast{
     0% {bottom: -100%}
     20% {bottom: 100px}
@@ -137,17 +141,6 @@ table td, table th{
   }
 
 
-  
-
-
-.btn-fix-hover{
-color: #fff !important;
-}
-.btn-fix-hover:hover {
-    background-color: #DC3545;
-    border: none !important;
-    color: #fff !important;
-}
 
 /* Code for products.html and vendor_detail.html  */
 
