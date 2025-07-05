@@ -73,6 +73,13 @@
 #searchForm button.btn:hover i {
     color: inherit !important;
 }
+.toggle-btn i {
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-btn.open i {
+        transform: rotate(180deg);
+    }
 
 </style>
 {% include 'includes/alerts.html' %}
@@ -113,7 +120,7 @@
                             <a href="#" class="btn btn-sm  update_color {% if search_type == 'products' or not search_type %}btn-success{% else %}btn-outline-success{% endif %} text-light " onclick="switchType('products')">Products</a>
                         </div>
                         <div>
-                            <a href="#" class="btn btn-sm update_color {% if search_type == 'stores' %}btn-success{% else %}btn-outline-success{% endif %} text-light " onclick="switchType('stores')">Stores</a>
+                            <a href="#" class="btn btn-sm update_color {% if search_type == 'stores' %}btn-success{% else %}btn-outline-success{% endif %} text-light " onclick="switchType('stores')" style="width: 90px;">Stores</a>
                         </div>
                     </div>
                     <div class="shop-product-fillter">
@@ -203,11 +210,11 @@
                                                 </a>
 
                                                 <!-- Arrow icon toggles collapse only -->
-                                                <a data-bs-toggle="collapse" href="#subcats-{{ cat.id }}" role="button" aria-expanded="false" aria-controls="subcats-{{ cat.id }}">
-                                                    <i class="fa fa-chevron-down" style="font-size: 12px;"></i>
-                                                </a>
+                                                 <button class="toggle-btn" data-target="subcats-{{ cat.id }}" style="border: none; background: none;">
+                                                    <i class="fa fa-chevron-down"></i>
+                                                </button>
                                             </div>
-                                            <ul class="collapse mt-2 ps-3" id="subcats-{{ cat.id }}">
+                                            <ul class="subcategory-list mt-2 ps-3" id="subcats-{{ cat.id }}" style="display: none;">
                                                 {% for sub in cat.subcategories.all %}
                                                 <li class="small">
                                                     <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
@@ -236,7 +243,7 @@
                     <div class="row vendor-grid">
                         {% for vendor in vendors %}
                             <div class="col-lg-4 col-md-6 col-12 col-sm-6">
-                                    <div class="vendor-wrap mb-30">
+                                    <div class="vendor-wrap mb-30" style="border-radius: 8px !important;">
                                         <div class="vendor-img-action-wrap">
                                             <div class="vendor-img" style="max-width: 100%; height: 135px !important; object-fit: cover; overflow: hidden;">
                                                 <a href="{% url 'vendor_detail' vendor.vendor_slug %}" >
@@ -266,17 +273,33 @@
                                                 
                                             </div>
                                             <div class="vendor-info mb-20">
-                                                <ul class="contact-infor text-muted">
-                                               
-                                                <li style="min-height: 50px !important;"><strong>Address: </strong>
+                                                <ul class="contact-infor text-muted" style="padding: 0;">
+                                                
+                                              {% if vendor.user_profile.address %}
+                                              <li style="min-height: 50px !important;"><strong>Address: </strong>
                                                     <span>
                                                         {{vendor.user_profile.address | truncatechars:25}}
                                                     </span>
                                                 </li>
-                                                    <li><strong>Call Us:</strong><span>{{vendor.user.phone_number | truncatechars:15}}</span></li>
+                                              
+                                              {% else %}
+                                              <li style="min-height: 50px !important;visibility: hidden;"><strong>Address: </strong>
+                                                    <span>
+                                                        {{vendor.user_profile.address | truncatechars:25}}
+                                                    </span>
+                                                </li>
+                                              {% endif %}
+                                               
+                                                
+                                                  {% if vendor.user.phone_number %}
+                                                  <li><strong>Call Us:</strong><span> {{vendor.user.phone_number | truncatechars:15}}</span></li>
+                                                  {% else %}
+                                                  <li style="visibility: hidden;"><strong>Call Us:</strong><span></span></li>
+                                                  {% endif %}
+                                                    
                                                 </ul>
                                             </div>
-                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-xs text-light no_hover">Visit Store <i class="fi-rs-arrow-small-right"></i></a>
+                                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-xs text-light update_color">Visit Store <i class="fi-rs-arrow-small-right"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -324,8 +347,8 @@
                     <div class="row product-grid">
                         {% for product in products %}
                         <div class="col-lg-4 col-md-4 col-6 col-sm-6">
-                            <div class="product-cart-wrap mb-30">
-                                <div class="product-img-action-wrap">
+                            <div class="product-cart-wrap mb-30" style="border-radius: 8px !important;">
+                                <div class="product-img-action-wrap" style="border: none !important; border-radius: 0 !important;">
                                     <div class="product-img product-img-zoom">
                                         <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
                                             <div class="img-box-cs">
@@ -472,11 +495,13 @@
                                     </a>
 
                                     <!-- Arrow icon toggles collapse only -->
-                                    <a data-bs-toggle="collapse" href="#subcats-{{ cat.id }}" role="button" aria-expanded="false" aria-controls="subcats-{{ cat.id }}">
-                                        <i class="fa fa-chevron-down" style="font-size: 12px;"></i>
-                                    </a>
+
+                                    <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
+                                        <i class="fa fa-chevron-down"></i>
+                                    </button>
+
                                 </div>
-                                <ul class="collapse mt-2 ps-3" id="subcats-{{ cat.id }}">
+                                <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none; ">
                                     {% for sub in cat.subcategories.all %}
                                     <li class="small">
                                         <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
@@ -502,6 +527,27 @@
         </div>
     </main>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggles = document.querySelectorAll('.toggle-btn');
+
+        toggles.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                const subList = document.getElementById(targetId);
+
+                if (subList.style.display === 'none' || subList.style.display === '') {
+                    subList.style.display = 'block';
+                    btn.classList.add('open');
+                } else {
+                    subList.style.display = 'none';
+                    btn.classList.remove('open');
+                }
+            });
+        });
+    });
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     function toggleCategories(event) {

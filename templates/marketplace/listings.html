@@ -3,6 +3,25 @@
 {% load static %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/cs-foodbakery-plugin.css' %}">
+<style>
+
+.disable-hover:hover,
+.disable-hover input:hover,
+.disable-hover button:hover,
+.disable-hover input:focus,
+.disable-hover button:hover,
+.disable-hover i:hover {
+    background: none !important;
+    color: inherit !important;
+    border: none !important;
+    outline: none !important;
+    transition: none !important;
+}
+.disable-hover button {
+    cursor: pointer !important;
+}
+</style>
+
 
 <!-- Main Section Start -->
 <main class="main pages mb-80">
@@ -20,7 +39,7 @@
                 <h1 class="display-2 mb-50">Vendors List</h1>
                 <div class="row">
                     <div class="col-lg-5 mx-auto">
-                        <div class="sidebar-widget-2 widget_search mb-50">
+                        <div class="sidebar-widget-2 widget_search mb-50  disable-hover">
                             <div class="search-form">
                                 <form method="get">
                                     <input type="text" name=search placeholder="Search vendors (by name or store type)..." />
@@ -35,7 +54,7 @@
             <div class="row vendor-grid">
                 {% for vendor in vendors %}
                 <div class="col-lg-3 col-md-6 col-12 col-sm-6">
-                    <div class="vendor-wrap mb-30">
+                    <div class="vendor-wrap mb-30" style="border-radius: 8px !important;">
                         <div class="vendor-img-action-wrap">
                             <div class="vendor-img" style="max-width: 100%; height: 135px !important; object-fit: cover; overflow: hidden;">
                                 <a href="{% url 'vendor_detail' vendor.vendor_slug %}" >
@@ -65,17 +84,29 @@
                                 
                             </div>
                             <div class="vendor-info mb-20">
-                                <ul class="contact-infor text-muted">
+                                <ul class="contact-infor text-muted" style="padding: 0">
                                 
-                                <li style="min-height: 50px !important;"><strong>Address: </strong>
-                                    <span>
-                                        {{vendor.user_profile.address | truncatechars:25}}
-                                    </span>
-                                </li>
-                                    <li><strong>Call Us:</strong><span>{{vendor.user.phone_number | truncatechars:15}}</span></li>
+                                
+                                {% if vendor.user_profile.address %}
+                                    <li style="min-height: 50px !important;">
+                                        <strong>Address: </strong>
+                                        <span>{{ vendor.user_profile.address|truncatechars:25 }}</span>
+                                    </li>
+                                {% else %}
+                                    <li style="min-height: 50px !important; visibility: hidden;">
+                                        <strong>Address: </strong>
+                                    </li>
+                                {% endif %}
+
+                                
+                                    {% if vendor.user.phone_number %}
+                                    <li><strong>Call Us:</strong><span> {{vendor.user.phone_number | truncatechars:15}}</span></li>
+                                    {% else %}
+                                    <li style="visibility: hidden;"><strong>Call Us:</strong><span></span></li>
+                                    {% endif %}
                                 </ul>
                             </div>
-                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-xs text-light">Visit Store <i class="fi-rs-arrow-small-right"></i></a>
+                            <a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="btn btn-xs update_color">Visit Store <i class="fi-rs-arrow-small-right"></i></a>
                         </div>
                     </div>
                 </div>

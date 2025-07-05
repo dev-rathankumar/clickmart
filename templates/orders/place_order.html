@@ -59,33 +59,68 @@
                                     
                                     <div>
 
-                                        <table class="table table-borderless">
-                                            <tbody>
-                                                {% for item in cart_items %}
-                                                <tr style="border:none;">
-                                                    <td>
+                                       <!-- Table for large screens -->
+                                    <table class="table table-borderless d-none d-md-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Image</th>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Price</th>
+                                                <th>Tax</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in cart_items %}
+                                            <tr>
+                                                <td>
                                                     {% if item.product.image %}
                                                         <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
                                                     {% else %}
                                                         <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
                                                     {% endif %}
-                                                    </td>
-
-                                                    <td><b>{{ item.product }}</b></td>
-                                                    <td>{{ item.quantity }}</td>
-                                                    
+                                                </td>
+                                                <td><b>{{ item.product }}</b></td>
+                                                <td>{{ item.quantity }}</td>
+                                                <td>
                                                     {% if item.product.sales_price %}
-                                                        <td>₹{{ item.product.sales_price }}</td>
+                                                        ₹{{ item.product.sales_price }}
                                                     {% else %}
-                                                        <td>₹{{ item.product.regular_price }}</td>
+                                                        ₹{{ item.product.regular_price }}
                                                     {% endif %}
-                                                        <td>
-                                                       {{item.product.tax_category}}
-                                                        </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
+                                                </td>
+                                                <td>{{ item.product.tax_category }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Flex list for small screens -->
+                                    <div class="d-md-none">
+                                        {% for item in cart_items %}
+                                        <div class="cart-item-row d-flex align-items-center mb-3" style="gap: 10px; flex-wrap: wrap;">
+                                            <div style="flex-shrink: 0;">
+                                                {% if item.product.image %}
+                                                    <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
+                                                {% else %}
+                                                    <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
+                                                {% endif %}
+                                            </div>
+                                            <div class="w-25"><b>{{ item.product }}</b></div>
+                                            <div style="margin-left: 20px";> {{ item.quantity }}</div>
+                                            <div  style="width: 20%;margin-left: 20px">
+                                            
+                                                {% if item.product.sales_price %}
+                                                    ₹{{ item.product.sales_price }}
+                                                {% else %}
+                                                    ₹{{ item.product.regular_price }}
+                                                {% endif %}
+                                            </div>
+                                            <div  style="margin-left: 10px">{{ item.product.tax_category }}</div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
                                        <ul class="order-summary-list">
                                             <li class="order-summary-item d-flex justify-content-between align-items-center text-start mx-3 mb-1">
                                                 <span>Subtotal</span>
