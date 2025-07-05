@@ -374,7 +374,7 @@
 
 {% comment %} lowest price {% endcomment %}
   {% for collection in collections %}
-<section class="product-tabs section-padding position-relative d-none d-md-block">
+<section class="product-tabs section-padding position-relative">
   <div class="container">
     <div class="section-title style-2 wow animate__animated animate__fadeIn mb-3">
       <h3>{{ collection.name }}</h3>
@@ -568,7 +568,7 @@
       responsive: [
         { breakpoint: 1200, settings: { slidesToShow: 3 }},
         { breakpoint: 992, settings: { slidesToShow: 2 }},
-        { breakpoint: 576, settings: { slidesToShow: 1 }}
+        { breakpoint: 576, settings: { slidesToShow: 3 }}
       ],
       prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-arrow-small-left"></i></span>',
       nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-arrow-small-right"></i></span>',

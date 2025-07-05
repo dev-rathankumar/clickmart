@@ -87,6 +87,13 @@
         box-shadow: none !important;
         outline: none !important;
     }
+    .toggle-btn i {
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-btn.open i {
+        transform: rotate(180deg);
+    }
 </style>
 {% include 'includes/alerts.html' %}
 
@@ -112,7 +119,7 @@
                 </div>
                 <div class="vendor-content">
                     <div class="product-category">
-                        <span class="text-muted">{{ vendor.store_type }}</span>
+                        <span class="text-white">{{ vendor.store_type }}</span>
                     </div>
                     <h3 class="mb-5 text-white"><a href="vendor-details-1.html" class="text-white">{{ vendor.vendor_name }}</a></h3>
                     
@@ -234,13 +241,61 @@
                                 </ul>
                             </div>
                         </div>
+                         <button id="filterToggleBtn"
+                                    class="btn d-lg-none sort-by-product-wrap ml-10 d-flex align-items-center justify-content-center"
+                                    style="width: 140px; height: 40px;font-size: 14px" 
+                                    type="button"
+                                    aria-expanded="false"
+                                    aria-controls="category-ul">
+                                    <i class="fa fa-filter mr-2"></i> Filter
+                            </button>
+
                     </div>
+                    <div class="d-lg-none d-block">
+                        <div id="category-ul" class="sidebar-widget widget-category-2 mb-30 mt-20" style="display: none;" >
+                            <h5 class="section-title style-1 mb-30">Category</h5>
+                            <ul class="list-unstyled">
+                                {% for cat in categories %}
+                                <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
+                                    {% if cat.subcategories.all %}
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <!-- Main category name links to its page -->
+                                        <a class="text-dark fw-bold text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}">
+                                            {{ cat.category_name }} 
+                                        </a>
+
+                                        <!-- Arrow icon toggles collapse only -->
+                                        <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                    </div>
+                                    <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none;">
+                                        {% for sub in cat.subcategories.all %}
+                                        <li class="small">
+                                            <a class="text-decoration-none" href="{% url 'vendor_detail_filter_by_subcategory' vendor_slug=vendor.vendor_slug subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <!-- No subcategories -->
+                                    <div>
+                                        <a class="fw-bold text-dark text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}">
+                                            {{ cat.category_name }}
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="row product-grid">
                     {% for product in products %}
                     <div class="col-lg-4 col-md-4 col-6 col-sm-6">
-                        <div class="product-cart-wrap mb-30">
-                            <div class="product-img-action-wrap">
+                        <div class="product-cart-wrap mb-30" style="border-radius: 8px !important;">
+                            <div class="product-img-action-wrap"  style="border: none !important; border-radius: 0 !important;">
                                 <div class="product-img product-img-zoom">
                                     <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
                                        <div class="img-box-cs">
@@ -439,13 +494,34 @@
                             {% endfor %}
                         </ul>
                     </div>
-
             </div>
         </div>
     </div>
 </main>
 <!-- Main Section End -->
+ <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggles = document.querySelectorAll('.toggle-btn');
+
+        toggles.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                const subList = document.getElementById(targetId);
+
+                if (subList.style.display === 'none' || subList.style.display === '') {
+                    subList.style.display = 'block';
+                    btn.classList.add('open');
+                } else {
+                    subList.style.display = 'none';
+                    btn.classList.remove('open');
+                }
+            });
+        });
+    });
+</script>
+
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
     function toggleCategories(event) {
         event.preventDefault(); // Prevent default behavior of the button/link
         const category = document.getElementById('category-ul');
@@ -463,22 +539,40 @@
         
         if (window.innerWidth <= 990) {
             category.style.display = 'none';
-            icon.classList.remove("icon-restaurant_menu");
-            icon.classList.add("fa", "fa-bars");
+            if (icon) {
+                icon.classList.remove("icon-restaurant_menu");
+                icon.classList.add("fa", "fa-bars");
+            }
         } else {
             category.style.display = 'block';
-            icon.classList.remove("fa", "fa-bars");
-            icon.classList.add("icon-restaurant_menu");
+            if (icon) {
+                icon.classList.remove("fa", "fa-bars");
+                icon.classList.add("icon-restaurant_menu");
+            }
         }
     }
 
-    // Run on initial load
-    updateCategoryIcon();
+     updateCategoryIcon();
 
     // Add event listener to handle window resize
     window.addEventListener("resize", updateCategoryIcon);
 
 
+    const filterBtn = document.getElementById('filterToggleBtn');
+    if (filterBtn) {
+        filterBtn.addEventListener('click', function () {
+            const categoryMenu = document.getElementById('category-ul');
+            const isHidden = categoryMenu.style.display === 'none' || categoryMenu.style.display === '';
 
+            if (isHidden) {
+                categoryMenu.style.display = 'block';
+                this.setAttribute('aria-expanded', 'true');
+            } else {
+                categoryMenu.style.display = 'none';
+                this.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
