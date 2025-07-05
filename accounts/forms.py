@@ -1,31 +1,38 @@
 from django import forms
 from .models import User, UserProfile,DeliveryAddress
 from .validators import allow_only_images_validator
-
+from django.core.validators import MaxLengthValidator
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
-    phone_number = forms.CharField(required=True)
+    phone_number = forms.CharField(required=True,max_length=12,validators=[MaxLengthValidator(12)],)
+    first_name = forms.CharField(max_length=50,validators=[MaxLengthValidator(50)],)
+    last_name = forms.CharField(max_length=50,validators=[MaxLengthValidator(50)],)
+    email = forms.EmailField(max_length=100,validators=[MaxLengthValidator(100)],)
+    # If you want to allow users to set username via this form, add:
+    # username = forms.CharField(max_length=50, validators=[MaxLengthValidator(50)])
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password','phone_number']
+        fields = ['first_name', 'last_name', 'email', 'password', 'phone_number']
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
-
         self.fields['first_name'].widget.attrs.update({
             'placeholder': 'Enter first name',
-            'autocomplete': 'off'
+            'autocomplete': 'off',
+            'maxlength': 50
         })
         self.fields['last_name'].widget.attrs.update({
             'placeholder': 'Enter last name',
-            'autocomplete': 'off'
+            'autocomplete': 'off',
+            'maxlength': 50
         })
-        
         self.fields['email'].widget.attrs.update({
             'placeholder': 'Enter email',
-            'autocomplete': 'off'
+            'autocomplete': 'off',
+            'maxlength': 100
         })
         self.fields['password'].widget.attrs.update({
             'placeholder': 'Create password',
@@ -37,9 +44,9 @@ class UserForm(forms.ModelForm):
         })
         self.fields['phone_number'].widget.attrs.update({
             'placeholder': 'Enter phone number',
-            'autocomplete': 'off'
+            'autocomplete': 'off',
+            'maxlength': 12
         })
-
 
     def clean(self):
         cleaned_data = super(UserForm, self).clean()
@@ -47,10 +54,8 @@ class UserForm(forms.ModelForm):
         confirm_password = cleaned_data.get('confirm_password')
 
         if password != confirm_password:
-            raise forms.ValidationError(
-                "Password does not match!"
-            )
-
+            raise forms.ValidationError("Password does not match!")
+        return cleaned_data
 
 class UserProfileForm(forms.ModelForm):
     address = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Start typing...', 'required': 'required'}))

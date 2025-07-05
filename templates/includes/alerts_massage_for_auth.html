@@ -1,0 +1,32 @@
+{# Show all form errors in a single yellow alert box #}
+{% if form.errors or form.non_field_errors or v_form.errors or v_form.non_field_errors %}
+    <div class="alert alert-danger show-notification" role="alert">
+        {# User form errors #}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div><strong>{{ error }}</strong></div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div><strong>{{ error }}</strong></div>
+        {% endfor %}
+        {# Vendor form errors #}
+        {% for field in v_form %}
+            {% for error in field.errors %}
+                <div><strong>{{ error }}</strong></div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in v_form.non_field_errors %}
+            <div><strong>{{ error }}</strong></div>
+        {% endfor %}
+    </div>
+{% else %}
+    {# Only show messages if there are NO form errors #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} show-notification" role="alert">
+                <strong>{{ message }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endif %}

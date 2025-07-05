@@ -1019,6 +1019,7 @@ def upload_csv(request):
 def map_headers(request):
     csv_data = request.session.get('csv_data')
     filename = request.session.get('csv_filename')
+    vendor=get_vendor(request)
     if not csv_data or not filename :
         return redirect('upload_csv')
     print("filename", filename)
@@ -1035,6 +1036,7 @@ def map_headers(request):
         'internal_fields': internal_fields,
         'csv_filename': filename,
         'sample_row': first_data_row,
+        'vendor':vendor.id
     })
 
     

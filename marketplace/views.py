@@ -272,7 +272,7 @@ def add_to_cart(request, food_id):
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
                         'status': 'Failed',
-                        'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
+                        # 'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
                         'cart_counter': cart_counter['cart_count'],
                         'qty': chkCart.quantity,
                         'cart_amount': get_cart_amounts(request)
@@ -317,7 +317,7 @@ def add_to_cart(request, food_id):
             if new_qty > product.qty:
                 return JsonResponse({
                     'status': 'Failed',
-                    'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
+                    # 'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
                     'cart_counter': sum(cart.values()),
                     'qty': prev_qty,
                     'cart_amount': get_cart_amounts(request, session_cart=cart)

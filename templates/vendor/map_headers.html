@@ -92,20 +92,33 @@
 <!-- Main Section End -->
 
 <script>
-    const STORAGE_KEY = 'csv_field_mapping';
-    const CURRENT_FILE = "{{ csv_filename|escapejs }}";
-    const CSV_HEADERS = {{ csv_headers|safe }};
-    const SAMPLE_ROW = {{ sample_row|safe }};
+const STORAGE_KEY = 'csv_field_mapping_per_vendor';
+const CURRENT_FILE = "{{ csv_filename|escapejs }}";
+const CSV_HEADERS = {{ csv_headers|safe }};
+const SAMPLE_ROW = {{ sample_row|safe }};
+const CURRENT_VENDOR = "{{ vendor }}"; // make sure this is a string!
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+document.addEventListener('DOMContentLoaded', () => {
+    const allSaved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const saved = allSaved[CURRENT_VENDOR] || null;
 
-        document.querySelectorAll('select').forEach(select => {
-            const fieldKey = select.name.replace('mapping_', '');
-            const isRequired = select.dataset.required === "true";
-            const savedValue = saved?.mappings?.[fieldKey];
+    // If no saved data for current vendor → first time vendor
+    const isFirstTimeVendor = !saved;
 
-            select.classList.remove('border-success', 'border-danger');
+    document.querySelectorAll('select').forEach(select => {
+        const fieldKey = select.name.replace('mapping_', '');
+        const isRequired = select.dataset.required === "true";
+        const savedValue = saved?.mappings?.[fieldKey];
+
+        // Clear all borders on load
+        select.classList.remove('border-success', 'border-danger');
+
+        if (isFirstTimeVendor) {
+            // For new vendor, no green/red borders, just leave selects empty (or reset)
+            select.value = '';
+            // Don't add red borders even on required empty fields
+        } else {
+            // Existing vendor behavior:
 
             if (savedValue) {
                 if (CSV_HEADERS.includes(savedValue)) {
@@ -116,63 +129,68 @@
                 }
             }
 
-            // Only apply red border to required empty fields if same file
+            // If no saved value and field required, show red border to prompt user
             if (!select.value && isRequired) {
                 select.classList.add('border-danger');
             }
-        });
+        }
     });
+});
 
-    document.getElementById('mappingForm').addEventListener('submit', function (e) {
-        let isValid = true;
-        const mappings = {};
-        const numericFields = ['cost_price', 'regular_price', 'sale_price', 'qty', 'tax_percentage'];
+document.getElementById('mappingForm').addEventListener('submit', function (e) {
+    let isValid = true;
+    const mappings = {};
+    const numericFields = ['cost_price', 'regular_price', 'sale_price', 'qty', 'tax_percentage'];
 
-        document.querySelectorAll('select').forEach(select => {
-            const fieldKey = select.name.replace('mapping_', '');
-            const selectedColumn = select.value;
-            const isRequired = select.dataset.required === "true";
-            const errorDiv = select.nextElementSibling;
-            errorDiv.style.display = 'none';
-            errorDiv.innerText = '';
-            select.classList.remove('border-success', 'border-danger');
+    document.querySelectorAll('select').forEach(select => {
+        const fieldKey = select.name.replace('mapping_', '');
+        const selectedColumn = select.value;
+        const isRequired = select.dataset.required === "true";
+        const errorDiv = select.nextElementSibling;
+        errorDiv.style.display = 'none';
+        errorDiv.innerText = '';
+        select.classList.remove('border-success', 'border-danger');
 
-            if (isRequired && !selectedColumn) {
-                select.classList.add('border-danger');
-                errorDiv.style.display = 'block';
-                errorDiv.innerText = 'This field is required.';
-                isValid = false;
-                return;
-            }
-
-            if (selectedColumn) {
-                select.classList.add('border-success');
-                mappings[fieldKey] = selectedColumn;
-
-                const headerIndex = CSV_HEADERS.indexOf(selectedColumn);
-                const sampleValue = SAMPLE_ROW[headerIndex]?.trim();
-
-                if (numericFields.includes(fieldKey)) {
-                    if (!sampleValue || isNaN(sampleValue)) {
-                        select.classList.add('border-danger');
-                        errorDiv.style.display = 'block';
-                        errorDiv.innerText = 'This field must be a valid number.';
-                        isValid = false;
-                    }
-                }
-            }
-        });
-
-        if (!isValid) {
-            e.preventDefault();
+        if (isRequired && !selectedColumn) {
+            select.classList.add('border-danger');
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = 'This field is required.';
+            isValid = false;
             return;
         }
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            filename: CURRENT_FILE,
-            mappings: mappings
-        }));
+        if (selectedColumn) {
+            select.classList.add('border-success');
+            mappings[fieldKey] = selectedColumn;
+
+            const headerIndex = CSV_HEADERS.indexOf(selectedColumn);
+            const sampleValue = SAMPLE_ROW[headerIndex]?.trim();
+
+            if (numericFields.includes(fieldKey)) {
+                if (!sampleValue || isNaN(sampleValue)) {
+                    select.classList.add('border-danger');
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerText = 'This field must be a valid number.';
+                    isValid = false;
+                }
+            }
+        }
     });
+
+    if (!isValid) {
+        e.preventDefault();
+        return;
+    }
+
+    // Save the mappings only for the current vendor
+    const allSaved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    allSaved[CURRENT_VENDOR] = {
+        filename: CURRENT_FILE,
+        mappings: mappings
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(allSaved));
+});
+
 </script>
 
 
