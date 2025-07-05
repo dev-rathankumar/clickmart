@@ -1289,7 +1289,7 @@ def process_mapped_data_with_images(request):
         page_obj = None
         paginator = None
         offset = 0
-    
+    messages.success(request, f"Products image generated successfully.")
     return render(request, 'vendor/validate_import_data.html', {
         'products': products_to_display,
         'field_mappings': field_mappings_filtered,
@@ -1354,7 +1354,8 @@ def save_to_database(request):
                     errors.append(f"Row {row_num}: Product name is required.")
                     continue
                 regular_price = safe_decimal(row.get('regular_price',0), 'regular_price')
-                tax_cat_name = row.get('tax_category', '').strip()
+                tax_category_name = row.get('tax_category', '').strip()
+                tax_percentage = int(row.get('tax_percentage', '').strip())
                 category_name = row.get('category','').strip()
                 subcategory_name = row.get('subcategory', '').strip()
                 image_url = row.get('image', '').strip()
@@ -1385,9 +1386,18 @@ def save_to_database(request):
                             slug=slugify(f"{subcategory_name}{category_obj}{vendor.id}")
                         )
 
-                tax_category_obj = TaxCategory.objects.filter(tax_category__iexact=tax_cat_name).first()
-                if not tax_category_obj:
-                    errors.append(f"Row {row_num}: Tax category '{tax_cat_name}' not found.")
+                try:
+                    tax_category_obj = Tax.objects.filter(tax_category=tax_category_name, tax_percentage=tax_percentage).first()
+                    if not tax_category_obj:
+                        tax_category_obj = Tax.objects.create(
+                        tax_category=tax_category_name,
+                        tax_percentage=tax_percentage,
+                        tax_desc=''
+                        )
+                        tax_category_obj.save()
+                        print(f"Tax category '{tax_category_name}' with {tax_percentage}% created.")
+                except Tax.DoesNotExist:
+                    messages.error(request, f"Tax category '{tax_category_name}' not found. Skipping product '{product_name}'.")
                     continue
 
                 deposit_category_obj = DepositCategory.objects.filter(deposit_category__iexact='Clickmall').first()
@@ -1401,7 +1411,15 @@ def save_to_database(request):
                 # --- UPSERT LOGIC START ---
                 product_obj = None
                 try:
+                   
                     product_obj = Product.objects.get(vendor=vendor, slug=slug_val)
+                    if vendor and row.get('barcode','').strip():
+                        if Product.objects.filter(vendor=vendor, barcode=row.get('barcode','').strip()).exists():
+                            ex_bar_product = Product.objects.filter(vendor=vendor, barcode=row.get('barcode','').strip()).first()
+                            if ex_bar_product.product_name != product_obj.product_name:
+                                errors.append(f"Your given barcode is already used in {ex_bar_product.product_name} . Please use unique barcode for {product_name}")
+                                row_num += 1
+                                continue
                     # Update existing
                     product_obj.product_name = product_name
                     product_obj.product_desc = row.get('description', '').strip()
@@ -1425,6 +1443,12 @@ def save_to_database(request):
                     product_obj.company = row.get('company', '').strip() or None
                     product_obj.product_size = row.get('product_size','').strip() or None
                 except Product.DoesNotExist:
+                    if vendor and row.get('barcode','').strip():
+                        if Product.objects.filter(vendor=vendor, barcode=row.get('barcode','').strip()).exists():
+                            product = Product.objects.filter(vendor=vendor, barcode=row.get('barcode','').strip()).first()
+                            errors.append(f"Your given barcode is already used in {product.product_name} . Please use unique barcode for {product_name}")
+                            row_num += 1
+                            continue
                     # Create new
                     product_obj = Product(
                         vendor=vendor,

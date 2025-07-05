@@ -64,14 +64,14 @@ CSV_FIELD_MAPPINGS = {
     },
     'tax_category': {
         'label': 'Tax Category',
-        'help': 'Optional: Product’s Tax Category (if available). Used for scanning.',
-        'optional': True,
+        'help': 'Product’s Tax Category (if not available: NA).',
+        'optional': False,
         'type': 'str',
     },
     'tax_percentage': {
         'label': 'Tax Percentage',
-        'help': 'Optional: Product’s Tax Percentage (if available). Used for scanning.',
-        'optional': True,
+        'help': 'Product’s Tax Percentage (if not available: 0).',
+        'optional': False,
         'type': 'int',
     },
     'product_desc': {
