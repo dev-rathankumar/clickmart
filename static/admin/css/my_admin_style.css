@@ -1,0 +1,11 @@
+:root {
+  --primary: #0c1a69 !important;
+  --accent: #0c1a69 !important;
+}
+.select2-selection__choice {
+    background-color: #343a40 !important;
+    color: white !important;
+}
+.select2-search__field{
+ color: black  !important;
+}

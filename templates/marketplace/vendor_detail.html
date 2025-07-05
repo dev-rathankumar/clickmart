@@ -430,7 +430,7 @@
                                 {% else %}
                                 <!-- No subcategories -->
                                 <div>
-                                    <a class="fw-bold text-dark text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_slug=cat.slug %}">
+                                    <a class="fw-bold text-dark text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}">
                                         {{ cat.category_name }}
                                     </a>
                                 </div>

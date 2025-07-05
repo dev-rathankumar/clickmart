@@ -55,7 +55,7 @@ font:Normal  14px/24px "Open Sans", sans-serif;letter-spacing: 0px;text-transfor
 .wp-foodbakery .listing.grid-slider .rating-star .rating-box:before, .location-holder.modern a.more-btn, .grid-slider .swiper-button-prev:hover i, .grid-slider .swiper-button-next:hover i,
 .company-holder.simple .company-logo .text-holder .post-title h6 a:hover
 {
-color:#c33332 !important;
+color:#1b216a !important;
 }
 
 .tabs-holder .nav-tabs li a { padding: 12px 15px; }
@@ -138,7 +138,7 @@ color:#c33332 !important;
 .company-info-detail .company-info .text-holder span.restaurant-title { font-size: 18px !important; line-height: 20px !important; }
 .menu-itam-holder .menu-itam-list .text-holder h6 { font-size: 12px !important; }
 .menu-itam-holder { padding: 8px 0 0; }
-.image-holder + .text-holder + .price-holder { margin-top: 0; top: 86px; right: 15px; }
+.image-holder + .text-holder + .price-holder { margin-top: 0; top: 80px; right: 15px; }
 .company-info-detail .company-info .text-holder { display: block; padding: 0 0 0 18px; float: left; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
 .company-info-detail .company-info .text-holder .rating-star { display: inline-block; position: relative; line-height: normal; width: 80px; margin: 0 0 9px 0; }
 .company-info-detail .company-info .text-holder .rating-star:before { color: #cccfd5; content: "\f005\f005\f005\f005\f005"; font-family: "icomoon"; font-size: 14px; letter-spacing: 3px; }
@@ -187,7 +187,7 @@ color:#c33332 !important;
 .activation-tab-message .text-holder strong { color: #31cd75; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 45px; display: block; margin-bottom: 15px; }
 .activation-tab-message .text-holder span { color: #999999; display: block; font-size: 16px; font-family: 'Montserrat', sans-serif; }
 .activation-tab-message .media-holder { margin-bottom: 25px; }
-.activation-tab-message .text-holder span a { color: #4a95d2; }
+.activation-tab-message .text-holder span atop: 30px; right: 3px; { color: #4a95d2; }
 .activation-tab-message .thankyou-contacts { text-align: center; }
 .activation-tab-message .text-holder { max-width: 80%; margin: 0 auto 70px auto; }
 .listing.grid-listing .grid-listing-col > .text-holder { border: 1px solid #e5e5e5; border-top: 0; }
@@ -223,7 +223,7 @@ color:#c33332 !important;
 .listing.fancy-simple .text-holder { width: 100%; padding: 0; }.comments ul li .thumb-list .text-holder h6 { display: block; margin-bottom: 15px; }
 .comments ul li .thumb-list .text-holder .reply-btn { float: none; margin-bottom: 15px; }
 .restaurant-info .text-holder { width: 100%; }
-.menu-itam-holder .menu-itam-list .image-holder + .text-holder { display: block; padding-left: 0; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
+.menu-itam-holder .menu-itam-list .image-holder + .text-holder { padding-left: 0; width: -webkit-calc(100% - 90px); width: -moz-calc(100% - 90px); width: calc(100% - 90px); }
 .image-holder + .text-holder + .price-holder { margin-top: 0; top: 86px; right: 15px; }
 .counter-holder .text-holder i { margin-right: 10px; }
 .counter-holder .text-holder strong { font-size: 18px; }
@@ -238,5 +238,6 @@ color:#c33332 !important;
 .listing.fancy .text-holder { width: 100%; padding-left: 0; display: block; }
 .woocommerce ul.products li.product .product-action-button .add_to_cart_button { font-size: 12px; font-weight: 800; text-transform: capitalize; border: 0; padding: 8px 15px 8px 20px; height: auto; line-height: normal; position: relative; border-radius: 3px; display: inline-block; }
 .woocommerce ul.products li.product .product-action-button .add_to_cart_button i { top: 4px; }
+
 .activation-tab-message .text-holder strong { font-size: 35px; }
 .listing.fancy .text-holder { width: 100%; padding-left: 0; display: block; }

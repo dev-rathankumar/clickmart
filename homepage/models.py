@@ -43,11 +43,11 @@ class ProductCollection(models.Model):
     
     # For now, store the logic type (you can extend this later to include parameters)
     LOGIC_CHOICES = [
-        ('popular', 'Popular Products'),
+        # ('popular', 'Popular Products'),
         ('low_price', 'Lowest Price Guarantee'),
         # ('top_rated', 'Top Rated'),
         ('latest', 'Latest Products'),
-        ('top_collection', 'Flickbasket Top Collection')
+        # ('top_collection', 'Flickbasket Top Collection')
     ]
     logic = models.CharField(max_length=50, choices=LOGIC_CHOICES)
 

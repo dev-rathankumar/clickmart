@@ -210,10 +210,10 @@ class CategoryBrowsePage(models.Model):
 class CategoryBrowseSection(models.Model):
     PAGE_SECTION_TYPES = [
         ('product_slider', 'Product Slider'),
-        ('subcategory_slider', 'Subcategory Slider'),
-        ('brand_slider', 'Brand Slider'),
+        # ('subcategory_slider', 'Subcategory Slider'),
+        # ('brand_slider', 'Brand Slider'),
         ('image_slider', 'Image Slider'),
-        ('custom_heading', 'Custom Heading Only'),
+        # ('custom_heading', 'Custom Heading Only'),
     ]
 
     browse_page = models.ForeignKey(CategoryBrowsePage, on_delete=models.CASCADE, related_name='sections')

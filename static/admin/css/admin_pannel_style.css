@@ -1,0 +1,11 @@
+:root {
+  --primary: #0c1a69 !important;
+  --accent: #0c1a69 !important;
+}
+.dark-mode .navbar-light {
+    background-color:#343a40 !important;
+}
+
+.navbar-light .navbar-nav .nav-link{
+    color: rgba(255,255,255,.8);
+}
