@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import IntegrityError
 import requests
-
+import django.contrib as massage_helper
 from menu.forms import CategoryForm, FoodItemForm, ProductGalleryForm, SubCategoryForm, ProductForm,EditProductForm
 from orders.models import Order, OrderedFood
 # from menu.models import Product,ProductGallery
@@ -1160,6 +1160,7 @@ def process_mapped_data(request):
     if len(error_rows) == 0 and len(errors) == 0 and len(error_fields_for_frontend) == 0:
         vendor = get_vendor(request)
         save_to_clone_products_table(request, products, vendor)
+        massage_helper.messages.success(request, "Products have been validated successfully.")
 
     return render(request, 'vendor/validate_import_data.html', {
         'products': products_to_display,
@@ -1289,7 +1290,7 @@ def process_mapped_data_with_images(request):
         page_obj = None
         paginator = None
         offset = 0
-    messages.success(request, f"Products image generated successfully.")
+    messages.success(request, f"Products images generated successfully.")
     return render(request, 'vendor/validate_import_data.html', {
         'products': products_to_display,
         'field_mappings': field_mappings_filtered,
@@ -1525,40 +1526,55 @@ def update_image_url_in_session(request):
 
 
 
-# Save clone Data 
-from django.utils.text import slugify
 
 def save_to_clone_products_table(request, products, vendor):
-    bulk_objs = []
-    seen_slugs = set()  # To avoid duplicate slugs within this bulk
+    try:
+        bulk_objs = []
+        seen_slugs = set()  # To avoid duplicate slugs within this bulk
 
-    for row in products:
-        product_name = row['product_name']
-        slug = slugify(product_name)
-        key = (vendor.id, slug)
+        for row in products:
+            try:
+                product_name = row.get('product_name', '').strip()
+                if not product_name:
+                    continue
 
-        # Skip if already seen in this loop
-        if key in seen_slugs:
-            continue
+                slug = slugify(product_name)
+                key = (vendor.id, slug)
 
-        # Skip if already in DB
-        if ProductCloneTable.objects.filter(vendor=vendor, slug=slug).exists():
-            continue
+                # Skip if already seen in this loop
+                if key in seen_slugs:
+                    continue
 
-        seen_slugs.add(key)
+                # Skip if already in DB
+                if ProductCloneTable.objects.filter(vendor=vendor, slug=slug).exists():
+                    continue
 
-        bulk_objs.append(ProductCloneTable(
-            vendor=vendor,
-            slug=slug,
-            product_name=product_name,
-            regular_price=row.get('regular_price', 0),
-            image_url=row.get('image', ''),
-            category_name=row.get('category', ''),
-            qty=row.get('qty', 0),
-            tax_category_name=row.get('tax_category', ''),
-            deposit_category_name=row.get('deposit_category', ''),
-            unit_type=row.get('unit_type', 'pcs'),
-        ))
+                seen_slugs.add(key)
 
-    if bulk_objs:
-        ProductCloneTable.objects.bulk_create(bulk_objs)
+                bulk_objs.append(ProductCloneTable(
+                    vendor=vendor,
+                    slug=slug,
+                    product_name=product_name,
+                    regular_price=row.get('regular_price', 0),
+                    image_url=row.get('image', ''),
+                    category_name=row.get('category', ''),
+                    qty=row.get('qty', 0),
+                    tax_category_name=row.get('tax_category', ''),
+                    deposit_category_name=row.get('deposit_category', ''),
+                    unit_type=row.get('unit_type', 'pcs'),
+                ))
+
+            except:
+                # Skip this row if any error occurs while processing it
+                continue
+
+        if bulk_objs:
+            try:
+                ProductCloneTable.objects.bulk_create(bulk_objs)
+            except:
+                # Silently skip bulk_create error
+                pass
+
+    except:
+        # Silently skip unexpected top-level error
+        pass
