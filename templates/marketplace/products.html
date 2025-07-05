@@ -117,10 +117,10 @@
                 <div class="col-lg-8">
                     <div class="shop-toolbar d-flex justify-content-start align-items-center mb-10 ">
                         <div class="me-3 ">
-                            <a href="#" class="btn btn-sm  update_color {% if search_type == 'products' or not search_type %}btn-success{% else %}btn-outline-success{% endif %} text-light " onclick="switchType('products')">Products</a>
+                            <a href="#" class="btn btn-sm  update_color {% if search_type == 'products' or not search_type %}btn-success{% else %}{% endif %} text-light " onclick="switchType('products')" style="border: none;">Products</a>
                         </div>
                         <div>
-                            <a href="#" class="btn btn-sm update_color {% if search_type == 'stores' %}btn-success{% else %}btn-outline-success{% endif %} text-light " onclick="switchType('stores')" style="width: 90px;">Stores</a>
+                            <a href="#" class="btn btn-sm update_color {% if search_type == 'stores' %}btn-success{% else %}{% endif %} text-light " onclick="switchType('stores')" style="border: none;width: 90px;">Stores</a>
                         </div>
                     </div>
                     <div class="shop-product-fillter">

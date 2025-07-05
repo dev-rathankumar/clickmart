@@ -406,7 +406,7 @@
             style="font-size: 1.4rem"
           >
             <i class="fa fa-shopping-cart"></i>
-            <span class="badge rounded-pill bg-danger"> {{cart_count}} </span>
+            <span class="badge rounded-pill bg-danger" id="mb-cart_count"> {{cart_count}} </span>
           </a>
           {% endif %}
           <button
@@ -590,7 +590,7 @@
         <span
           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart_color"
         >
-          <span id="cart_count">{{cart_count}}</span>
+          <span id="mb-hd-cart_count">{{cart_count}}</span>
           <span class="visually-hidden">cart items</span>
         </span>
       </a>

@@ -46,7 +46,7 @@ def home(request):
     else:
         vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)[:8]
 
-    products = Product.objects.filter(is_active=True)[:10]
+    products = Product.objects.filter(is_active=True, qty__gt=0)[:10]
 
     # Product Collections
     collections = ProductCollection.objects.filter(active=True)
