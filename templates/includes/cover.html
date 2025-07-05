@@ -20,12 +20,16 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="vendor-info text-white mb-15">
-                            <ul class="font-sm">
+                            <ul class="font-sm"  style="padding: 0">
                                 {% if vendor.user_profile.address %}
                                 <li><img class="mr-5" src="{% static 'assets/imgs/theme/icons/icon-location.svg' %}" alt="" /><strong>Address: </strong> <span>{{ vendor.user_profile.address }}</span></li>
                                 {% endif %}
                                 {% if vendor.user.phone_number %}
-                                <li><img class="mr-5" src="{% static 'assets/imgs/theme/icons/icon-contact.svg' %}" alt="" /><strong>Call Us: </strong><span>{{vendor.user.phone_number}}</span></li>
+                                <li style="display: flex; align-items: center;">
+                                    <img src="{% static 'assets/imgs/theme/icons/icon-contact.svg' %}" alt="" style="width: 16px; height: 16px; margin-right: 6px;">
+                                    <span><strong>Call Us:</strong> {{ vendor.user.phone_number }}</span>
+                                </li>
+
                                 {% endif %}
                             </ul>
                         </div>

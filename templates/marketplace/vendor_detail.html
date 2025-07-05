@@ -458,7 +458,7 @@
                     </div>
                 </div>
                 {% endif %}
-                   <div class="sidebar-widget widget-category-2 mb-30">
+                     <div class="sidebar-widget widget-category-2 mb-30">
                         <h5 class="section-title style-1 mb-30">Category</h5>
                         <ul class="list-unstyled">
                             {% for cat in categories %}
@@ -471,11 +471,11 @@
                                     </a>
 
                                     <!-- Arrow icon toggles collapse only -->
-                                    <a data-bs-toggle="collapse" href="#subcats-{{ cat.id }}" role="button" aria-expanded="false" aria-controls="subcats-{{ cat.id }}">
-                                        <i class="fa fa-chevron-down" style="font-size: 12px;"></i>
-                                    </a>
+                                    <button class="toggle-btn" data-target="subcat-large-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
+                                        <i class="fa fa-chevron-down"></i>
+                                    </button>
                                 </div>
-                                <ul class="collapse mt-2 ps-3" id="subcats-{{ cat.id }}">
+                                <ul id="subcat-large-{{ cat.id }}" class="subcategory-list" style="display: none; ">
                                     {% for sub in cat.subcategories.all %}
                                     <li class="small">
                                         <a class="text-decoration-none" href="{% url 'vendor_detail_filter_by_subcategory' vendor_slug=vendor.vendor_slug subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
@@ -510,53 +510,21 @@
 
                 if (subList.style.display === 'none' || subList.style.display === '') {
                     subList.style.display = 'block';
-                    btn.classList.add('open');
+                    btn.querySelector('i').classList.remove('fa-chevron-down');
+                    btn.querySelector('i').classList.add('fa-chevron-up');
                 } else {
                     subList.style.display = 'none';
-                    btn.classList.remove('open');
+                    btn.querySelector('i').classList.remove('fa-chevron-up');
+                    btn.querySelector('i').classList.add('fa-chevron-down');
                 }
             });
         });
     });
 </script>
 
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    function toggleCategories(event) {
-        event.preventDefault(); // Prevent default behavior of the button/link
-        const category = document.getElementById('category-ul');
-        // Toggle the display property between 'none' and 'block'
-        if (category.style.display === 'none' || category.style.display === '') {
-            category.style.display = 'block';
-        } else {
-            category.style.display = 'none';
-        }
-    }
-    
-    function updateCategoryIcon() {
-        const icon = document.getElementById("categoryIcon");
-        const category = document.getElementById('category-ul'); 
-        
-        if (window.innerWidth <= 990) {
-            category.style.display = 'none';
-            if (icon) {
-                icon.classList.remove("icon-restaurant_menu");
-                icon.classList.add("fa", "fa-bars");
-            }
-        } else {
-            category.style.display = 'block';
-            if (icon) {
-                icon.classList.remove("fa", "fa-bars");
-                icon.classList.add("icon-restaurant_menu");
-            }
-        }
-    }
-
-     updateCategoryIcon();
-
-    // Add event listener to handle window resize
-    window.addEventListener("resize", updateCategoryIcon);
-
 
     const filterBtn = document.getElementById('filterToggleBtn');
     if (filterBtn) {
