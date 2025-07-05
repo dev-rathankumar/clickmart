@@ -101,8 +101,11 @@ $(document).ready(function(){
                 else{
                     console.log(response)
                     $('#cart_count').text(response.cart_counter);
+                    $('#mb-cart_count').text(response.cart_counter);
+                    $('#mb-hd-cart_count').text(response.cart_counter);
                     // $('#cart_counter').attr('data-count', response.cart_counter['cart_count']);
                     $('#qty-'+food_id).text(response.qty);
+                    $('#qty-mb-'+food_id).text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -182,7 +185,10 @@ $(document).ready(function(){
                     swal(response.message, '', 'error')
                 }else{
                     $('#cart_count').text(response.cart_counter);
+                    $('#mb-cart_count').text(response.cart_counter);
+                    $('#mb-hd-cart_count').text(response.cart_counter);
                     $('#qty-'+food_id).text(response.qty);
+                    $('#qty-mb-'+food_id).text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -257,6 +263,8 @@ $(document).ready(function(){
                 }else{
                     console.log(response)
                     $('#cart_count').text(response.cart_counter);
+                    $('#mb-cart_count').text(response.cart_counter);
+                    $('#mb-hd-cart_count').text(response.cart_counter);
 
                     applyCartAmounts(
                         response.cart_amount['subtotal'],

@@ -242,7 +242,29 @@ def view_Product(request, vendor_slug, product_slug):
         category=product.category,
         is_available=True  # Optional: Only include available products
     ).exclude(id=product.id)
-    
+    if request.user.is_authenticated:
+        cart_items = []
+        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
+            cart_items.append({
+                'product': cart_obj.product,
+                'quantity': cart_obj.quantity,
+                'cart_id': cart_obj.id,  # DB cart uses Cart PK
+            })
+    else:
+        cart = request.session.get('cart', {})
+        product_ids = list(cart.keys())
+        cart_products  = Product.objects.filter(id__in=product_ids)
+        cart_items = []
+        for product in cart_products :
+            print("product_id ===>", product.id)
+            quantity = cart.get(str(product.id))
+            cart_items.append({
+                'product': product,
+                'quantity': quantity,
+                'cart_id': product.id,  # session cart uses product id
+            })
+    cart_product_ids = set(item['product'].id for item in cart_items)
+
     context = {
         'vendor':vendor,
         'product': product,
@@ -252,6 +274,8 @@ def view_Product(request, vendor_slug, product_slug):
         'product_gallery':product_gallery,
         'different_vendor_product_exists':different_vendor_product_exists,
         'address':address,
+        'cart_items': cart_items,
+        'cart_product_ids': cart_product_ids,
     }
     
     return render(request, 'vendor/product_view.html', context)
