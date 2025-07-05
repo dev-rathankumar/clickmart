@@ -56,6 +56,11 @@
         width: 100px !important;
     }
   }
+  <style>
+  .cart-item-row > div {
+    white-space: nowrap;
+  }
+</style>
 
 </style>
 <div class="container mt-5 mb-5">
@@ -92,33 +97,52 @@
                 </div>
                 <hr>
 
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Vendor</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Tax Category</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in ordered_food %}
-                        <tr>
-                            <td>
-                                <img src="{{ item.product.image.url }}" width="60" alt="Product Image"><br>
-                                <b>{{ item.product }}</b>
-                            </td>
-                            <td>{{ item.product.vendor.vendor_name }}</td>
-                            <td>{{ item.quantity }}</td>
-                            <td>₹{{ item.price }}</td>
-                            <td>{{ item.product.tax_category }}</td>
-                            <td>{{ item.status }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+               <table class="table d-none d-md-table">
+                <thead>
+                    <tr>
+                    <th>Product</th>
+                    <th>Vendor</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Tax Category</th>
+                    <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ordered_food %}
+                    <tr>
+                    <td>
+                        <img src="{{ item.product.image.url }}" width="60" alt="Product Image"><br>
+                        <b>{{ item.product }}</b>
+                    </td>
+                    <td>{{ item.product.vendor.vendor_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>{{ item.product.tax_category }}</td>
+                    <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
                 </table>
+
+                <!-- Small screen  -->
+                <div class="d-md-none">
+                {% for item in ordered_food %}
+                <div class="cart-item-row d-flex align-items-center mb-3" style="gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                    <div style="flex-shrink: 0;">
+                    <img src="{{ item.product.image.url }}" width="60" alt="Product Image">
+                    </div>
+                    <div class="w-30"><b>{{ item.product }}</b></div>
+                    <div style="margin-left: 15px;">Vendor: {{ item.product.vendor.vendor_name }}</div>
+                    <div style="margin-left: 15px;">Qty: {{ item.quantity }}</div>
+                    <div style="margin-left: 15px;">
+                    Price: ₹{{ item.price }}
+                    </div>
+                    <div style="margin-left: 15px;">Tax: {{ item.product.tax_category }}</div>
+                    <div style="margin-left: 15px;">Status: {{ item.status }}</div>
+                </div>
+                {% endfor %}
+                </div>
 
                 <div class="row mt-5">
                     <div class="d-flex justify-content-center col-md-6">
