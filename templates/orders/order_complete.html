@@ -112,7 +112,13 @@
                     {% for item in ordered_food %}
                     <tr>
                     <td>
+                        
+                        {% if item.product.image %}
                         <img src="{{ item.product.image.url }}" width="60" alt="Product Image"><br>
+                       {% else %}     
+                        <img src="#" width="60" alt="Product Image"><br>
+                        {% endif %}
+                            
                         <b>{{ item.product }}</b>
                     </td>
                     <td>{{ item.product.vendor.vendor_name }}</td>
@@ -130,7 +136,12 @@
                 {% for item in ordered_food %}
                 <div class="cart-item-row d-flex align-items-center mb-3" style="gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
                     <div style="flex-shrink: 0;">
+                    
+                    {% if item.product.image %}
                     <img src="{{ item.product.image.url }}" width="60" alt="Product Image">
+                    {% else %}
+                    <img src="" width="60" alt="Product Image">
+                    {% endif %}                        
                     </div>
                     <div class="w-30"><b>{{ item.product }}</b></div>
                     <div style="margin-left: 15px;">Vendor: {{ item.product.vendor.vendor_name }}</div>

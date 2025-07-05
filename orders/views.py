@@ -254,10 +254,11 @@ def order_complete(request):
             'all_paid': all_paid,
         }
         return render(request, 'orders/order_complete.html', context)
-    except:
-        return redirect('home')
-    
-
+    except Exception as e:
+            print("Error occurred in order_complete:")
+            print(f"Order Number: {order_number}, Transaction ID: {transaction_id}")
+            print(f"Error: {e}")
+            return render(request, 'orders/order_failed.html', {'error': str(e)})
 
 def generate(request):
         order = Order.objects.get(order_number=202501100237187)
