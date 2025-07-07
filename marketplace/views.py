@@ -738,6 +738,23 @@ def All_products(request, category_id=None, subcategory_id=None):
 
     return render(request, 'marketplace/products.html', context)
 
+
+def product_search(request):
+    query = request.GET.get("term", "")
+    products = Product.objects.filter(product_name__icontains=query)[:10]
+    
+    data = []
+    for product in products:
+        data.append({
+            "name": product.product_name,
+            "slug": product.slug,
+            "vendor_slug": product.vendor.vendor_slug,
+            "image": product.image.url if product.image else "",
+            "price": product.sales_price,
+        })
+
+    return JsonResponse(data, safe=False)
+
 # def add_product_to_cart(request, product_id):
 #     print(request)
 #     if request.user.is_authenticated:

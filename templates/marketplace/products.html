@@ -81,6 +81,26 @@
         transform: rotate(180deg);
     }
 
+      #vendor-suggestions-list {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  #vendor-suggestions-list li {
+    padding: 10px;
+    cursor: pointer;
+  }
+
+  #vendor-suggestions-list li:hover {
+    background-color: #f0f0f0;
+  }
 </style>
 {% include 'includes/alerts.html' %}
 
@@ -98,11 +118,12 @@
                             <div class="flex-grow-1">
                                 <div class="search-style-2">
                                     <form method="get" class="d-flex" id="searchForm">
-                                        <input type="text" name="search" class="form-control" placeholder="Search products or stores..." value="{{ search_query|default:'' }}" />
+                                        <input type="text" name="search" id="vendor-search-input" autocomplete="off" class="form-control" placeholder="Search products or stores..." value="{{ search_query|default:'' }}" />
                                         <input type="hidden" name="type" id="searchType" value="{{ search_type|default:'products' }}">
                                          <button type="submit" class="btn  d-flex align-items-center justify-content-center ml-10" >
                                              <img src=" {% static 'assets/imgs/theme/icons/search.png' %}" alt="Search" style="width: 100%; height: 20px;">
                                         </button>
+                                         <ul id="vendor-suggestions-list" class="dropdown-menu show" style="position:absolute; z-index:1000; display:none;"></ul>
                                     </form>
                                 </div>
                             </div>
@@ -527,6 +548,66 @@
         </div>
     </main>
 </div>
+
+{% comment %} for search {% endcomment %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = {
+        input: document.getElementById("vendor-search-input"),
+        list: document.getElementById("vendor-suggestions-list"),
+    };
+
+    const { input, list } = searchInput;
+    if (!input || !list) return;
+
+    input.addEventListener("keyup", function () {
+        const query = input.value.trim();
+        console.log("query", query);
+
+        if (query.length < 1) {
+        list.style.display = "none";
+        list.innerHTML = "";
+        return;
+        }
+
+        fetch(`/marketplace/live/search/?term=${query}`)
+        .then((response) => response.json())
+        .then((data) => {
+            list.innerHTML = "";
+            console.log("data", data);
+
+            if (data.length === 0) {
+            list.innerHTML = `<li class="dropdown-item text-muted">No results found</li>`;
+            } else {
+            data.forEach((product) => {
+                const li = document.createElement("li");
+                li.className = "dropdown-item";
+                li.innerHTML = `
+                <a href="/marketplace/product/${product.vendor_slug}/${product.slug}" class="d-flex align-items-center text-dark text-decoration-none">
+                    <img src="${product.image || '/static/images/placeholder.jpg'}" alt="${product.name}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
+                    <div style="font-size: 13px;">
+                    <div>${product.name}</div>
+                    <small>₹${product.price}</small>
+                    </div>
+                </a>
+                `;
+                list.appendChild(li);
+            });
+            }
+
+            list.style.display = "block";
+        });
+    });
+
+    // Hide dropdown on click outside
+    document.addEventListener("click", function (e) {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+        list.style.display = "none";
+        }
+    });
+    });
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggles = document.querySelectorAll('.toggle-btn');
