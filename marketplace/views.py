@@ -288,12 +288,18 @@ def add_to_cart(request, food_id):
             product = Product.objects.get(id=food_id)
         except Product.DoesNotExist:
             return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+        try:
+            qty = int(request.GET.get('quantity', 1))
+        except (ValueError, TypeError):
+            qty = 1
 
+        if qty < 1:
+            qty = 1
         # --- Authenticated user ---
         if request.user.is_authenticated:
             try:
                 chkCart = Cart.objects.get(user=request.user, product=product)
-                new_quantity = chkCart.quantity + 1
+                new_quantity = chkCart.quantity + qty
                 if new_quantity > product.qty:
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
@@ -338,7 +344,7 @@ def add_to_cart(request, food_id):
             cart = request.session.get('cart', {})
             product_id = str(product.id)
             prev_qty = int(cart.get(product_id, 0))
-            new_qty = prev_qty + 1
+            new_qty = prev_qty + qty
 
             if new_qty > product.qty:
                 return JsonResponse({
