@@ -61,7 +61,7 @@ class ProductForm(forms.ModelForm):
         self.fields['category'].queryset = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)
 
         # If a category is selected, filter the subcategories
-        self.fields['subcategory'].required = True
+        self.fields['subcategory'].required = False
         if 'category' in self.data:
             try:
                 category_id = int(self.data.get('category'))
