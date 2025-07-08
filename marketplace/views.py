@@ -288,18 +288,12 @@ def add_to_cart(request, food_id):
             product = Product.objects.get(id=food_id)
         except Product.DoesNotExist:
             return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
-        try:
-            qty = int(request.GET.get('quantity', 1))
-        except (ValueError, TypeError):
-            qty = 1
 
-        if qty < 1:
-            qty = 1
         # --- Authenticated user ---
         if request.user.is_authenticated:
             try:
                 chkCart = Cart.objects.get(user=request.user, product=product)
-                new_quantity = chkCart.quantity + qty
+                new_quantity = chkCart.quantity + 1
                 if new_quantity > product.qty:
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
@@ -344,7 +338,7 @@ def add_to_cart(request, food_id):
             cart = request.session.get('cart', {})
             product_id = str(product.id)
             prev_qty = int(cart.get(product_id, 0))
-            new_qty = prev_qty + qty
+            new_qty = prev_qty + 1
 
             if new_qty > product.qty:
                 return JsonResponse({
@@ -369,6 +363,7 @@ def add_to_cart(request, food_id):
     else:
         return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
     
+
 
 
 def decrease_cart(request, food_id):
@@ -640,17 +635,19 @@ def All_products(request, category_id=None, subcategory_id=None):
     if search_type == 'stores':
         if get_or_set_current_location(request) is not None:
 
-            pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
-
-            vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
-
+            location = get_or_set_current_location(request)
+            print('location', location)
+            if location is not None:
+                lng, lat = location
+                pnt = GEOSGeometry(f'POINT({lng} {lat})', srid=4326)
+                vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+                print("Pnt", pnt)
+                print("vendor", vendors)
             for v in vendors:
                 v.kms = round(v.distance.km, 1)
         else:
             vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
         
-        print("vendors ===> ", vendors)
-
         if search_query:
             vendors = vendors.filter(
                 models.Q(vendor_name__icontains=search_query) |
