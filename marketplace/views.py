@@ -73,6 +73,8 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
     categories = Category.objects.filter(is_active=True, parent=None, store_type=vendor.store_type).prefetch_related('subcategories')
 
+    print('just category',categories)
+
     # Handle search query
     search_query = request.GET.get('search', None)
     sort_type = request.GET.get('sort', None)
@@ -724,9 +726,7 @@ def All_products(request, category_id=None, subcategory_id=None):
     
         paginator = Paginator(products, 20)
         page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        
+        page_obj = paginator.get_page(page_number)      
 
         context.update({
             'products': page_obj,
@@ -739,21 +739,73 @@ def All_products(request, category_id=None, subcategory_id=None):
     return render(request, 'marketplace/products.html', context)
 
 
-def product_search(request):
+def product_search_for_vendor(request):
     query = request.GET.get("term", "")
-    products = Product.objects.filter(product_name__icontains=query)[:10]
-    
+    vendor_slug = request.GET.get("vendor", "")
+
+    vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
+    products = Product.objects.filter(vendor=vendor, product_name__icontains=query)[:10]
+
     data = []
     for product in products:
         data.append({
             "name": product.product_name,
             "slug": product.slug,
-            "vendor_slug": product.vendor.vendor_slug,
+            "vendor_slug": vendor.vendor_slug,
             "image": product.image.url if product.image else "",
             "price": product.sales_price,
         })
 
     return JsonResponse(data, safe=False)
+
+
+def product_search(request):
+    query = request.GET.get("term", "")
+
+    # Check for user location
+    location = get_or_set_current_location(request)
+    
+    if location is not None:
+        pnt = GEOSGeometry('POINT(%s %s)' % location)
+        vendor_qs = Vendor.objects.filter(
+            user_profile__location__distance_lte=(pnt, D(km=10000)),
+            is_approved=True,
+            user__is_active=True).annotate( distance=Distance("user_profile__location", pnt)).order_by("distance")
+    else:
+        pnt = None
+        vendor_qs = Vendor.objects.filter( is_approved=True,  user__is_active=True)
+
+    # Filter vendors by search term
+    vendors = vendor_qs.filter(vendor_name__icontains=query)[:10]
+
+    # Filter products
+    products = Product.objects.filter(
+        Q(product_name__icontains=query) | Q(vendor__vendor_name__icontains=query)).select_related('vendor')[:10]
+
+    return JsonResponse({
+        "vendors": [
+            {
+                "type": "vendor",
+                "name": vendor.vendor_name,
+                "vendor_slug": vendor.vendor_slug,
+                "image": vendor.user_profile.profile_picture.url if vendor.user_profile.profile_picture else "",
+                "distance": round(vendor.distance.km, 1) if pnt else None
+            }
+            for vendor in vendors
+        ],
+        "products": [
+            {
+                "type": "product",
+                "name": product.product_name,
+                "slug": product.slug,
+                "vendor_name": product.vendor.vendor_name,
+                "vendor_slug": product.vendor.vendor_slug,
+                "image": product.image.url if product.image else "",
+                "price": str(product.sales_price),
+            }
+            for product in products
+        ]
+    })
 
 # def add_product_to_cart(request, product_id):
 #     print(request)

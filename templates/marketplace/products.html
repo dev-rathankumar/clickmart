@@ -570,32 +570,64 @@
         return;
         }
 
-        fetch(`/marketplace/live/search/?term=${query}`)
+        fetch(`/marketplace/live/search/?term=${encodeURIComponent(query)}`)
         .then((response) => response.json())
         .then((data) => {
-            list.innerHTML = "";
-            console.log("data", data);
+          list.innerHTML = "";
 
-            if (data.length === 0) {
+          // Combine vendors and products into one list
+          const combinedResults = [...(data.vendors || []), ...(data.products || [])];
+
+          if (combinedResults.length === 0) {
             list.innerHTML = `<li class="dropdown-item text-muted">No results found</li>`;
-            } else {
-            data.forEach((product) => {
-                const li = document.createElement("li");
-                li.className = "dropdown-item";
-                li.innerHTML = `
-                <a href="/marketplace/product/${product.vendor_slug}/${product.slug}" class="d-flex align-items-center text-dark text-decoration-none">
-                    <img src="${product.image || '/static/images/placeholder.jpg'}" alt="${product.name}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
-                    <div style="font-size: 13px;">
-                    <div>${product.name}</div>
-                    <small>₹${product.price}</small>
-                    </div>
-                </a>
-                `;
-                list.appendChild(li);
-            });
-            }
+          } else {
+            combinedResults.forEach((item) => {
+              const li = document.createElement("li");
+              li.className = "dropdown-item";
 
-            list.style.display = "block";
+              // Determine link URL
+              const link =
+                item.type === "vendor"
+                  ? `/marketplace/${item.vendor_slug}/`
+                  : `/marketplace/product/${item.vendor_slug}/${item.slug}`;
+
+              // Image with fallback
+              const image = item.image || "/static/images/placeholder.jpg";
+
+              // Extra info HTML (distance for vendors, price & seller for products)
+              let extraInfo = "";
+              if (item.type === "vendor") {
+                extraInfo = `<div class="d-flex align-items-center gap-1 text-muted" style="font-size: 13px;">
+                  ${item.name}
+                  ${
+                    item.distance
+                    ? `<i class="bi bi-geo-alt" style="font-size: 16px; color: #555; margin-left: 6px;"></i> ${item.distance} km`
+                    : ""
+                  }
+                </div>
+                <small class="text-muted">Visit Store</small>`;
+              } else {
+                extraInfo = `<div>${item.name}</div>
+                <small>₹${item.price}</small><br>`;
+              }
+
+              li.innerHTML = `
+                <a href="${link}" class="d-flex align-items-center text-dark text-decoration-none">
+                  <img src="${image}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
+                  <div style="font-size: 13px;">
+                    ${extraInfo}
+                  </div>
+                </a>
+              `;
+              list.appendChild(li);
+            });
+          }
+
+          list.style.display = "block";
+        })
+        .catch(() => {
+          list.innerHTML = `<li class="dropdown-item text-danger">Error loading results</li>`;
+          list.style.display = "block";
         });
     });
 

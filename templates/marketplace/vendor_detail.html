@@ -484,7 +484,7 @@
                         <h5 class="section-title style-1 mb-30">Category</h5>
                         <ul class="list-unstyled">
                             {% for cat in categories %}
-                            <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
+                            <li class="mb-2" style="line-height: 20px; text-align: left;">
                                 {% if cat.subcategories.all %}
                                 <div class="d-flex justify-content-between align-items-center">
                                     <!-- Main category name links to its page -->
@@ -532,6 +532,9 @@
     const { input, list } = searchInput;
     if (!input || !list) return;
 
+    // Extract vendor slug from current URL
+    const vendorSlug = window.location.pathname.split("/")[2];
+
     input.addEventListener("keyup", function () {
         const query = input.value.trim();
         console.log("query", query);
@@ -542,7 +545,7 @@
         return;
         }
 
-        fetch(`/marketplace/live/search/?term=${query}`)
+        fetch(`/marketplace/vendor/live/search/?term=${query}&vendor=${vendorSlug}`)
         .then((response) => response.json())
         .then((data) => {
             list.innerHTML = "";

@@ -82,26 +82,7 @@
                                             </div>
                                             
                                             <h6>Hello {{ order.name }}, </h6><span>Review your order details below.</span>
-                                            <div class="float-right">
-                                                <form id="change-order-status" method="POST">
-                                                    {% csrf_token %}
-                                                    <select name="order_status" id="order_status" onchange="changeOrderStatus(this)"
-                                                    {% if vendor_status == 'Paid' %} class="bg-success text-light" 
-                                                    {% elif vendor_status == 'Processing' %} class="bg-warning text-light" 
-                                                    {% elif vendor_status == 'Completed' %} class="bg-success text-light" 
-                                                    {% elif vendor_status == 'Cancelled' %} class="bg-danger text-light"
-                                                    {% elif vendor_status == 'Refunded' %} class="bg-danger text-light" 
-                                                    {% endif %}
-                                                    >
-                                                        <option value="Processing" {% if vendor_status == 'Processing' %}selected{% endif %}>Processing</option>
-                                                        <option value="Paid" {% if vendor_status == 'Paid' %}selected{% endif %}>Paid</option>
-                                                        <option value="Completed" {% if vendor_status == 'Completed' %}selected{% endif %}>Completed</option>
-                                                        <option value="Cancelled" {% if vendor_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-                                                        <option value="Refunded" {% if vendor_status == 'Refunded' %}selected{% endif %}>Refunded</option>
-                                                    </select>
-                                                    <input type="hidden" name="order_number" value="{{ order.order_number }}">
-                                                </form>
-                                            </div>
+                                            
                                             <hr>
                             
                                             <div class="d-flex justify-content-between custom-design-for-info">
@@ -119,22 +100,54 @@
                                                 </div>
                                             </div>
                                             <hr>
-                                            <table class="table">
+                                           <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Image</th>
+                                                        <th>Product</th>
+                                                        <th>Quantity</th>
+                                                        <th>Price</th>
+                                                        <th>Tax</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
                                                 <tbody>
                                                     {% for item in ordered_food %}
                                                     <tr>
                                                         <td><img src="{{ item.product.image.url }}" width="60" alt="Food Image"></td>
                                                         <td>
                                                             <p class="mb-0"><b>{{ item.product }}</b></p>
-                                                            <a class="text-muted" href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}">{{ item.product.vendor.vendor_name }}</a>
+                                                            <a class="text-muted" href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}">
+                                                                {{ item.product.vendor.vendor_name }}
+                                                            </a>
                                                         </td>
                                                         <td>{{ item.quantity }} QTY</td>
-                                                    {% if item.product.sales_price %}
-                                                        <td>₹{{ item.product.sales_price }}</td>
-                                                    {% else %}
-                                                        <td>₹{{ item.product.regular_price }}</td>
-                                                    {% endif %}
-                                                        <td>{{item.product.tax_category}}</td>
+                                                        <td>₹{{ item.product.sales_price|default:item.product.regular_price }}</td>
+                                                        <td>{{ item.product.tax_category }}</td>
+                                                        <td>
+                                                            <form class="update-product-status-form">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="order_number" value="{{ order.order_number }}">
+                                                                <input type="hidden" name="ordered_food_id" value="{{ item.id }}">
+                                                                <select name="order_status" onchange="updateSingleProductStatus(this)"
+                                                                    class="
+                                                                        {% if item.status == 'Paid' or item.status == 'Completed' %}
+                                                                            bg-success text-light
+                                                                        {% elif item.status == 'Processing' %}
+                                                                            bg-warning text-light
+                                                                        {% elif item.status == 'Cancelled' or item.status == 'Refunded' %}
+                                                                            bg-danger text-light
+                                                                        {% endif %}
+                                                                    "
+                                                                >
+                                                                    <option value="Processing" {% if item.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                                                    <option value="Paid" {% if item.status == 'Paid' %}selected{% endif %}>Paid</option>
+                                                                    <option value="Completed" {% if item.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                                    <option value="Cancelled" {% if item.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                                                    <option value="Refunded" {% if item.status == 'Refunded' %}selected{% endif %}>Refunded</option>
+                                                                </select>
+                                                            </form>
+                                                        </td>
                                                     </tr>
                                                     {% endfor %}
                                                 </tbody>
@@ -160,29 +173,7 @@
                                                         </span>
                                                     </li>
                                                     
-                                                 {% comment %} {% for single_tax_dict in tax_data %}
-                                                {% for key, value in single_tax_dict.items %}
-                                                    {% if value %}
-                                                        <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
-                                                            <div style="font-size: 12px;">
-                                                                {{ key }} 
-                                                                <small>
-                                                                    {% for per, val in value.items %}
-                                                                       ({{ per }}%)
-                                                                    {% endfor %}
-                                                                </small>
-                                                            </div>
-                                                            <span class="price float-right">
-                                                                <span class="currency">₹</span>
-                                                                {% for per, val in value.items %}
-                                                                    <span id="tax-{{ forloop.parentloop.counter }}">{{ val }}</span>
-                                                                {% endfor %}
-                                                            </span>
-                                                        </li>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            {% endfor %} {% endcomment %}
- 
+                                        
                             {% for single_tax_dict in tax_data %}
                             {% for key, value in single_tax_dict.tax_info.items %}
                                 {% if value %}  
@@ -240,65 +231,59 @@
 </div>
 <!-- Main Section End -->
 
+
 <script>
-function changeOrderStatus(selectElement) {
-    var form = document.getElementById('change-order-status');
-    var formData = new FormData(form);
+function updateSingleProductStatus(selectElement) {
+    const form = selectElement.closest('.update-product-status-form');
+    const formData = new FormData(form);
+    const selectedStatus = formData.get('order_status');
 
-    var selectedValue = formData.get('order_status'); 
-    var orderNumber = formData.get('order_number'); 
+    if (!confirm("Are you sure you want to change this item's status to " + selectedStatus + "?")) {
+        return;
+    }
 
-    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    // Confirm before sending the AJAX request
-    var confirmAction = confirm("Are you sure you want to change the order status to " + selectedValue + "?");
-
-    if (confirmAction) {
-
-        swal({
+    swal({
         title: 'Please wait...',
-        text: 'Updating the order status.',
-        icon: 'info', // You can use 'info' or skip this
-        buttons: false, // Disable buttons
-        closeOnClickOutside: false, // Prevent outside click
-        closeOnEsc: false // Prevent escape key closing
+        text: 'Updating the order status',
+        icon: 'info',
+        buttons: false,
+        closeOnClickOutside: false,
+        closeOnEsc: false
     });
 
-        $.ajax({
-            url: '{% url "order_status" %}',  // Django URL name for your view
-            type: 'POST',
-            data: formData, 
-            processData: false, 
-            contentType: false, 
-            headers: {
-                'X-CSRFToken': csrfToken 
-            },
-            success: function(response) {
-                var orderStatusSelect = document.getElementById('order_status');
-                orderStatusSelect.classList.remove('bg-success', 'text-light', 'bg-warning', 'bg-danger');
-                if (response.status === 'Paid' || response.status === 'Completed') {
-                    orderStatusSelect.classList.add('bg-success', 'text-light');
-                    swal(response.message, '', 'success')
-                } else if(response.status === 'Processing'){
-                    orderStatusSelect.classList.add('bg-warning', 'text-light');
-                    swal(response.message, '', 'success')
-                }else if(response.status === 'Cancelled' || response.status === 'Refunded'){
-                    orderStatusSelect.classList.add('bg-danger', 'text-light');
-                    swal(response.message, '', 'success')
-                }
-                
-            },
-            error: function(xhr, status, error) {
-                alert('An error occurred while updating the order status.');
-            }
-        });
-    } else {
-        // If user cancels, reset the select box to its previous value
-        selectElement.value = '';  // Reset or set to the original value if needed
-    }
-}
+    fetch("{% url 'order_status' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            // Clear existing color classes
+            selectElement.classList.remove('bg-success', 'bg-warning', 'bg-danger', 'text-light');
 
+            // Add new color based on status
+            if (data.status === 'Paid' || data.status === 'Completed') {
+                selectElement.classList.add('bg-success', 'text-light');
+            } else if (data.status === 'Processing') {
+                selectElement.classList.add('bg-warning', 'text-light');
+            } else if (data.status === 'Cancelled' || data.status === 'Refunded') {
+                selectElement.classList.add('bg-danger', 'text-light');
+            }
+
+            swal("Success", data.message, "success");
+        } else {
+            swal("Error", data.error || "Something went wrong", "error");
+        }
+    })
+    .catch(() => {
+        swal("Error", "Request failed", "error");
+    });
+}
 </script>
+
 
 
 {% endblock %}

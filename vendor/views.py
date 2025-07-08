@@ -850,30 +850,32 @@ def order_status(request):
     if request.method == "POST":
         status = request.POST.get('order_status')
         order_number = request.POST.get('order_number')
+        ordered_food_id = request.POST.get('ordered_food_id') # Accept specific OrderedFood ID
+        
 
         try:
             order = Order.objects.get(order_number=order_number)
 
             vendor = Vendor.objects.get(user=request.user)
 
-            ordered_products = OrderedFood.objects.filter(order = order, product__vendor = vendor)
-
-            if not ordered_products.exists():
-                return JsonResponse({'error': 'No items found for this vendor in the order.'})
+            try:
+                ordered_products = OrderedFood.objects.get(id=ordered_food_id, order=order, product__vendor=vendor)
+            except OrderedFood.DoesNotExist:
+                return JsonResponse({'error': 'Item not found for this vendor in the order.'})
             
-            for item in ordered_products:
-                product = item.product
-                prev_status = item.status
+           
+            product = ordered_products.product
+            prev_status = ordered_products.status
 
-                # Stock adjustment
-                if prev_status not in ['Cancelled', 'Refunded'] and status in ['Cancelled', 'Refunded']:
-                    product.qty += item.quantity
-                elif prev_status not in ['Paid', 'Completed', 'Processing'] and status in ['Paid', 'Completed', 'Processing']:
-                    product.qty -= item.quantity
+            # Stock adjustment
+            if prev_status not in ['Cancelled', 'Refunded'] and status in ['Cancelled', 'Refunded']:
+                product.qty += ordered_products.quantity
+            elif prev_status not in ['Paid', 'Completed', 'Processing'] and status in ['Paid', 'Completed', 'Processing']:
+                product.qty -= ordered_products.quantity
 
-                product.save()
-                item.status = status
-                item.save()
+            product.save()
+            ordered_products.status = status
+            ordered_products.save()
             mail_subject = f'Order #{order_number} - Items from {vendor.vendor_name} updated to {status}'
             message = f"""
             Dear {order.user.first_name},<br><br>
