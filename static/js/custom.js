@@ -101,8 +101,13 @@ $(document).ready(function(){
                 else{
                     console.log(response)
                     $('#cart_count').text(response.cart_counter);
+                    $('#mb-cart_count').text(response.cart_counter);
+                    $('#mb-hd-cart_count').text(response.cart_counter);
                     // $('#cart_counter').attr('data-count', response.cart_counter['cart_count']);
                     $('#qty-'+food_id).text(response.qty);
+                    $('#dkstp-qty-'+food_id).text(response.qty);
+                    $('#mb-qty-'+food_id).text(response.qty);
+                    $('#qty-mb-'+food_id).text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -110,11 +115,13 @@ $(document).ready(function(){
                     if (response.qty <= 0){
                         // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
+                        $('#mb-add_to_cart_btn-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
                         $('#hr-above-qty-'+food_id).hide();
                     } else {
                         // If the quantity is greater than 0, show the increase and decrease buttons
                         $('#add_to_cart_btn-'+food_id).hide();
+                        $('#mb-add_to_cart_btn-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
                         $('#hr-above-qty-'+food_id).show();
 
@@ -182,7 +189,12 @@ $(document).ready(function(){
                     swal(response.message, '', 'error')
                 }else{
                     $('#cart_count').text(response.cart_counter);
+                    $('#mb-cart_count').text(response.cart_counter);
+                    $('#mb-hd-cart_count').text(response.cart_counter);
                     $('#qty-'+food_id).text(response.qty);
+                    $('#dkstp-qty-'+food_id).text(response.qty);
+                    $('#mb-qty-'+food_id).text(response.qty);
+                    $('#qty-mb-'+food_id).text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -190,11 +202,13 @@ $(document).ready(function(){
                     if (response.qty <= 0){
                         // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
+                        $('#mb-add_to_cart_btn-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
                         $('#hr-above-qty-'+food_id).hide();
                     } else {
                         // If the quantity is greater than 0, show the increase and decrease buttons
                         $('#add_to_cart_btn-'+food_id).hide();
+                        $('#mb-add_to_cart_btn-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
                         $('#hr-above-qty-'+food_id).show();
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
@@ -257,6 +271,8 @@ $(document).ready(function(){
                 }else{
                     console.log(response)
                     $('#cart_count').text(response.cart_counter);
+                    $('#mb-cart_count').text(response.cart_counter);
+                    $('#mb-hd-cart_count').text(response.cart_counter);
 
                     applyCartAmounts(
                         response.cart_amount['subtotal'],
