@@ -364,6 +364,7 @@ def add_to_cart(request, food_id):
     
 
 
+
 def decrease_cart(request, food_id):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         try:
@@ -633,17 +634,19 @@ def All_products(request, category_id=None, subcategory_id=None):
     if search_type == 'stores':
         if get_or_set_current_location(request) is not None:
 
-            pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
-
-            vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
-
+            location = get_or_set_current_location(request)
+            print('location', location)
+            if location is not None:
+                lng, lat = location
+                pnt = GEOSGeometry(f'POINT({lng} {lat})', srid=4326)
+                vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+                print("Pnt", pnt)
+                print("vendor", vendors)
             for v in vendors:
                 v.kms = round(v.distance.km, 1)
         else:
             vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
         
-        print("vendors ===> ", vendors)
-
         if search_query:
             vendors = vendors.filter(
                 models.Q(vendor_name__icontains=search_query) |
