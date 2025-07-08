@@ -101,11 +101,10 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     elif category_id:
         # Filter by category
         selected_category = get_object_or_404(Category, id=category_id, is_active=True, store_type=vendor.store_type)
-        subcategories = selected_category.subcategories.filter(vendor_subcategory_reference_id=vendor.id)
         products = Product.objects.filter(
-            subcategory__in=subcategories, 
-            is_available=True, 
-            is_active=True, 
+            category=selected_category,
+            is_available=True,
+            is_active=True,
             vendor=vendor
         )
     else:
@@ -669,9 +668,7 @@ def All_products(request, category_id=None, subcategory_id=None):
             products = products.filter(subcategory=selected_subcategory)
         elif category_id:
             selected_category = get_object_or_404(Category, id=category_id, is_active=True)
-            subcategories = selected_category.subcategories.all()
-            products = products.filter(subcategory__in=subcategories)
-
+            products = products.filter(category=selected_category)
         # If not category search, filter by product name/desc as usual
         if search_query:
             products = products.filter(

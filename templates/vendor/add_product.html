@@ -165,6 +165,13 @@
                           />
 
                         </div>
+                        {% if form.image.errors %}
+                      <ul class="errorlist" style="color: red; margin-top: 4px;">
+                        {% for error in form.image.errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
                       </div>
                     </div>
                     <div class="col-lg-12 col-md-12 col-sm-12">
@@ -240,9 +247,9 @@
                   </div>
                 </div>
 
-                {% for field in form %} {% for error in field.errors %}
+                {% comment %} {% for field in form %} {% for error in field.errors %}
                 <li style="color: red">{{ error }}</li>
-                {% endfor %} {% endfor %}
+                {% endfor %} {% endfor %} {% endcomment %}
 
                 <button type="submit" class="btn btn-info mb-3">
                   <i class="fa fa-check" aria-hidden="true"></i> Create

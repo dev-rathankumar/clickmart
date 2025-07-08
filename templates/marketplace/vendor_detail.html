@@ -115,6 +115,18 @@
   #vendor-suggestions-list li:hover {
     background-color: #f0f0f0;
   }
+.opening-hours_btn {
+  background-color: rgba(80, 80, 80, 0.7); /* darker gray with 70% opacity */
+  color: white;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+
+.opening-hours_btn:hover {
+  background-color: none !important; /* darker gray */
+  color: none !important;
+}
 </style>
 {% include 'includes/alerts.html' %}
 
@@ -143,6 +155,60 @@
                         <span class="text-white">{{ vendor.store_type }}</span>
                     </div>
                     <h3 class="mb-5 text-white"><a href="vendor-details-1.html" class="text-white">{{ vendor.vendor_name }}</a></h3>
+
+                    <div class="d-block d-lg-none mb-2">
+                        {% if opening_hours %}
+                            <!-- Button Styled as "Today: 12:00 AM - 11:30 PM" -->
+                            <button type="button" class="btn opening-hours_btn d-flex align-items-center justify-content-between gap-2 px-3 py-2 w-auto" id="showToastBtn">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fi-rs-clock"></i>
+                                    {% if current_opening_hours %}
+                                    <span>Today:</span>
+                                    {% for i in current_opening_hours %}
+                                        <span class="fw-semibold ms-1">
+                                        {% if i.is_closed %}
+                                            Closed
+                                        {% else %}
+                                            {{ i.from_hour }} - {{ i.to_hour }}
+                                        {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                    {% else %}
+                                    <span>No opening hours available</span>
+                                    {% endif %}
+                                </div>
+                                <i class="fi-rs-angle-small-down ms-2"></i> <!-- Right-side dropdown icon -->
+                                </button>
+
+
+
+                            <!-- Centered Toast -->
+                            <div class="position-fixed top-50 start-50 translate-middle zindex-toast" style="z-index: 1055;">
+                            <div class="toast align-items-center text-dark bg-white border shadow p-3" role="alert" id="openingToast" data-bs-autohide="false">
+                                <div class="d-flex justify-content-between align-items-start">
+                                <div class="toast-body">
+                                    <h6 class="mb-3">Opening Hours</h6>
+                                    <ul class="list-unstyled mb-0">
+                                    {% for hour in opening_hours %}
+                                    <li class="d-flex justify-content-between mb-1" style="font-size: 14px;">
+                                        <span style="min-width: 100px;">{{ hour }}</span>
+                                        <span class="fw-semibold">
+                                        {% if hour.is_closed %}Closed{% else %}{{ hour.from_hour }} - {{ hour.to_hour }}{% endif %}
+                                        </span>
+                                    </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                                <!-- Close button -->
+                                <button type="button" class="btn-close ms-2 mt-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                            </div>
+
+                          
+                            {% endif %}
+
+                    </div>
                     
                     <div class="row">
                         <div class="col-lg-6">
@@ -439,7 +505,7 @@
                     {% endif %}
                 <!--End Deals-->
             </div>
-            <div class="col-lg-4 primary-sidebar sticky-sidebar">
+            <div class="col-lg-4 primary-sidebar sticky-sidebar d-none d-lg-block">
                 {% if opening_hours %}
                 <div class="sidebar-widget widget-store-info mb-30 bg-3 border-0">
                     
@@ -484,7 +550,7 @@
                         <h5 class="section-title style-1 mb-30">Category</h5>
                         <ul class="list-unstyled">
                             {% for cat in categories %}
-                            <li class="mb-2" style="line-height: 20px; text-align: left;">
+                            <li class="mb-2" style="display: block !important;line-height: 20px; text-align: left;">
                                 {% if cat.subcategories.all %}
                                 <div class="d-flex justify-content-between align-items-center">
                                     <!-- Main category name links to its page -->
@@ -522,6 +588,8 @@
 </main>
 <!-- Main Section End -->
 
+
+{% comment %} This is for search {% endcomment %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
     const searchInput = {
@@ -626,5 +694,16 @@
       });
     }
   });
+  {% comment %} This is for toast {% endcomment %}
+    document.addEventListener("DOMContentLoaded", function () {
+    const toastTrigger = document.getElementById("showToastBtn");
+    const toastElement = document.getElementById("openingToast");
+    const toast = new bootstrap.Toast(toastElement); // no delay
+
+    toastTrigger.addEventListener("click", () => {
+      toast.show();
+    });
+  });
+
 </script>
 {% endblock %}
