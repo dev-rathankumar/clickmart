@@ -17,6 +17,7 @@ class VendorForm(forms.ModelForm):
             'placeholder': 'Enter store name',
             'autocomplete': 'off'
         })
+        self.fields['store_type'].required = True
         self.fields['store_type'].empty_label = "Select business type"
       
         if self.instance and self.instance.pk:

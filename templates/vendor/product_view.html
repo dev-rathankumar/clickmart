@@ -431,7 +431,12 @@
                         <div class="sidebar-widget widget-vendor mb-30 bg-grey-9 box-shadow-none">
                             <h5 class="section-title style-3 mb-20">Seller</h5>
                             <div class="vendor-logo d-flex mb-30 align-items-center">
-                                <img src="{{ product.vendor.user_profile.profile_picture.url }}" width="40px" alt="{{ product.vendor.vendor_name }}" style="border-radius: 10px;" />
+                              {% if product.vendor.user_profile.profile_picture %}
+                              <img src="{{ product.vendor.user_profile.profile_picture.url }}" width="40px" alt="{{ product.vendor.vendor_name }}" style="border-radius: 10px;" />
+
+                              {% else %}
+                              <img src="#" alt="Product Image" width="60">
+                              {% endif %}
                                 <div class="vendor-name ml-15">
                                     <h6>
                                         <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name }}</a>
