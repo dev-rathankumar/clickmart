@@ -124,6 +124,42 @@
     margin-left: 25px;
     margin-right: 25px;
 }
+.dktp-quantity-box{
+   width: 215px !important;
+    background: whitesmoke;
+    display: flex;
+    z-index: 2;
+    font-weight: bold;
+    color: black;
+    gap: 8px;
+    font-size: 18px;
+    padding: 13px 10px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid #0000001f;
+    border-radius: 25px;
+    margin-bottom: 10px;
+    font-weight: 200;
+}
+.dktp-quantity-box span {
+    text-decoration: none;
+    font-weight: 200;
+    font-size: 12px;
+}
+.dktp-quantity-box span i{
+    color: black !important;
+    font-weight:200;
+}
+
+.dktp-quantity-box label {
+    margin: 0;
+    font-size: 18px;
+    color: black;
+    margin-left: 45px;
+    margin-right: 45px;
+}
 
 </style>
 {% include 'includes/alerts.html' %}
@@ -233,7 +269,7 @@
                                             <div class="cart-bar-inner">
                                                 <span class="mrp-label">MRP <b>₹{{ product.sales_price }}</b></span>
                                                 {% if product.qty > 0 %}
-                                                <button  class="button add-to-cart-btn add_to_cart"  style="{% if product.id in cart_product_ids %}display:none;{% endif %}" id="add_to_cart_btn-{{product.id}}" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                <button  class="button add-to-cart-btn add_to_cart"  style="{% if product.id in cart_product_ids %}display:none;{% endif %}" id="mb-add_to_cart_btn-{{product.id}}" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
                                                   <!-- Quantity controls -->
                                                   <div class="quantity-box"
                                                       id="quantity-btn-box-{{ product.id }}"
@@ -241,7 +277,7 @@
                                                     <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
                                                       <i class="icon-minus text-white"></i>
                                                     </a>
-                                                    <label id="qty-{{ product.id }}">
+                                                    <label id="mb-qty-{{ product.id }}">
                                                       {% for item in cart_items %}
                                                         {% if product.id == item.product.id %}
                                                           {{ item.quantity }}
@@ -255,31 +291,36 @@
                                                 {% else %}
                                                 <button class="button button-add-to-cart add_to_cart" disabled style="background:#ccc;color:#666;">Out of Stock</button>
                                                 {% endif %}
-                      
-
-
-
-
-
-
-
-
-
-
                                             </div>
                                             </div>
-                                            <div class="detail-qty border radius">
+                                            <div class="detail-qty border radius"style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
                                                 <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"type="button" id="decrease-quantity" data-mdb-ripple-color="dark"></i></a>
                                                    <input type="text" id="quantity-input" class="qty-val" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
                                                 <a href="#" class="qty-up" type="button" id="increase-quantity" data-mdb-ripple-color="dark"><i class="fi-rs-angle-small-up"></i></a>
                                             </div>
                                             <div class="product-extra-link2">
-                                                {% if check_cart %}
-                                                
-                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
-                                                
-                                                {% else %} 
-                                                <button  class="button button-add-to-cart add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_product_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                {% if product.qty > 0 %}
+                                                <button  class="button button-add-to-cart add_to_cart" style="{% if product.id in cart_product_ids %}display:none;{% endif %}" id="add_to_cart_btn-{{product.id}}" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
+                                                  <!-- Quantity controls -->
+                                                  <div class="dktp-quantity-box"
+                                                      id="quantity-btn-box-{{ product.id }}"
+                                                      style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
+                                                    <span class="decrease_cart text-dark" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
+                                                      <i class="icon-minus text-dark"></i>
+                                                    </span>
+                                                    <label id="dkstp-qty-{{ product.id }}">
+                                                      {% for item in cart_items %}
+                                                        {% if product.id == item.product.id %}
+                                                          {{ item.quantity }}
+                                                        {% endif %}
+                                                      {% endfor %}
+                                                    </label>
+                                                    <span class="add_to_cart text-dark" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
+                                                      <i class="icon-plus text-dark"></i>
+                                                    </span>
+                                                </div>
+                                                {% else %}
+                                                <button class="button button-add-to-cart add_to_cart" disabled style="background:#ccc;color:#666;">Out of Stock</button>
                                                 {% endif %}
                                             </div>
                                              
@@ -439,12 +480,12 @@
                               {% endif %}
                                 <div class="vendor-name ml-15">
                                     <h6>
-                                        <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name }}</a>
+                                        <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name | truncatechars:23 }}</a>
                                     </h6>
                                 </div>
                             </div>
                             
-                            <ul class="contact-infor">
+                            <ul class="contact-infor" style="padding:0;">
                                 <li><img src="{% static 'assets/imgs/theme/icons/icon-location.svg' %}" alt="" /><strong>Address: </strong> <span>{{ product.vendor.user_profile.address }}</span></li>
                                 <!-- <li><img src="assets/imgs/theme/icons/icon-contact.svg" alt="" /><strong>Contact Seller:</strong><span>(+91) - 540-025-553</span></li> -->
                                 <!-- <li class="hr"><span></span></li> -->

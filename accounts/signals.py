@@ -7,14 +7,24 @@ from .models import User, UserProfile
 def post_save_create_profile_receiver(sender, instance, created, **kwargs):
     print(created)
     if created:
-        UserProfile.objects.create(user=instance)
+        print("instance====> ",instance)
+        print("instance role====> ",instance.role)
+        UserProfile.objects.create(
+            user=instance,
+            profile_picture='vendor/profile_and_cover_default/default-profile-new.png',
+            cover_photo='vendor/profile_and_cover_default/vendor-header-bg.png'
+        )
     else:
         try:
             profile = UserProfile.objects.get(user=instance)
             profile.save()
         except:
             # Create the userprofile if not exist
-            UserProfile.objects.create(user=instance)
+            UserProfile.objects.create(
+            user=instance,
+            profile_picture='vendor/profile_and_cover_default/default-profile-new.png',
+            cover_photo='vendor/profile_and_cover_default/vendor-header-bg.png'
+        )
 
 
 @receiver(pre_save, sender=User)
