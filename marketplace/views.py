@@ -207,6 +207,7 @@ def view_Product(request, vendor_slug, product_slug):
         address = DeliveryAddress.objects.filter(user=request.user, is_primary=True).first()
     else:
         address=None
+    
     vendor = Vendor.objects.get(vendor_slug=vendor_slug)
     # Vendor distance 
     if get_or_set_current_location(request) is not None:
@@ -220,13 +221,8 @@ def view_Product(request, vendor_slug, product_slug):
                 vendor.kms = round(v.distance.km, 1)
 
 
-    different_vendor_product_exists=False
     if request.user.is_authenticated:
         chkCart = Cart.objects.filter(product=product, user=request.user)
-        existing_products_in_cart = Cart.objects.filter(user=request.user)
-        for single_cart_prodcut in existing_products_in_cart:
-            if single_cart_prodcut.product.vendor != vendor:
-                different_vendor_product_exists=True
         chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
     else:
         product_id_str = str(product.id)
@@ -256,13 +252,13 @@ def view_Product(request, vendor_slug, product_slug):
         product_ids = list(cart.keys())
         cart_products  = Product.objects.filter(id__in=product_ids)
         cart_items = []
-        for product in cart_products :
-            print("product_id ===>", product.id)
-            quantity = cart.get(str(product.id))
+        for cart_product in cart_products :
+            print("product_id ===>", cart_product.id)
+            quantity = cart.get(str(cart_product.id))
             cart_items.append({
-                'product': product,
+                'product': cart_product,
                 'quantity': quantity,
-                'cart_id': product.id,  # session cart uses product id
+                'cart_id': cart_product.id,  # session cart uses product id
             })
     cart_product_ids = set(item['product'].id for item in cart_items)
 
@@ -273,7 +269,6 @@ def view_Product(request, vendor_slug, product_slug):
         'check_cart':chkCart,
         'chkCart_count':chkCart_count,
         'product_gallery':product_gallery,
-        'different_vendor_product_exists':different_vendor_product_exists,
         'address':address,
         'cart_items': cart_items,
         'cart_product_ids': cart_product_ids,

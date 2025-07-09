@@ -226,7 +226,7 @@ $(document).ready(function(){
       
 
                     if (response.qty <= 0){
-                        // If the quantity is 0 or less, show the add button
+                      // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#mb-add_to_cart_btn-'+food_id).show();
                         $('#dkstp-qty-input-'+food_id).show();
