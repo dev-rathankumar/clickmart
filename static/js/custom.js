@@ -86,17 +86,17 @@ $(document).ready(function(){
         
         food_id = $(this).attr('data-id');
         url = $(this).attr('data-url');
-    //     var qty = $('#main-pv-quantity-input').val();
-    //     console.log("qqqttyy==>>",qty);
+        var qty = $('#main-pv-quantity-input').val();
         
-    //     qty = parseInt(qty);
-    //     if (isNaN(qty) || qty < 1) qty = 1; // Default to 1 if invalid
-    //     console.log("qqqttyy==>>",qty);
-    //    if (url.indexOf('?') > -1) {
-    //     url += '&quantity=' + qty;
-    //     } else {
-    //         url += '?quantity=' + qty;
-    //     }
+        qty = parseInt(qty);
+        if (isNaN(qty) || qty < 1) qty = 1; // Default to 1 if invalid
+        console.log("qqqttyy==>>",qty);
+       if (url.indexOf('?') > -1) {
+        url += '&quantity=' + qty;
+        } else {
+            url += '?quantity=' + qty;
+        }
+        
 
         $.ajax({
             type: 'GET',
@@ -117,7 +117,6 @@ $(document).ready(function(){
                     swal(response.message,'','warning')
                 }
                 else{
-                    console.log(response)
                     $('#cart_count').text(response.cart_counter);
                     $('#mb-cart_count').text(response.cart_counter);
                     $('#mb-hd-cart_count').text(response.cart_counter);
@@ -129,6 +128,8 @@ $(document).ready(function(){
                     $('#product_count').text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
+                    $('#main-pv-quantity-input').val(1);
+
       
 
                     if (response.qty <= 0){
@@ -150,7 +151,6 @@ $(document).ready(function(){
                         $('#product_count_main').show();
                         $('#hr-above-qty-'+food_id).show();
 
-                    console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
 
                     } 
                     if (response.qty <= 0){
@@ -226,7 +226,7 @@ $(document).ready(function(){
       
 
                     if (response.qty <= 0){
-                      // If the quantity is 0 or less, show the add button
+                        // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#mb-add_to_cart_btn-'+food_id).show();
                         $('#dkstp-qty-input-'+food_id).show();
@@ -243,7 +243,6 @@ $(document).ready(function(){
                         $('#dkstp-quantity-btn-box-'+food_id).show();
                         $('#product_count_main').show();
                         $('#hr-above-qty-'+food_id).show();
-                    console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
 
                     } 
                     if (response.qty <= 0){
