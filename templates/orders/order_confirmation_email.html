@@ -30,7 +30,7 @@
   <table role="presentation" width="100%">
     <tr>
     <td  align="center" style="color: white;">
-     <img alt="Logo" src="https://rathank.com/wp-content/uploads/2025/06/flickbasket-logo.png" width="400px" align="middle">
+     <img alt="Logo" src="https://rathank.com/wp-content/uploads/2025/07/flickbasket-logo-blue.png" width="400px" align="middle">
       </td>
   </table>
 
@@ -70,13 +70,13 @@
         <tr>
           
           {% if food.product.image %}
-          <td><img src="http://{{domain}}{{ food.product.image.url }}" alt="Product Image" width="60"></td>
+          <td><img src="https://{{domain}}{{ food.product.image.url }}" alt="Product Image" width="60"></td>
           {% else %}
           <td><img src="#" alt="Product Image" width="60"></td>
           {% endif %}
             
             <td><p style="margin: 0;">{{ food.product }}</p>
-            <small><a href="http://{{ domain }}{% url 'vendor_detail' food.product.vendor.vendor_slug %}" style="color:#ccc;">{{ food.product.vendor.vendor_name }}</a></small>
+            <small><a href="https://{{ domain }}{% url 'vendor_detail' food.product.vendor.vendor_slug %}" style="color:#ccc;">{{ food.product.vendor.vendor_name }}</a></small>
             </td>
             <td>{{ food.quantity }}</td>
             <td>₹{{ food.price }}</td>
@@ -130,7 +130,7 @@
     <tr>
         <td align="center" style="padding: 15px 15px; color: #fff;">
           <p>© {% now "Y" %} Flickbasket Marketplace, All Rights Reserved.</p>
-          <a href="http://{{domain}}" style="color:#fff;">Visit Website</a>      
+          <a href="https://{{domain}}" style="color:#fff;">Visit Website</a>      
         </td>
       </tr>
   </table> 
