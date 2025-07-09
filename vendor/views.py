@@ -1106,9 +1106,6 @@ def process_mapped_data(request):
                     field_errors.append(f"{label} must be the correct category based on your store type.")
                     error_fields_for_frontend.append({'row': idx, 'field': internal_field})
 
-
-
-
         # Gather errors
         if missing_fields or field_errors:
             error_rows.add(idx - 1)
