@@ -279,7 +279,7 @@
                                                       id="quantity-btn-box-{{ product.id }}"
                                                       style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
                                                     <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
-                                                      <i class="icon-minus text-white"></i>
+                                                      <i class="icon-minus text-white"style="cursor: pointer;"></i>
                                                     </a>
                                                     <label id="mb-qty-{{ product.id }}">
                                                       {% for item in cart_items %}
@@ -289,7 +289,7 @@
                                                       {% endfor %}
                                                     </label>
                                                     <a href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
-                                                      <i class="icon-plus text-white"></i>
+                                                      <i class="icon-plus text-white"style="cursor: pointer;"></i>
                                                     </a>
                                                 </div>
                                                 {% else %}
@@ -298,9 +298,9 @@
                                             </div>
                                             </div>
                                             <div class="detail-qty border radius"id="dkstp-qty-input-{{product.id}}"style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
-                                                <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"type="button" id="decrease-quantity" data-mdb-ripple-color="dark"></i></a>
+                                                <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"type="button" id="decrease-quantity" data-mdb-ripple-color="dark"style="cursor: pointer;"></i></a>
                                                    <input type="text" id="main-pv-quantity-input" class="qty-val" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" readonly/>
-                                                <a href="#" class="qty-up" type="button" id="increase-quantity" data-mdb-ripple-color="dark"><i class="fi-rs-angle-small-up"></i></a>
+                                                <a href="#" class="qty-up" type="button" id="increase-quantity" data-mdb-ripple-color="dark"><i class="fi-rs-angle-small-up"style="cursor: pointer;"></i></a>
                                             </div>
                                             <div class="product-extra-link2">
                                                 {% if product.qty > 0 %}
@@ -310,7 +310,7 @@
                                                       id="dkstp-quantity-btn-box-{{ product.id }}"
                                                       style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
                                                     <span class="decrease_cart text-dark" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
-                                                      <i class="icon-minus text-dark"></i>
+                                                      <i class="icon-minus text-dark" style="cursor: pointer;"></i>
                                                     </span>
                                                     <label id="dkstp-qty-{{ product.id }}">
                                                       {% for item in cart_items %}
@@ -320,7 +320,7 @@
                                                       {% endfor %}
                                                     </label>
                                                     <span class="add_to_cart text-dark" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
-                                                      <i class="icon-plus text-dark"></i>
+                                                      <i class="icon-plus text-dark" style="cursor: pointer;"></i>
                                                     </span>
                                                 </div>
                                                 {% else %}

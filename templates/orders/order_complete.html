@@ -169,29 +169,36 @@
                             <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
                                 Subtotal
                                 <span class="price float-right">
-                                    ₹{{ subtotal }}
+                                    ₹{{ subtotal|floatformat:2 }}
                                 </span>
                             </li>
 
-                            {% for tax_entry in tax_data %}
-                                {% for tax_name, tax_info in tax_entry.items %}
-                                    {% for rate, amount in tax_info.items %}
+                            {% for single_tax_dict in tax_data %}
+                                {% for key, value in single_tax_dict.tax_info.items %}
+                                    {% if value %}  
                                         <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
                                             <div style="font-size: 12px;">
-                                                {{ tax_name }} <small>({{ rate }}%)</small>
+                                                {{ single_tax_dict.tax_category }} 
+                                                <small>({{ key }}%)</small>
+                                                {% for item in ordered_food %}
+                                                {% if item.product.id == single_tax_dict.product_id %}
+                                                <small>{{item.product | truncatechars:20}}</small>
+                                                {% endif %}
+                                                {% endfor %}
                                             </div>
                                             <span class="price float-right">
-                                                ₹{{ amount }}
+                                                <span class="currency">₹</span>
+                                                <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
                                             </span>
                                         </li>
+                                        {% endif %}
                                     {% endfor %}
                                 {% endfor %}
-                            {% endfor %}
 
                             <li style="list-style-type: none; font-weight: 600;" class="d-flex justify-content-between align-items-center">
                                 TOTAL
                                 <span class="price float-right ">
-                                    ₹{{ order.total }}
+                                    ₹{{ order.total |floatformat:2 }}
                                 </span>
                             </li>
                         </ul>
