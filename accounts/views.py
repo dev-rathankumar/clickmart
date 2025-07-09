@@ -169,6 +169,17 @@ def login(request):
         email = request.POST['email']
         password = request.POST['password']
 
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with this email.')
+            return redirect('login')
+
+        # Check if the user is active
+        if not user.is_active:
+            messages.error(request, 'Your account is not active. Please activate your account first.')
+            return redirect('login')
+
         user = auth.authenticate(email=email, password=password)
 
         if user is not None:

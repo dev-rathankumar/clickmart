@@ -22,7 +22,7 @@
                           
                             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
                             {% if subcategories %}
-                            <a href="{% url 'add_sub_category' category_id=category.id %}" class="btn btn-fix-hover text-light float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i> Add SubCategory</a>
+                            <a href="{% url 'add_sub_category' category_id=category.id %}" class="btn update_color text-light float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i> Add SubCategory</a>
                             {% endif %}
                             <br><br>
                             <h6>Category: <span class="text-uppercase text-success">{{category}}</span></h6>
