@@ -108,6 +108,7 @@ $(document).ready(function(){
                     $('#dkstp-qty-'+food_id).text(response.qty);
                     $('#mb-qty-'+food_id).text(response.qty);
                     $('#qty-mb-'+food_id).text(response.qty);
+                    $('#product_count').text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -116,13 +117,19 @@ $(document).ready(function(){
                         // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#mb-add_to_cart_btn-'+food_id).show();
+                        $('#dkstp-qty-input-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
+                        $('#dkstp-quantity-btn-box-'+food_id).hide();
+                        $('#product_count_main').hide();
                         $('#hr-above-qty-'+food_id).hide();
                     } else {
                         // If the quantity is greater than 0, show the increase and decrease buttons
                         $('#add_to_cart_btn-'+food_id).hide();
                         $('#mb-add_to_cart_btn-'+food_id).hide();
+                        $('#dkstp-qty-input-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
+                        $('#dkstp-quantity-btn-box-'+food_id).show();
+                        $('#product_count_main').show();
                         $('#hr-above-qty-'+food_id).show();
 
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
@@ -195,21 +202,28 @@ $(document).ready(function(){
                     $('#dkstp-qty-'+food_id).text(response.qty);
                     $('#mb-qty-'+food_id).text(response.qty);
                     $('#qty-mb-'+food_id).text(response.qty);
+                    $('#product_count').text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
 
                     if (response.qty <= 0){
-                        // If the quantity is 0 or less, show the add button
+                      // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#mb-add_to_cart_btn-'+food_id).show();
+                        $('#dkstp-qty-input-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
+                        $('#dkstp-quantity-btn-box-'+food_id).hide();
+                        $('#product_count_main').hide();
                         $('#hr-above-qty-'+food_id).hide();
                     } else {
                         // If the quantity is greater than 0, show the increase and decrease buttons
                         $('#add_to_cart_btn-'+food_id).hide();
                         $('#mb-add_to_cart_btn-'+food_id).hide();
+                        $('#dkstp-qty-input-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
+                        $('#dkstp-quantity-btn-box-'+food_id).show();
+                        $('#product_count_main').show();
                         $('#hr-above-qty-'+food_id).show();
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
 
