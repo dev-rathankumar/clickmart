@@ -1,16 +1,23 @@
 let autocomplete;
 
-function initAutoComplete(){
-autocomplete = new google.maps.places.Autocomplete(
-    document.getElementById('id_address'),
-    {
-        types: ['geocode', 'establishment'],
-        //default in this app is "IN" - add your country code
-        componentRestrictions: {'country': ['in']},
-    })
-// function to specify what should happen when the prediction is clicked
-autocomplete.addListener('place_changed', onPlaceChanged);
-}
+function initAutoComplete() {
+        setTimeout(() => {
+            const input = document.getElementById('id_address');
+            if (!input) {
+                console.warn('Address input not found');
+                return;
+            }
+
+            autocomplete = new google.maps.places.Autocomplete(input, {
+                types: ['geocode', 'establishment'],
+                componentRestrictions: { country: ['in'] },
+            });
+
+            autocomplete.addListener('place_changed', onPlaceChanged);
+            // console.log(" Google Autocomplete initialized");
+        }, 300);
+    }
+
 
 function onPlaceChanged (){
     var place = autocomplete.getPlace();
@@ -79,11 +86,22 @@ $(document).ready(function(){
         
         food_id = $(this).attr('data-id');
         url = $(this).attr('data-url');
+    //     var qty = $('#main-pv-quantity-input').val();
+    //     console.log("qqqttyy==>>",qty);
         
-       
+    //     qty = parseInt(qty);
+    //     if (isNaN(qty) || qty < 1) qty = 1; // Default to 1 if invalid
+    //     console.log("qqqttyy==>>",qty);
+    //    if (url.indexOf('?') > -1) {
+    //     url += '&quantity=' + qty;
+    //     } else {
+    //         url += '?quantity=' + qty;
+    //     }
+
         $.ajax({
             type: 'GET',
             url: url,
+            
             success: function(response){
                 if(response.status == 'login_required'){
                     swal(response.message, '', 'info').then(function(){
@@ -108,6 +126,7 @@ $(document).ready(function(){
                     $('#dkstp-qty-'+food_id).text(response.qty);
                     $('#mb-qty-'+food_id).text(response.qty);
                     $('#qty-mb-'+food_id).text(response.qty);
+                    $('#product_count').text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -116,13 +135,19 @@ $(document).ready(function(){
                         // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#mb-add_to_cart_btn-'+food_id).show();
+                        $('#dkstp-qty-input-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
+                        $('#dkstp-quantity-btn-box-'+food_id).hide();
+                        $('#product_count_main').hide();
                         $('#hr-above-qty-'+food_id).hide();
                     } else {
                         // If the quantity is greater than 0, show the increase and decrease buttons
                         $('#add_to_cart_btn-'+food_id).hide();
                         $('#mb-add_to_cart_btn-'+food_id).hide();
+                        $('#dkstp-qty-input-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
+                        $('#dkstp-quantity-btn-box-'+food_id).show();
+                        $('#product_count_main').show();
                         $('#hr-above-qty-'+food_id).show();
 
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
@@ -195,6 +220,7 @@ $(document).ready(function(){
                     $('#dkstp-qty-'+food_id).text(response.qty);
                     $('#mb-qty-'+food_id).text(response.qty);
                     $('#qty-mb-'+food_id).text(response.qty);
+                    $('#product_count').text(response.qty);
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
       
@@ -203,13 +229,19 @@ $(document).ready(function(){
                         // If the quantity is 0 or less, show the add button
                         $('#add_to_cart_btn-'+food_id).show();
                         $('#mb-add_to_cart_btn-'+food_id).show();
+                        $('#dkstp-qty-input-'+food_id).show();
                         $('#quantity-btn-box-'+food_id).hide();
+                        $('#dkstp-quantity-btn-box-'+food_id).hide();
+                        $('#product_count_main').hide();
                         $('#hr-above-qty-'+food_id).hide();
                     } else {
                         // If the quantity is greater than 0, show the increase and decrease buttons
                         $('#add_to_cart_btn-'+food_id).hide();
                         $('#mb-add_to_cart_btn-'+food_id).hide();
+                        $('#dkstp-qty-input-'+food_id).hide();
                         $('#quantity-btn-box-'+food_id).show();
+                        $('#dkstp-quantity-btn-box-'+food_id).show();
+                        $('#product_count_main').show();
                         $('#hr-above-qty-'+food_id).show();
                     console.log('add btn =>',$('#add_to_cart_btn-'+food_id))
 
