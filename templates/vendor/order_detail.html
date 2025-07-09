@@ -113,8 +113,12 @@
                                                 </thead>
                                                 <tbody>
                                                     {% for item in ordered_food %}
-                                                    <tr>
+                                                    <tr> 
+                                                        {% if item.product.image %}
                                                         <td><img src="{{ item.product.image.url }}" width="60" alt="Food Image"></td>
+                                                        {% else %}
+                                                        <td><img class="product-img" src="{% static 'images/placeholder.jpg' %}" alt="No image available" /></td>
+                                                        {% endif %}
                                                         <td>
                                                             <p class="mb-0"><b>{{ item.product }}</b></p>
                                                             <a class="text-muted" href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}">

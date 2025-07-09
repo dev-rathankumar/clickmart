@@ -161,6 +161,9 @@
     margin-left: 45px;
     margin-right: 45px;
 }
+.register-now-v{
+  text-decoration: underline
+}
 
 </style>
 {% include 'includes/alerts.html' %}
@@ -191,7 +194,7 @@
                                             {% if product.image %}
                                               <img src="{{ product.image.url }}" alt="product image" />
                                             {% else %}
-                                              <img src="{% static 'images/placeholder.jpg' %}" alt="No image available" />
+                                              <img src="{% static 'images/placeholder.jpg' %}" alt="No image available"  />
                                             {% endif %}
 
                                         </figure>
@@ -477,11 +480,11 @@
                               <img src="{{ product.vendor.user_profile.profile_picture.url }}" width="40px" alt="{{ product.vendor.vendor_name }}" style="border-radius: 10px;" />
 
                               {% else %}
-                              <img src="{% static 'images/default-profile-new.png' %}" alt="{{ vendor.vendor_name }}">
+                              <img src="{% static 'images/default-profile-new.png' %}" width="40px" alt="{{ vendor.vendor_name }}">
                               {% endif %}
                                 <div class="vendor-name ml-15">
                                     <h6>
-                                        <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name | truncatechars:23 }}</a>
+                                        <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name | truncatechars:18 }}</a>
                                     </h6>
                                 </div>
                             </div>
@@ -495,7 +498,7 @@
                             <ul>
                                 <li class="hr"><span></span></li>
                             </ul>
-                            <p>Become a Seller? <a href="{% url 'registerVendor' %}"> Register now</a></p>
+                            <p>Become a Seller? <a class="register-now-v" href="{% url 'registerVendor' %}"> Register now</a></p>
                         </div>
                     </div>
                 </div>
