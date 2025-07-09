@@ -363,8 +363,8 @@
                                       {% if similar_products %}
                                       {% for similar_product in similar_products %}
                                         <div class="col-lg-3 col-md-4 col-6 col-sm-6">
-                                            <div class="product-cart-wrap hover-up">
-                                                <div class="product-img-action-wrap">
+                                            <div class="product-cart-wrap hover-up mb-3" >
+                                                <div class="product-img-action-wrap" style="height: 200px !important;">
                                                     <div class="product-img product-img-zoom">
                                                         <a href="{% url 'view_product' product.vendor.vendor_slug similar_product.slug %}" tabindex="0">
                                                         {% if similar_product.image %}
@@ -379,7 +379,7 @@
                                                     
                                                 </div>
                                                 <div class="product-content-wrap">
-                                                    <h2><a href="{% url 'view_product' product.vendor.vendor_slug similar_product.slug %}" tabindex="0">{{ similar_product.product_name }}</a></h2>
+                                                    <h2><a href="{% url 'view_product' product.vendor.vendor_slug similar_product.slug %}" tabindex="0">{{ similar_product.product_name|truncatechars:30 }}</a></h2>
                                                     
                                                     <div class="product-price">
                                                         <span>₹{{similar_product.sales_price}}</span>
@@ -476,7 +476,7 @@
                               <img src="{{ product.vendor.user_profile.profile_picture.url }}" width="40px" alt="{{ product.vendor.vendor_name }}" style="border-radius: 10px;" />
 
                               {% else %}
-                              <img src="#" alt="Product Image" width="60">
+                              <img src="{% static 'images/default-profile-new.png' %}" alt="{{ vendor.vendor_name }}">
                               {% endif %}
                                 <div class="vendor-name ml-15">
                                     <h6>

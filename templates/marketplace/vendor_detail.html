@@ -121,11 +121,11 @@
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
-
-
-.opening-hours_btn:hover {
-  background-color: none !important; /* darker gray */
-  color: none !important;
+.opening-hours_btn:hover{
+  background-color: rgba(80, 80, 80, 0.7); 
+  color: white;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 </style>
 {% include 'includes/alerts.html' %}
@@ -156,7 +156,7 @@
                     </div>
                     <h3 class="mb-5 text-white"><a href="vendor-details-1.html" class="text-white">{{ vendor.vendor_name }}</a></h3>
 
-                    <div class="d-block d-lg-none mb-2">
+                    <div class=" mb-2">
                         {% if opening_hours %}
                             <!-- Button Styled as "Today: 12:00 AM - 11:30 PM" -->
                             <button type="button" class="btn opening-hours_btn d-flex align-items-center justify-content-between gap-2 px-3 py-2 w-auto" id="showToastBtn">
@@ -701,6 +701,7 @@
     const toast = new bootstrap.Toast(toastElement); // no delay
 
     toastTrigger.addEventListener("click", () => {
+      toastTrigger.blur(); 
       toast.show();
     });
   });
