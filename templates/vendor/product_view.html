@@ -81,6 +81,7 @@
 .mobile-cart-info { display: none; }
 @media (max-width: 600px) {
   .mobile-cart-info { display: block !important; }
+  #product_count_main{display: none !important;}
 }
 .vendor-visit-link {
   background-color: #3a4a99 !important; /* light blue */
@@ -295,7 +296,7 @@
                                             </div>
                                             <div class="detail-qty border radius"id="dkstp-qty-input-{{product.id}}"style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
                                                 <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"type="button" id="decrease-quantity" data-mdb-ripple-color="dark"></i></a>
-                                                   <input type="text" id="main-pv-quantity-input" class="qty-val" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" />
+                                                   <input type="text" id="main-pv-quantity-input" class="qty-val" value="1" aria-label="Product quantity" aria-describedby="quantity-controls" readonly/>
                                                 <a href="#" class="qty-up" type="button" id="increase-quantity" data-mdb-ripple-color="dark"><i class="fi-rs-angle-small-up"></i></a>
                                             </div>
                                             <div class="product-extra-link2">
@@ -617,9 +618,12 @@ function getCookie(name) {
     document.addEventListener('DOMContentLoaded', function() {
       const decreaseButton = document.getElementById('decrease-quantity');
       const increaseButton = document.getElementById('increase-quantity');
-      const quantityInput = document.getElementById('quantity-input');
+      const quantityInput = document.getElementById('main-pv-quantity-input');
       const maxStock = {{ product.qty|default:0 }};  // Max available stock, passed from the backend
     
+      quantityInput.setAttribute("readonly", true);
+      quantityInput.addEventListener("keydown", (e) => e.preventDefault());
+
       decreaseButton.addEventListener('click', function() {
         let currentQuantity = parseInt(quantityInput.value);
         
@@ -633,6 +637,7 @@ function getCookie(name) {
         
         if (currentQuantity < maxStock) {
           quantityInput.value = currentQuantity + 1;
+
         }
       });
     });

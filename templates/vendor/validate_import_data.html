@@ -72,6 +72,28 @@
   border-style: solid;
   border-color: black transparent transparent transparent;
 }
+.pagination-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 5px 0;
+}
+
+.pagination {
+    flex-wrap: nowrap;
+    min-width: max-content;
+}
+
+.page-item {
+    white-space: nowrap;
+}
+.pagination-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+.pagination-wrapper::-webkit-scrollbar-thumb {
+    background: #181970;
+    border-radius: 3px;
+}
+
 </style>
 <div class="main-section">
     {% include 'includes/cover.html' %}
@@ -172,8 +194,9 @@
                         </div>
 
                         {% if show_all and paginator and paginator.num_pages > 1 %}
+                        <div class="pagination-wrapper">
                             <nav>
-                                <ul class="pagination justify-content-end">
+                                <ul class="pagination justify-content-end flex-wrap">
                                     {% if page_obj.has_previous %}
                                         <li class="page-item">
                                             <a class="page-link" href="?show_all=1{% if errors_only %}&errors_only=1{% endif %}&page={{ page_obj.previous_page_number }}">Previous</a>
@@ -199,6 +222,7 @@
                                     {% endif %}
                                 </ul>
                             </nav>
+                            </div>
                         {% endif %}
 
                         <div class="d-flex justify-content-between mt-3">

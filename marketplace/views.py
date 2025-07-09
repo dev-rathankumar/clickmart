@@ -282,12 +282,18 @@ def add_to_cart(request, food_id):
             product = Product.objects.get(id=food_id)
         except Product.DoesNotExist:
             return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
-
+        try:
+            qty = int(request.GET.get('quantity', 1))
+            print("qty just after get =>", qty)
+            if qty < 1:
+                qty = 1
+        except (ValueError, TypeError):
+            qty = 1
         # --- Authenticated user ---
         if request.user.is_authenticated:
             try:
                 chkCart = Cart.objects.get(user=request.user, product=product)
-                new_quantity = chkCart.quantity + 1
+                new_quantity = chkCart.quantity + qty
                 if new_quantity > product.qty:
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
@@ -308,7 +314,7 @@ def add_to_cart(request, food_id):
                     'cart_amount': get_cart_amounts(request)
                 })
             except Cart.DoesNotExist:
-                if product.qty < 1:
+                if product.qty < qty:
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
                         'status': 'Failed',
@@ -317,7 +323,7 @@ def add_to_cart(request, food_id):
                         'qty': 0,
                         'cart_amount': get_cart_amounts(request)
                     })
-                chkCart = Cart.objects.create(user=request.user, product=product, quantity=1)
+                chkCart = Cart.objects.create(user=request.user, product=product, quantity=qty)
                 cart_counter = get_cart_counter(request)
                 return JsonResponse({
                     'status': 'Success',
@@ -332,7 +338,7 @@ def add_to_cart(request, food_id):
             cart = request.session.get('cart', {})
             product_id = str(product.id)
             prev_qty = int(cart.get(product_id, 0))
-            new_qty = prev_qty + 1
+            new_qty = prev_qty + qty
 
             if new_qty > product.qty:
                 return JsonResponse({
