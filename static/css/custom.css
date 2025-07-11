@@ -162,4 +162,5 @@ table td, table th{
 .btn-imp-data-size{
    font-size: 16px !important;
   font-weight: 500 !important;
+  height: 42px !important;
 }

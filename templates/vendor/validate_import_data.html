@@ -226,24 +226,32 @@
                         {% endif %}
 
                         <div class="d-flex justify-content-between mt-3">
+                            <div class="text-end">
                             <button type="button" class="btn update_color btn-imp-data-size" onclick="window.history.back();">Previous</button>
+                            </div>
                         </form>
                         {% if SaveToDatabase %}
                             <form action="{% url 'save_to_database' %}" method="post" id="save-db-form">
                                 {% csrf_token %}
-                                <button type="submit" class="btn update_color" id="save-db-btn">
-                                    Save to Database
-                                    <span class="spinner-border spinner-border-sm spinner-button" id="save-db-spinner" style="display:none;" role="status" aria-hidden="true"></span>
-                                </button>
+                                <div class="text-end">
+                                    <button type="submit" class="btn update_color" id="save-db-btn">
+                                        Save to Database
+                                        <span class="spinner-border spinner-border-sm spinner-button" id="save-db-spinner" style="display:none;" role="status" aria-hidden="true"></span>
+                                    </button>
+                                    <p id="save-db-wait-msg" class="text-muted mt-2" style="display:none;">Please wait, saving to database. This may take several minutes...</p>
+                                </div>
                             </form>
                             {% else %}
                             <form action="{% url 'set_image_to_mapped_data' %}" method="post" id="image-form">
                                 {% csrf_token %}
-                                <button type="submit" class="btn update_color" id="generate-images-btn"
-                                    {% if errors %}disabled{% endif %}>
-                                    Generate Product Images
-                                    <span class="spinner-border spinner-border-sm spinner-button" id="spinner" style="display:none;" role="status" aria-hidden="true"></span>
-                                </button>
+                                <div class="text-end">
+                                    <button type="submit" class="btn update_color" id="generate-images-btn"
+                                        {% if errors %}disabled{% endif %}>
+                                        Generate Product Images
+                                        <span class="spinner-border spinner-border-sm spinner-button" id="spinner" style="display:none;" role="status" aria-hidden="true"></span>
+                                    </button>
+                                    <p id="generate-wait-msg" class="text-muted mt-2 text-left" style="display:none;">Please wait, generating images. This may take several minutes...</p>
+                                </div>
                             </form>
                         {% endif %}
                         </div>
@@ -341,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-
 document.addEventListener('DOMContentLoaded', function () {
     // Generate Product Images spinner
     var imageForm = document.getElementById('image-form');
@@ -349,10 +356,12 @@ document.addEventListener('DOMContentLoaded', function () {
         imageForm.addEventListener('submit', function(e) {
             var btn = document.getElementById('generate-images-btn');
             var spinner = document.getElementById('spinner');
+            var waitMsg = document.getElementById('generate-wait-msg');
             if (btn && spinner && !btn.disabled) {
                 btn.classList.add('btn-blur');
                 spinner.style.display = 'inline-block';
                 btn.disabled = true;
+                if (waitMsg) waitMsg.style.display = 'block';
             }
         });
     }
@@ -363,10 +372,12 @@ document.addEventListener('DOMContentLoaded', function () {
         saveDbForm.addEventListener('submit', function(e) {
             var btn = document.getElementById('save-db-btn');
             var spinner = document.getElementById('save-db-spinner');
+            var waitMsg = document.getElementById('save-db-wait-msg');
             if (btn && spinner && !btn.disabled) {
                 btn.classList.add('btn-blur');
                 spinner.style.display = 'inline-block';
                 btn.disabled = true;
+                if (waitMsg) waitMsg.style.display = 'block';
             }
         });
     }
