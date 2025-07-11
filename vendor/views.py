@@ -1365,7 +1365,7 @@ def save_to_database(request):
 
                 # Category lookup/creation (same as before)
                 try:
-                    category_obj = Category.objects.get(category_name__iexact=category_name)
+                    category_obj = Category.objects.get(category_name__iexact=category_name,store_type=vendor.store_type)
                 except Category.DoesNotExist:
                     messages.error(request,"Please enter the correct category based on your store type.")
                     return redirect('import_your_data')

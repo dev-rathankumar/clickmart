@@ -98,7 +98,7 @@ class EditProductForm(forms.ModelForm):
         # Only show main categories (categories without a parent)
         self.fields['category'].queryset = Category.objects.filter(parent__isnull=True,store_type=vendor.store_type)
 
-        self.fields['subcategory'].required = True
+        self.fields['subcategory'].required = False
         # If editing an existing product, set subcategory choices based on selected category
         if 'category' in self.data:
             # When the form is submitted, filter subcategories based on selected category

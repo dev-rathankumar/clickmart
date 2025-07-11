@@ -11,12 +11,12 @@ class Category(models.Model):
         'self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories'
     )
     store_type = models.ForeignKey(StoreType, on_delete=models.CASCADE, null=True, blank=True)
-    category_name = models.CharField(max_length=50)
-    category_code = models.CharField(max_length=50, unique=True, help_text=("Enter category code(e.g. 'GROC', 'BEV')"))  # e.g. 'GROC', 'BEV'
+    category_name = models.CharField(max_length=300)
+    category_code = models.CharField(max_length=350, unique=True, help_text=("Enter category code(e.g. 'GROC', 'BEV')"))  # e.g. 'GROC', 'BEV'
     vendor_subcategory_reference_id  = models.IntegerField(null=True, blank=True, help_text="This field is for a subcategory specific to a vendor. Leave it empty when adding a main category.") # This field only for subcategory use to track the vendor's subcategory we will store his id here (This is a indirect connection withn venodr) 
-    slug = models.SlugField(max_length=100)
+    slug = models.SlugField(max_length=400)
     category_image = models.ImageField(upload_to='store/categories/uploads', null=True, blank=True)
-    description = models.TextField(max_length=250, blank=True)
+    description = models.TextField(max_length=350, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -51,8 +51,8 @@ UNIT_TYPE_CHOICES = (
 
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='products')
-    product_name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=300, blank=True)
+    product_name = models.CharField(max_length=500)
+    slug = models.SlugField(max_length=600, blank=True)
     product_desc = models.TextField(blank=True, null=True)
     full_specification = models.TextField(blank=True, default='')
     hsn_number = models.CharField(max_length=8, blank=True, null=True)
