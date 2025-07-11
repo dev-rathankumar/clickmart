@@ -116,7 +116,7 @@
                         {% if item.product.image %}
                         <img src="{{ item.product.image.url }}" width="60" alt="Product Image"><br>
                        {% else %}     
-                        <img src="#" width="60" alt="Product Image"><br>
+                        <img src="{% static 'images/placeholder.jpg' %}" width="60" alt="No image available" /><br>
                         {% endif %}
                             
                         <b>{{ item.product }}</b>
@@ -140,7 +140,7 @@
                     {% if item.product.image %}
                     <img src="{{ item.product.image.url }}" width="60" alt="Product Image">
                     {% else %}
-                    <img src="" width="60" alt="Product Image">
+                    <img src="{% static 'images/placeholder.jpg' %}" width="60" alt="No image available" />
                     {% endif %}                        
                     </div>
                     <div class="w-30"><b>{{ item.product }}</b></div>

@@ -2,7 +2,12 @@
 <link rel="stylesheet" href="{% static 'css/cs-foodbakery-plugin.css' %}">
 
 <div class="container">
-    <div class="archive-header-3 mt-30 mb-50" style="background-image: url({% static 'assets/imgs/vendor/vendor-header-bg.png' %})">
+    
+        {% if vendor.user_profile.cover_photo %}
+        <div class="archive-header-3 mt-30 mb-50" style="background-image: linear-gradient(rgb(0 0 0 / 37%), rgb(0 0 0 / 60%)), url('{{ vendor.user_profile.cover_photo.url }}'); background-size: cover; background-position: center;">
+        {% else %}
+        <div class="archive-header-3 mt-30 mb-50" style="background-image: url({% static 'assets/imgs/vendor/vendor-header-bg.png' %})">
+        {% endif %}
         <div class="archive-header-3-inner">
             <div class="vendor-logo mr-50">
                 {% if vendor.user_profile.profile_picture %}
@@ -15,12 +20,12 @@
                 <div class="product-category">
                     <span class="text-muted " style="color: #fff !important;">{{ vendor.store_type }}</span>
                 </div>
-                <h3 class="mb-5 text-white"><a href="vendor-details-1.html" class="text-white">{{ vendor.vendor_name }}</a></h3>
+                <h3 class="mb-5 text-white"><a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="text-white">{{ vendor.vendor_name }}</a></h3>
                 
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="vendor-info text-white mb-15">
-                            <ul class="font-sm" style="padding:0; width: 300px;">
+                            <ul class="font-sm" style="padding:0;">
                                 {% if vendor.user_profile.address %}
                                 <li><img class="mr-5" src="{% static 'assets/imgs/theme/icons/icon-location.svg' %}" alt="" /><strong>Address: </strong> <span>{{ vendor.user_profile.address }}</span></li>
                                 {% endif %}

@@ -61,7 +61,8 @@ def get_cart_amounts(request, session_cart=None):
             }
             tax_dict.append(tax_entry)
 
-        grand_total = subtotal + tax_value
+        # grand_total = subtotal + tax_value
+        grand_total = subtotal 
 
     elif cart:  # Guest session cart
         # cart is { 'product_id': quantity, ... }
@@ -86,7 +87,8 @@ def get_cart_amounts(request, session_cart=None):
             except Product.DoesNotExist:
                 continue
 
-        grand_total = subtotal + tax_value
+        # grand_total = subtotal + tax_value
+        grand_total = subtotal
 
     return {
         'subtotal': subtotal,

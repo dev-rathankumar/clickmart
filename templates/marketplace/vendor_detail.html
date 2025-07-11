@@ -141,7 +141,11 @@
         </div>
     </div>
     <div class="container mb-30">
+        {% if vendor.user_profile.cover_photo %}
+        <div class="archive-header-3 mt-30 mb-50" style="background-image: linear-gradient(rgb(0 0 0 / 37%), rgb(0 0 0 / 60%)), url('{{ vendor.user_profile.cover_photo.url }}'); background-size: cover; background-position: center;">
+        {% else %}
         <div class="archive-header-3 mt-30 mb-50" style="background-image: url({% static 'assets/imgs/vendor/vendor-header-bg.png' %})">
+        {% endif %}
             <div class="archive-header-3-inner">
                 <div class="vendor-logo mr-50">
                     {% if vendor.user_profile.profile_picture %}
@@ -154,7 +158,7 @@
                     <div class="product-category">
                         <span class="text-white">{{ vendor.store_type }}</span>
                     </div>
-                    <h3 class="mb-5 text-white"><a href="vendor-details-1.html" class="text-white">{{ vendor.vendor_name }}</a></h3>
+                    <h3 class="mb-5 text-white"><a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="text-white">{{ vendor.vendor_name }}</a></h3>
 
                     <div class="d-block d-lg-none mb-2">
                         {% if opening_hours %}

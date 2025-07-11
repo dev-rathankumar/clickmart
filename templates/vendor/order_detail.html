@@ -173,7 +173,7 @@
                                                         Subtotal
                                                         <span class="price float-right">
                                                             <span class="currency">₹</span>
-                                                            <span id="subtotal">{{ subtotal }}</span>
+                                                            <span id="subtotal">{{ subtotal |floatformat:2 }}</span>
                                                         </span>
                                                     </li>
                                                     
@@ -192,7 +192,7 @@
                                         
                                         <span class="price float-right">
                                             <span class="currency">₹</span>
-                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
+                                            <span id="tax-{{ single_tax_dict.product_id }}">{{ value |floatformat:2 }}</span>
                                         </span>
                                     </li>
                                         {% endif %}
@@ -208,7 +208,7 @@
                                                         TOTAL
                                                         <span class="price float-right ">
                                                             <span class="currency">₹</span>
-                                                            <span id="total">{{ grand_total }}</span>
+                                                            <span id="total">{{ grand_total |floatformat:2 }}</span>
                                                         </span>
                                                     </li>
                                                     </ul>
