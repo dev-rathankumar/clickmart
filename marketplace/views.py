@@ -237,7 +237,8 @@ def view_Product(request, vendor_slug, product_slug):
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
         category=product.category,
-        is_available=True  # Optional: Only include available products
+        is_available=True,  # Optional: Only include available products
+        vendor=product.vendor 
     ).exclude(id=product.id)
     if request.user.is_authenticated:
         cart_items = []
