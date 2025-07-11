@@ -1038,7 +1038,8 @@ def map_headers(request):
         'internal_fields': internal_fields,
         'csv_filename': filename,
         'sample_row': first_data_row,
-        'vendor':vendor.id
+        'vendor_id':vendor.id,
+        'vendor':vendor
     })
 
     

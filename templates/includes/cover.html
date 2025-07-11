@@ -20,7 +20,10 @@
                 <div class="product-category">
                     <span class="text-muted " style="color: #fff !important;">{{ vendor.store_type }}</span>
                 </div>
+                
+                {% if vendor %}
                 <h3 class="mb-5 text-white"><a href="{% url 'vendor_detail' vendor.vendor_slug %}" class="text-white">{{ vendor.vendor_name }}</a></h3>
+                {% endif %}
                 
                 <div class="row">
                     <div class="col-lg-6">

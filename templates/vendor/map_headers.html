@@ -96,7 +96,7 @@ const STORAGE_KEY = 'csv_field_mapping_per_vendor';
 const CURRENT_FILE = "{{ csv_filename|escapejs }}";
 const CSV_HEADERS = {{ csv_headers|safe }};
 const SAMPLE_ROW = {{ sample_row|safe }};
-const CURRENT_VENDOR = "{{ vendor }}"; // make sure this is a string!
+const CURRENT_VENDOR = "{{ vendor_id }}"; // make sure this is a string!
 
 document.addEventListener('DOMContentLoaded', () => {
     const allSaved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
