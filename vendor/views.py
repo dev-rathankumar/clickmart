@@ -58,7 +58,7 @@ from inventory.models import deposit as DepositCategory
 from vendor.models import Vendor
 from django.template.defaultfilters import slugify
 import decimal
-
+import time
 
 def get_vendor(request):
     vendor = Vendor.objects.get(user=request.user)
@@ -1220,6 +1220,7 @@ def set_image_to_mapped_data(request):
                 continue
 
             # Otherwise, try to generate
+            time.sleep(0.7) # this will delay the request so per minute 85 images will generate 
             image_url = search_images(request, product_name)
             if image_url:
                 product['image'] = image_url
