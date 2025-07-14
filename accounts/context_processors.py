@@ -31,5 +31,4 @@ def get_paypal_client_id(request):
 
 def get_store_types(request):
     store_types_footer = StoreType.objects.order_by('-id')[:6]
-    print("Store types in context:", store_types_footer)
     return {'store_types_footer': store_types_footer}

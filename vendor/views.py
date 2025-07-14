@@ -1183,7 +1183,11 @@ def validate_import_data(request):
 
 def set_image_to_mapped_data(request):
     if request.method == 'POST':
+        selected_products = json.loads(request.POST.get('selected_products', '[]'))
+        print("Selected Products ===>", selected_products)
+
         session_products = request.session.get('products', [])
+        print("firstr session ===>", session_products)
         mappings = request.session.get('mappings', {})
         vendor = get_vendor(request)
 
@@ -1191,10 +1195,9 @@ def set_image_to_mapped_data(request):
             messages.error(request, "No product data available. Please upload and validate your CSV first.")
             return redirect('upload_csv')
 
-        # Fetch existing products for this vendor from DB
-        existing_products = ProductCloneTable.objects.filter(vendor=vendor)
+        existing_products = ProductCloneTable.objects.all()
         existing_product_map = {
-            (p.product_name.strip().lower()): p.image_url
+            p.product_name.strip().lower(): p.image_url
             for p in existing_products if p.image_url
         }
 
@@ -1203,41 +1206,73 @@ def set_image_to_mapped_data(request):
         for product in session_products:
             product_name = product.get('product_name', '').strip()
             if not product_name:
-                continue  # Skip products without a name
-
-            existing_image_url = product.get('image', '').strip()
-
-            # If image already present in session, skip
-            if existing_image_url:
-                updated_products.append(product)
                 continue
 
-            # Check if DB product has an image
-            existing_image_from_db = existing_product_map.get(product_name.lower())
-            if existing_image_from_db:
-                product['image'] = existing_image_from_db
+            if product_name in selected_products:
+                # Otherwise, generate
+                time.sleep(0.7)
+                image_url = search_images(request, product_name)
+                if image_url:
+                    product['image'] = image_url
+                    try:
+                        clone_product = ProductCloneTable.objects.get(vendor=vendor, product_name=product_name)
+                        clone_product.image_url = image_url
+                        clone_product.save()
+                    except ProductCloneTable.DoesNotExist:
+                        pass
+                else:
+                    existing_image_from_db = existing_product_map.get(product_name.lower())
+                    if existing_image_from_db:
+                        product['image'] = existing_image_from_db
+                        updated_products.append(product)
+                        continue                
+
                 updated_products.append(product)
-                continue
 
-            # Otherwise, try to generate
-            time.sleep(0.7) # this will delay the request so per minute 85 images will generate 
-            image_url = search_images(request, product_name)
-            if image_url:
-                product['image'] = image_url
-                # Update DB as well
-                try:
-                    clone_product = ProductCloneTable.objects.get(vendor=vendor, product_name=product_name)
-                    clone_product.image_url = image_url
-                    clone_product.save()
-                except ProductCloneTable.DoesNotExist:
-                    pass  # Skip if not yet saved to DB
-            else:
-                messages.warning(request, f"No image found for product: {product_name}")
-            
-            updated_products.append(product)
+            else:  
+                existing_image_url = product.get('image', '').strip()
+                # If image already present in session, just keep it
+                if existing_image_url:
+                    updated_products.append(product)
+                    continue
 
-        # Save updated session data
+                #  Not selected: check vendor first
+                vendor_product = Product.objects.filter(product_name=product_name, vendor=vendor).first()
+                if vendor_product and vendor_product.image:
+                    product['image'] = request.build_absolute_uri(vendor_product.image.url)
+                    updated_products.append(product)
+                    continue
+
+
+                # Check DB
+                existing_image_from_db = existing_product_map.get(product_name.lower())
+                if existing_image_from_db:
+                    product['image'] = existing_image_from_db
+                    updated_products.append(product)
+                    continue
+
+                # Otherwise, generate
+                time.sleep(0.7)
+                image_url = search_images(request, product_name)
+                if image_url:
+                    product['image'] = image_url
+                    try:
+                        clone_product = ProductCloneTable.objects.get(vendor=vendor, product_name=product_name)
+                        clone_product.image_url = image_url
+                        clone_product.save()
+                    except ProductCloneTable.DoesNotExist:
+                        pass
+                else:
+                    messages.warning(request, f"No image found for product: {product_name}")
+
+                updated_products.append(product)
+
+        # Save to session
+        # print("before saving product in session ==>",session_products)
         request.session['products'] = updated_products
+        # print("update proudcts ===>", updated_products)
+        # print("products form session ==>", request.session['products'])
+
         if 'image' not in mappings:
             mappings['image'] = 'image'
         request.session['mappings'] = mappings
@@ -1267,6 +1302,7 @@ def search_images(request, product_name):
 
 
 def process_mapped_data_with_images(request):
+
     products = request.session.get('products', [])
     mappings = request.session.get('mappings', {})
     # print("mappings", mappings)
@@ -1306,17 +1342,29 @@ def process_mapped_data_with_images(request):
     })
 
 
-
-
-
-
 def download_image_to_field(product_obj, image_url):
-    print("image_url", image_url)
-    print("image function enter ")
+    print("image_url:", image_url)
     if not image_url:
         return
+
     try:
-        main_image_filename = image_url.split('/')[-1].split("?")[0]
+        # Extract filename from the image_url (strip query params)
+        main_image_filename = image_url.split('/')[-1].split('?')[0]
+        new_file_base = os.path.splitext(main_image_filename)[0]
+
+        # Check if product already has an image
+        if product_obj.image:
+            existing_filename = os.path.basename(product_obj.image.name)
+            existing_file_base = os.path.splitext(existing_filename)[0]
+            print("Existing image base:", existing_file_base)
+
+            if existing_file_base == new_file_base:
+                print("Image already exists — skipping download.")
+                # Just reassign the same image path
+                product_obj.image.name = product_obj.image.name  # Re-link the existing image
+                return
+
+        # Download and save the new image
         response = requests.get(image_url, timeout=10)
         if response.status_code == 200:
             main_content_file = ContentFile(response.content, name=main_image_filename)
@@ -1324,8 +1372,10 @@ def download_image_to_field(product_obj, image_url):
             product_obj.image.save(main_image_filename, main_content_file, save=False)
         else:
             print(f"Image download failed: HTTP {response.status_code}")
+
     except Exception as e:
         print(f"Image download error: {e}")
+
 
 def safe_decimal(val, default=Decimal(0), field_name=None):
     try:

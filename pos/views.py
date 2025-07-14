@@ -229,8 +229,9 @@ def dashboard_products(request):
         vendor = Vendor.objects.get(user=request.user)
         df = pd.DataFrame(productTransaction.objects.filter(transaction_date_time__date__range = (last_30_date,today_date), transaction__vendor=vendor).order_by('-transaction_date_time').values())
         context['products_group'] = {}
-        for i, df in df.groupby('department'):
-            context['products_group'][i] = df.groupby(["barcode","name"])[["qty"]].sum().reset_index().sort_values(by=["qty"],ascending=False).iloc[:number].to_dict('records')
+        if not df.empty and 'department' in df.columns:
+            for i, df in df.groupby('department'):
+                context['products_group'][i] = df.groupby(["barcode","name"])[["qty"]].sum().reset_index().sort_values(by=["qty"],ascending=False).iloc[:number].to_dict('records')
 
         context['low_inventory_products'] = product.objects.filter(vendor=vendor).order_by('qty').values('barcode','product_name','qty')[:50]
         context['number'] = number
@@ -312,57 +313,74 @@ def dashboard_sales(request):
     try:
         vendor = Vendor.objects.get(user=request.user)
         df = pd.DataFrame(transaction.objects.filter(transaction_dt__date__gte = datetime(today_date.year, 1,1), vendor=vendor).values())
-        df['transaction_dt'] = df['transaction_dt'].apply(lambda x: x.astimezone(timezone) )
-        df['date'] = df['transaction_dt'].dt.date
-        df_date = df.groupby('date')['total_sale'].sum()
-        df_date.index = pd.to_datetime(df_date.index)
-        if not df_date.get(datetime(today_date.year, 1,1)):df_date[datetime(today_date.year, 1,1)] = 0
-        if not df_date.get(today_date): df_date[today_date] = 0
-        df_date = df_date.asfreq('D',fill_value=0)
+        if not df.empty:
+            df['transaction_dt'] = df['transaction_dt'].apply(lambda x: x.astimezone(timezone) )
+            df['date'] = df['transaction_dt'].dt.date
+            df_date = df.groupby('date')['total_sale'].sum()
+            df_date.index = pd.to_datetime(df_date.index)
+            if not df_date.get(datetime(today_date.year, 1,1)):df_date[datetime(today_date.year, 1,1)] = 0
+            if not df_date.get(today_date): df_date[today_date] = 0
+            df_date = df_date.asfreq('D',fill_value=0)
 
-        context['today_total_sales'] = df_date.get(today_date)
-        context["add_info"] = {}
-        context["add_info"]['Yesterday\'s Total Sales'] = df_date.get(today_date-timedelta(1))
-        context["add_info"]['Last 7 Days Avg Sales'] = df_date[df_date.index>today_date-timedelta(7)].sum()/7
-        context['30_Days_Avg_Sales'] = df_date[df_date.index>today_date-timedelta(30)].mean()
-        context['30_Days_Total_Sales'] = df_date[df_date.index>today_date-timedelta(30)].sum()
-        # context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum()[-1]
-        weekly_sales = df_date.resample('W').sum()
-        context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum().iloc[-1]
-        context["add_info"]['Last Week Total Sales'] = weekly_sales.iloc[-2] if len(weekly_sales) > 1 else 0
-        if len(weekly_sales) > 0:
-            context["add_info"]['WTD Total Sales'] = weekly_sales.iloc[-1]
+            context['today_total_sales'] = df_date.get(today_date)
+            context["add_info"] = {}
+            context["add_info"]['Yesterday\'s Total Sales'] = df_date.get(today_date-timedelta(1))
+            context["add_info"]['Last 7 Days Avg Sales'] = df_date[df_date.index>today_date-timedelta(7)].sum()/7
+            context['30_Days_Avg_Sales'] = df_date[df_date.index>today_date-timedelta(30)].mean()
+            context['30_Days_Total_Sales'] = df_date[df_date.index>today_date-timedelta(30)].sum()
+            # context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum()[-1]
+            weekly_sales = df_date.resample('W').sum()
+            context["add_info"]['WTD Total Sales'] = df_date.resample('W').sum().iloc[-1]
+            context["add_info"]['Last Week Total Sales'] = weekly_sales.iloc[-2] if len(weekly_sales) > 1 else 0
+            if len(weekly_sales) > 0:
+                context["add_info"]['WTD Total Sales'] = weekly_sales.iloc[-1]
+            else:
+                context["add_info"]['WTD Total Sales'] = 0
+
+            # Monthly resampling
+            monthly_sales = df_date.resample('ME').sum()
+            if len(monthly_sales) > 0:
+                context["add_info"]['MTD Total Sales'] = monthly_sales.iloc[-1]
+            else:
+                context["add_info"]['MTD Total Sales'] = 0
+
+            # Yearly resampling
+            yearly_sales = df_date.resample('YE').sum()
+            if len(yearly_sales) > 0:
+                context["add_info"]['YTD Total Sales'] = yearly_sales.iloc[-1]
+            else:
+                context["add_info"]['YTD Total Sales'] = 0
+
+            # print(df_date.resample('W').sum())
+            fig = px.bar(x= df_date.index,  y=df_date,text_auto=True,barmode='group',template="plotly_white" ,labels={"x":"Date","y":"Total Sales"})
+            fig.update_xaxes(title="Days", tickformat = '%a,%d/%m',tickangle=-90)
+            fig.update_yaxes(title="Total Sales")
+            fig.update_layout( margin = dict(b=10,pad=0,t=10,r=0,l=0), )
+            div = po.plot(fig, auto_open=False, output_type='div',config= {'displayModeBar': False},include_plotlyjs=False)
+            context['30_day_sales_graph'] = div
+
+            df_day_payment = df[df['date'] == today_date.date() ].groupby('payment_type')['total_sale'].sum().reset_index()
+            fig2 = px.pie(df_day_payment,values='total_sale',names='payment_type',template="plotly_white",height=195 ,
+                labels={"payment_type":"Payment Type","total_sale":"Total Sales"})
+            fig2.update_layout( margin = dict(b=10,pad=0,t=10), )
+            context['day_payment_graph'] = po.plot(fig2, auto_open=False, output_type='div',config= {'displayModeBar': False},include_plotlyjs=False)
         else:
-            context["add_info"]['WTD Total Sales'] = 0
-
-        # Monthly resampling
-        monthly_sales = df_date.resample('ME').sum()
-        if len(monthly_sales) > 0:
-            context["add_info"]['MTD Total Sales'] = monthly_sales.iloc[-1]
-        else:
-            context["add_info"]['MTD Total Sales'] = 0
-
-        # Yearly resampling
-        yearly_sales = df_date.resample('YE').sum()
-        if len(yearly_sales) > 0:
-            context["add_info"]['YTD Total Sales'] = yearly_sales.iloc[-1]
-        else:
-            context["add_info"]['YTD Total Sales'] = 0
-
-        # print(df_date.resample('W').sum())
-        fig = px.bar(x= df_date.index,  y=df_date,text_auto=True,barmode='group',template="plotly_white" ,labels={"x":"Date","y":"Total Sales"})
-        fig.update_xaxes(title="Days", tickformat = '%a,%d/%m',tickangle=-90)
-        fig.update_yaxes(title="Total Sales")
-        fig.update_layout( margin = dict(b=10,pad=0,t=10,r=0,l=0), )
-        div = po.plot(fig, auto_open=False, output_type='div',config= {'displayModeBar': False},include_plotlyjs=False)
-        context['30_day_sales_graph'] = div
-
-        df_day_payment = df[df['date'] == today_date.date() ].groupby('payment_type')['total_sale'].sum().reset_index()
-        fig2 = px.pie(df_day_payment,values='total_sale',names='payment_type',template="plotly_white",height=195 ,
-            labels={"payment_type":"Payment Type","total_sale":"Total Sales"})
-        fig2.update_layout( margin = dict(b=10,pad=0,t=10), )
-        context['day_payment_graph'] = po.plot(fig2, auto_open=False, output_type='div',config= {'displayModeBar': False},include_plotlyjs=False)
+            context['today_total_sales'] = 0
+            context["add_info"] = {
+                "Yesterday's Total Sales": 0,
+                'Last 7 Days Avg Sales': 0,
+                'WTD Total Sales': 0,
+                'Last Week Total Sales': 0,
+                'MTD Total Sales': 0,
+                'YTD Total Sales': 0
+            }
+            context['30_Days_Avg_Sales'] = 0
+            context['30_Days_Total_Sales'] = 0
+            context['30_day_sales_graph'] = ''
+            context['day_payment_graph'] = ''
+            print("I'm now empty")
     except Exception as e:
+        print(e)
         return redirect("/pos/register/")
     return render(request,"pos/salesDashboard.html",context=context)
 

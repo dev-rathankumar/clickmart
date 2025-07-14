@@ -174,6 +174,9 @@ class ProductCloneTable(models.Model):
     class Meta:
         unique_together = ('vendor', 'slug')
 
+    def __str__(self):
+        return f"{self.product_name}-{self.vendor.vendor_name}"
+
 class ProductGallery(models.Model):
     product = models.ForeignKey(Product, blank=True, null=True, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='store/products', max_length=355, blank=True, null=True)
