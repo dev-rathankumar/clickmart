@@ -33,7 +33,8 @@ from django.db import models
 from django.db.models import Count, OuterRef, Subquery
 from django.core.paginator import Paginator
 from foodOnline_main.views import get_or_set_current_location
-
+from django.db.models import Sum, F, Value
+from django.db.models.functions import Coalesce
 
 def marketplace(request):
     if get_or_set_current_location(request) is not None:
@@ -237,9 +238,10 @@ def view_Product(request, vendor_slug, product_slug):
     # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
         category=product.category,
-        is_available=True,  # Optional: Only include available products
-        vendor=product.vendor 
-    ).exclude(id=product.id)
+        is_available=True,
+    ).exclude(id=product.id).annotate(
+        total_sold=Coalesce(Sum('orderedfood__quantity'), 0)
+    ).order_by('-total_sold')[:10]
     if request.user.is_authenticated:
         cart_items = []
         for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):

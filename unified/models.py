@@ -255,3 +255,27 @@ class SubCategoryAssignment(models.Model):
                     if subcat.parent is None:
                         raise ValidationError("Only subcategories (i.e., categories with a parent) can be assigned here.")
 
+
+
+# Attribute Model 
+class ProductAttribute(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class ProductAttributeValue(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='attributes')
+    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+    value = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ('product', 'attribute')  # Prevent duplicate entries
+
+    def __str__(self):
+        return f"{self.product.product_name}--> {self.attribute.name}: {self.value}"
