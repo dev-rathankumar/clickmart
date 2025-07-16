@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from inventory.models import tax
 from vendor.models import Vendor
-from .models import Product as UnifieldProduct, CategoryBrowsePage, CategoryBrowseSection, ProductAssignment, SubCategoryAssignment,ProductCloneTable
+from .models import Product as UnifieldProduct, CategoryBrowsePage, CategoryBrowseSection, ProductAssignment, SubCategoryAssignment,ProductCloneTable,ProductAttribute,ProductAttributeValue,VariantAttribute,ProductVariantGroup,VariantAttributeValue
 from .models import ProductGallery, Category, MediaUpload
 import admin_thumbnails
 from import_export.admin import ImportExportModelAdmin
@@ -267,6 +267,20 @@ class ProductAssignmentAdmin(SortableAdminMixin,admin.ModelAdmin):
 class SubCategoryAssignmentAdmin(admin.ModelAdmin):
     list_display = ['section', 'product', 'order']
 
+class ProductAttributeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'is_active', 'created_at', 'updated_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name']
+
+
+class ProductAttributeValueAdmin(admin.ModelAdmin):
+    list_display = ['product__vendor','product', 'attribute', 'value']
+    list_filter = ['attribute__name', 'product__product_name']
+    search_fields = ['product__product_name', 'attribute__name', 'value']
+    autocomplete_fields = ['product', 'attribute']
+    list_select_related = ['product', 'attribute']
+    ordering = ['product', 'attribute']
+
 
 
 admin.site.register(Category, CategoryAdmin)
@@ -278,3 +292,11 @@ admin.site.register(CategoryBrowseSection, CategoryBrowseSectionAdmin)
 admin.site.register(ProductAssignment, ProductAssignmentAdmin)
 admin.site.register(SubCategoryAssignment)
 admin.site.register(ProductCloneTable)
+admin.site.register(ProductAttribute, ProductAttributeAdmin)
+admin.site.register(ProductAttributeValue, ProductAttributeValueAdmin)
+
+
+admin.site.register(VariantAttribute)
+admin.site.register(VariantAttributeValue)
+admin.site.register(ProductVariantGroup)
+

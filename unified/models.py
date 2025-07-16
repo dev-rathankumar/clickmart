@@ -278,4 +278,35 @@ class ProductAttributeValue(models.Model):
         unique_together = ('product', 'attribute')  # Prevent duplicate entries
 
     def __str__(self):
-        return f"{self.product.product_name}--> {self.attribute.name}: {self.value}"
+        return f"ID({self.product.id})-->{self.product.product_name}--> {self.attribute.name}: {self.value}"
+
+
+# # Product varients 
+class VariantAttribute(models.Model):
+    name = models.CharField(max_length=100, unique=True)#By adimn === color, size,weight
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+class VariantAttributeValue(models.Model):
+    attribute = models.ForeignKey(VariantAttribute, on_delete=models.CASCADE, related_name='values') #color
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    value = models.CharField(max_length=100) # red
+
+    class Meta:
+        unique_together = ('attribute', 'value')
+
+    def __str__(self):
+        return f"{self.attribute.name}: {self.value}"
+
+class ProductVariantGroup(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+    attribute = models.ManyToManyField(VariantAttributeValue)
+    stock = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    image = models.ImageField(upload_to='store/products/variants/', blank=True, null=True)
+    sku = models.CharField(max_length=32, blank=True, null=True, unique=True)
+
+    def __str__(self):
+        return f"{self.product.product_name}"

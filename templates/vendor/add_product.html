@@ -235,7 +235,16 @@
                         {{ form.tax_category }}
                       </div>
                     </div>
-
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                      <div class="field-holder">
+                        <label>Product Attributes</label>
+                        <div id="attributes-wrapper"></div>
+                        <button type="button" class="btn btn-sm mt-2 text-light" style="background-color: #181970;" id="add-attribute-btn">
+                          <i class="fa fa-plus"></i> Add Attribute
+                        </button>
+                        <small style="color: #888;">Add product attributes and their values (e.g. Brand, Material).</small>
+                      </div>
+                    </div>
                     <div>
                       <h3>Upload Gallery Images</h3>
                       {{ formset.management_form }} {% for form in formset %}
@@ -311,5 +320,111 @@
     });
   });
 </script>
+<script>
+  // Data from Django context:
+  const allAttributes = [
+    {% for attr in attributes %}
+      {id: "{{ attr.id }}", name: "{{ attr.name|escapejs }}"},
+    {% endfor %}
+  ];
 
+  function getUnusedAttributes(selectedIds) {
+    return allAttributes.filter(attr => !selectedIds.includes(attr.id));
+  }
+
+let attrIdx = 0;
+function createAttributeRow(idx, selectedIds=[]) {
+  const unused = getUnusedAttributes(selectedIds);
+  if (unused.length === 0) return null;
+  const row = document.createElement('div');
+  row.className = 'd-flex align-items-center mb-2 attribute-row';
+  row.dataset.idx = idx;
+
+  // Dropdown
+  const select = document.createElement('select');
+  select.name = `attribute_${idx}`;
+  select.className = 'form-select attr-select';
+  select.required = false;
+
+  unused.forEach(attr => {
+    const option = document.createElement('option');
+    option.value = attr.id;
+    option.textContent = attr.name;
+    select.appendChild(option);
+  });
+  row.appendChild(select);
+
+  // Text input
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.name = `attr_value_${idx}`;
+  input.placeholder = 'Enter value';
+  input.className = 'form-control ms-2';
+  input.required = false;
+  row.appendChild(input);
+
+  // Remove button (always show)
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
+  removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+  removeBtn.onclick = function() {
+    row.remove();
+    refreshAttributeDropdowns();
+  };
+  row.appendChild(removeBtn);
+
+  return row;
+}
+  function getSelectedAttrIds() {
+    return Array.from(document.querySelectorAll('.attr-select')).map(s => s.value);
+  }
+
+  function refreshAttributeDropdowns() {
+    // Rebuild dropdowns to only offer unselected attributes
+    const allRows = document.querySelectorAll('.attribute-row');
+    const ids = getSelectedAttrIds();
+    allRows.forEach((row, idx) => {
+      const select = row.querySelector('.attr-select');
+      const currentVal = select.value;
+      // Build options
+      select.innerHTML = '';
+      allAttributes.forEach(attr => {
+        if (!ids.includes(attr.id) || attr.id === currentVal) {
+          const option = document.createElement('option');
+          option.value = attr.id;
+          option.textContent = attr.name;
+          select.appendChild(option);
+        }
+      });
+      select.value = currentVal;
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const wrapper = document.getElementById('attributes-wrapper');
+    const addBtn = document.getElementById('add-attribute-btn');
+
+    function addRow() {
+      const selectedIds = getSelectedAttrIds();
+      const row = createAttributeRow(attrIdx, selectedIds);
+      if (row) {
+        wrapper.appendChild(row);
+        attrIdx++;
+        refreshAttributeDropdowns();
+      }
+    }
+
+    addBtn.onclick = addRow;
+    // Add at least one row by default
+    // addRow();
+
+    // If user changes dropdown, refresh all
+    wrapper.addEventListener('change', function(e) {
+      if (e.target.classList.contains('attr-select')) {
+        refreshAttributeDropdowns();
+      }
+    });
+  });
+</script>
 {% endblock %}

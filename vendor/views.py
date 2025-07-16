@@ -10,7 +10,7 @@ import django.contrib as massage_helper
 from menu.forms import CategoryForm, FoodItemForm, ProductGalleryForm, SubCategoryForm, ProductForm,EditProductForm
 from orders.models import Order, OrderedFood
 # from menu.models import Product,ProductGallery
-from unified.models import Product,ProductGallery
+from unified.models import Product,ProductGallery,ProductAttribute, ProductAttributeValue
 import vendor
 from vendor.constants import CSV_FIELD_MAPPINGS
 from .forms import VendorForm, OpeningHourForm, CategoryImportForm, ProductImportForm, CSVUploadForm
@@ -591,6 +591,7 @@ def get_subcategories(request, category_id):
     subcategory_list = [{'id': subcategory.id, 'name': subcategory.category_name} for subcategory in subcategories]
     return JsonResponse({'subcategories': subcategory_list})
     
+
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def add_product(request):
@@ -598,58 +599,91 @@ def add_product(request):
     vendor = get_vendor(request)
 
     ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)
-    try:
-        if request.method == 'POST':
-            form = ProductForm(request.POST, request.FILES, vendor_id=vendor_id)
-            formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
+    attributes = ProductAttribute.objects.filter(is_active=True).order_by('name')
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, vendor_id=vendor_id)
+        formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
+        try:
             if form.is_valid() and formset.is_valid():
-                product = form.save(commit=False)
-                product.vendor = get_vendor(request)
-                # Generate the slug from the product name
-                product.slug = slugify(product.product_name)
-                product.save()
-                # Save the images from the formset
-                for form in formset:
-                    if form.cleaned_data.get('image'):
-                        gallery = form.save(commit=False)
-                        gallery.product = product
-                        gallery.save()
-                messages.success(request, 'Product added successfully!')
-                return redirect('vendor_products_list')
-        else:
-            form = ProductForm(vendor_id=vendor_id)
-            formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
+                with transaction.atomic():
+                    product = form.save(commit=False)
+                    product.vendor = vendor
+                    product.slug = slugify(product.product_name)
+                    product.save()
+                    # Save gallery images
+                    for f in formset:
+                        if f.cleaned_data.get('image'):
+                            gallery = f.save(commit=False)
+                            gallery.product = product
+                            gallery.save()
+                    # Handle product attributes
+                    attr_ids = set()
+                    errors = []
+                    idx = 0
+                    while True:
+                        attr_key = f'attribute_{idx}'
+                        val_key = f'attr_value_{idx}'
+                        attr_id = request.POST.get(attr_key)
+                        val = request.POST.get(val_key)
+                        print("val=>", val)
+                        print("attr_id=>", attr_id)
+                        if attr_id is None:  # No more
+                            break
+                        if not attr_id or not val:
+                            idx += 1
+                            continue  # skip incomplete rows
+                        if attr_id in attr_ids:
+                            errors.append(f"Duplicate attribute selected: {ProductAttribute.objects.get(id=attr_id).name}")
+                        else:
+                            attr_ids.add(attr_id)
+                            ProductAttributeValue.objects.create(
+                                product=product,
+                                attribute_id=attr_id,
+                                value=val
+                            )
+                        idx += 1
+                    if errors:
+                        messages.error(request, " ".join(errors))
+                        raise Exception("Product attributes error.")
+                    messages.success(request, 'Product added successfully!')
+                    return redirect('vendor_products_list')
+        except Exception as e:
+            messages.error(request, f"An error occurred: {e}")
+    else:
+        form = ProductForm(vendor_id=vendor_id)
+        formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
 
-        # Pass categories to the template for the dropdown
-        categories = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)  # Top-level categories
-        context = {
-            'form': form,
-            'categories': categories,
-            'formset': formset
-        }
-        return render(request, 'vendor/add_product.html', context)
-
-    except Exception as e:
-        messages.error(request, f"An error occurred: {e}")
-        return redirect('vendor_products_list')
-
+    categories = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)
+    context = {
+        'form': form,
+        'categories': categories,
+        'formset': formset,
+        'attributes': attributes,
+    }
+    return render(request, 'vendor/add_product.html', context)
 
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def edit_product(request, product_id):
     vendor = get_vendor(request)
-    product = get_object_or_404(Product, id=product_id, vendor=get_vendor(request))
-    # Create a formset for managing gallery images
+    product = get_object_or_404(Product, id=product_id, vendor=vendor)
     ProductGalleryFormSet = modelformset_factory(
         ProductGallery,
         form=ProductGalleryForm,
-        extra=1,  # Allow one extra form for uploading a new image
-        can_delete=True  # Allow existing images to be deleted
+        extra=1,
+        can_delete=True
     )
-    try :
+    attributes = ProductAttribute.objects.filter(is_active=True).order_by('name')
+    existing_attrvalues = ProductAttributeValue.objects.filter(product=product).select_related('attribute')
+    # Used to pass to template: list of dicts with id, value, name
+    attrvalue_list = [
+        {"id": av.attribute.id, "name": av.attribute.name, "value": av.value}
+        for av in existing_attrvalues
+    ]
+    try:
         if request.method == 'POST':
-            form = EditProductForm(request.POST, request.FILES, instance=product,vendor_id = vendor.id)
+            form = EditProductForm(request.POST, request.FILES, instance=product, vendor_id=vendor.id)
             formset = ProductGalleryFormSet(
                 request.POST, request.FILES, queryset=ProductGallery.objects.filter(product=product)
             )
@@ -657,40 +691,64 @@ def edit_product(request, product_id):
                 product = form.save(commit=False)
                 product.slug = slugify(product.product_name)
                 product.save()
-
                 # Process gallery formset
-                for form in formset:
-                    if form.cleaned_data.get('DELETE'):
-                        instance = form.instance
-                        # Ensure instance exists and has an ID before deleting
+                for f in formset:
+                    if f.cleaned_data.get('DELETE'):
+                        instance = f.instance
                         if instance and instance.id:
                             instance.delete()
-                    elif form.cleaned_data.get('image'):
-                        # Save new or updated image
-                        gallery = form.save(commit=False)
+                    elif f.cleaned_data.get('image'):
+                        gallery = f.save(commit=False)
                         gallery.product = product
                         gallery.save()
+                # --- HANDLE PRODUCT ATTRIBUTES ---
+                # Remove or update old, add new as needed
+                submitted_attrs = set()
+                idx = 0
+                while True:
+                    attr_key = f'attribute_{idx}'
+                    val_key = f'attr_value_{idx}'
+                    attr_id = request.POST.get(attr_key)
+                    val = request.POST.get(val_key)
+                    if attr_id is None:
+                        break
+                    # Only update if both are present and non-empty
+                    if attr_id and val:
+                        submitted_attrs.add(int(attr_id))
+                        pav, created = ProductAttributeValue.objects.get_or_create(
+                            product=product,
+                            attribute_id=attr_id,
+                            defaults={'value': val}
+                        )
+                        if not created and pav.value != val:
+                            pav.value = val
+                            pav.save()
+                    idx += 1
+                # Remove ProductAttributeValue objects that are no longer present
+                ProductAttributeValue.objects.filter(product=product).exclude(attribute_id__in=submitted_attrs).delete()
                 messages.success(request, 'Product updated successfully!')
                 return redirect('vendor_products_list')
             else:
-                print('error')
                 print(formset.errors)
         else:
-            form = EditProductForm(instance=product,vendor_id = vendor.id)
+            form = EditProductForm(instance=product, vendor_id=vendor.id)
             formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
 
-        categories = Category.objects.filter(parent__isnull=True,store_type=vendor.store_type)  # Top-level categories
+        categories = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)
         context = {
             'form': form,
             'categories': categories,
             'product': product,
             'formset': formset,
+            'attributes': attributes,
+            'attrvalue_list': attrvalue_list,
         }
         return render(request, 'vendor/edit_product.html', context)
     except Exception as e:
         messages.error(request, f"An error occurred: {e}")
         return redirect('vendor_products_list')
-
+    
+    
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def delete_product(request, product_id=None):

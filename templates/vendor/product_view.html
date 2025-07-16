@@ -226,7 +226,7 @@
                                     <!-- End Gallery -->
                                 </div>
                                 <div class="col-md-6 col-sm-12 col-xs-12">
-                                    <div class="detail-info pr-30 pl-30">
+                                    <div class="detail-info pr-10 pl-10">
                                         <span class=" vendor-visit-link mb-2"> <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}" >Visit {{ product.vendor.vendor_name }}</a> </span>
                                         
                                         {% if vendor.kms %}
@@ -247,12 +247,12 @@
                                             </div>
                                         </div>
                                         <div class="short-desc mb-30">
-                                            <p class="font-lg">{{ product.product_desc }}</p>
+                                            <p class="font-md">{{ product.product_desc | truncatechars:400}}</p>
                                         </div>
                                          {% if product.qty <= 0 %}
                                         <h4 class="text-danger">Out of Stock</h4>
                                         {% else %}
-                                        <div class="detail-extralink mb-50">
+                                        <div class="detail-extralink mb-10">
                                             <!-- Fixed Add to Cart Bar: Only shown on mobile -->
                                             <div class="mobile-fixed-cart-bar">
                                                <!-- Only visible on mobile screens -->
@@ -334,7 +334,20 @@
 
                                         </div>
                                          {% endif %}
-                                    </div>
+                                         <hr class='mb-3'>
+                                        <div>
+                                            <h4 class="mb-0"style="font-size: 1rem !important; color:#484747; font-weight:bold;">Key Attributes</h4>
+                                            <table style="font-size: 14px;">
+                                                {% for attr in product.attributes.all %}
+                                                    <tr style="line-height: 1.2;">
+                                                       <td style="font-weight: 500; padding:8px 0px 5px 0;">{{ attr.attribute.name }}</td>
+                                                        <td style="padding: 2px 0;">{{ attr.value }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </table>
+                                        </div>
+
+                                        </div>
                                     <!-- Detail Info -->
                                 </div>
                             </div>
