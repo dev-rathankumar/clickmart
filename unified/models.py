@@ -259,11 +259,15 @@ class SubCategoryAssignment(models.Model):
 
 # Attribute Model 
 class ProductAttribute(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE,blank=True, null=True )
     is_active = models.BooleanField(default=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        unique_together = ('name', 'category')
 
     def __str__(self):
         return self.name
@@ -295,16 +299,16 @@ class VariantAttributeValue(models.Model):
     value = models.CharField(max_length=100) # red
 
     class Meta:
-        unique_together = ('attribute', 'value')
+        unique_together = ('attribute', 'value', 'product')
 
     def __str__(self):
         return f"{self.attribute.name}: {self.value}"
 
 class ProductVariantGroup(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     attribute = models.ManyToManyField(VariantAttributeValue)
-    stock = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    stock = models.DecimalField(max_digits=10, decimal_places=3, default=0, blank=True, null=True)
     image = models.ImageField(upload_to='store/products/variants/', blank=True, null=True)
     sku = models.CharField(max_length=32, blank=True, null=True, unique=True)
 

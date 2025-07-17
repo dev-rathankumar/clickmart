@@ -27,6 +27,17 @@ urlpatterns = [
     path('manage-products/add-product/', views.add_product, name='add_product'),
     path('manage-products/edit-product/<int:product_id>/', views.edit_product, name='edit_product'),
     path('manage-products/product-delete/<int:product_id>/', views.delete_product, name='delete_product'),
+    path('product-variant/<int:product_id>/', views.product_variant, name='product_variant'),
+    path('variant-value/add/<int:product_id>/', views.add_variant_value, name='add_variant_value'),
+    path('variant-value/edit/<int:variant_id>/', views.edit_variant_value, name='edit_variant_value'),
+    path('variant-value/delete/<int:variant_id>/', views.delete_variant_value, name='delete_variant_value'),
+    path('variant-group/create/<int:product_id>/', views.create_variant_group, name='create_variant_group'),
+    path('variant-group/edit/<int:pk>/', views.edit_variant_group, name='edit_variant_group'),
+    path('variant-group/delete/<int:pk>/', views.delete_variant_group, name='delete_variant_group'),
+    path('get-attributes/<int:category_id>/', views.get_attributes_by_category, name='get_attributes_by_category'),
+
+
+
     
     # Category CRUD
 

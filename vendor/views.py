@@ -56,7 +56,9 @@ from unified.models import Product, Category
 from inventory.models import tax as TaxCategory
 from inventory.models import deposit as DepositCategory
 from vendor.models import Vendor
+from unified.models import VariantAttribute, VariantAttributeValue, ProductVariantGroup
 from django.template.defaultfilters import slugify
+from django.urls import reverse
 import decimal
 import time
 
@@ -603,6 +605,7 @@ def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, vendor_id=vendor_id)
         formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
+        action = request.POST.get('action')  # <- Check which button was clicked
         try:
             if form.is_valid() and formset.is_valid():
                 with transaction.atomic():
@@ -646,7 +649,11 @@ def add_product(request):
                         messages.error(request, " ".join(errors))
                         raise Exception("Product attributes error.")
                     messages.success(request, 'Product added successfully!')
-                    return redirect('vendor_products_list')
+                    if action == 'next':
+                        return redirect(reverse('product_variant', kwargs={'product_id': product.id}))
+                    else:
+                        return redirect('vendor_products_list')
+                    # return redirect('vendor_products_list')
         except Exception as e:
             messages.error(request, f"An error occurred: {e}")
     else:
@@ -662,6 +669,10 @@ def add_product(request):
     }
     return render(request, 'vendor/add_product.html', context)
 
+def get_attributes_by_category(request, category_id):
+    attributes = ProductAttribute.objects.filter(category_id=category_id, is_active=True)
+    data = [{'id': attr.id, 'name': attr.name} for attr in attributes]
+    return JsonResponse({'attributes': data})
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
@@ -727,7 +738,10 @@ def edit_product(request, product_id):
                 # Remove ProductAttributeValue objects that are no longer present
                 ProductAttributeValue.objects.filter(product=product).exclude(attribute_id__in=submitted_attrs).delete()
                 messages.success(request, 'Product updated successfully!')
-                return redirect('vendor_products_list')
+                if request.POST.get("submit_type") == "next":
+                    return redirect('product_variant', product_id=product.id)
+                else:
+                    return redirect('vendor_products_list')
             else:
                 print(formset.errors)
         else:
@@ -1689,3 +1703,171 @@ def save_to_clone_products_table(request, products, vendor):
     except:
         # Silently skip unexpected top-level error
         pass
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def product_variant(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    variant_attributes = VariantAttribute.objects.filter(is_active=True)
+    existing_variants = VariantAttributeValue.objects.filter(product=product)
+    variant_groups = ProductVariantGroup.objects.filter(product=product).prefetch_related('attribute')
+
+    context = {
+        'product': product,
+        'variant_attributes': variant_attributes,
+        'existing_variants': existing_variants,
+        'variant_groups': variant_groups,
+    }
+    return render(request, 'vendor/add_variant.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def add_variant_value(request, product_id):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        product = get_object_or_404(Product, id=product_id)
+        attributes = request.POST.getlist('attributes')
+        values = request.POST.getlist('values')
+
+        added = []
+        for attr_id, value in zip(attributes, values):
+            attribute = get_object_or_404(VariantAttribute, id=attr_id)
+            if value.strip():
+                val_obj, created = VariantAttributeValue.objects.get_or_create(
+                    product=product,
+                    attribute=attribute,
+                    value=value.strip()
+                )
+                added.append({
+                    'id': val_obj.id,
+                    'attribute': attribute.name,
+                    'value': val_obj.value
+                })
+
+        return JsonResponse({'status': 'success', 'added': added})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def edit_variant_value(request, variant_id):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        new_value = request.POST.get('value')
+        variant = get_object_or_404(VariantAttributeValue, id=variant_id)
+        variant.value = new_value
+        variant.save()
+        return JsonResponse({'status': 'success', 'value': variant.value})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def delete_variant_value(request, variant_id):
+    if request.method == 'DELETE' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        variant = get_object_or_404(VariantAttributeValue, id=variant_id)
+        variant.delete()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def create_variant_group(request, product_id):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=product_id)
+        price = request.POST.get('price')
+        stock = request.POST.get('stock')
+        sku = request.POST.get('sku')
+        attribute_ids = request.POST.getlist('attribute_values')
+        image = request.FILES.get('image')
+
+        if ProductVariantGroup.objects.filter(sku=sku).exists():
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': 'SKU must be unique.'})
+            messages.error(request, "SKU must be unique.")
+            return redirect('product_variant', product_id=product.id)
+
+        group = ProductVariantGroup.objects.create(
+            product=product,
+            price=price,
+            stock=stock,
+            sku=sku,
+            image=image
+        )
+        group.attribute.set(attribute_ids)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            attributes = [f"{attr.attribute.name} : {attr.value}" for attr in group.attribute.all()]
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Variant group created successfully.',
+                'group': {
+                    'id': group.id,
+                    'price': str(group.price),
+                    'stock': str(group.stock),
+                    'sku': group.sku,
+                    'image_url': group.image.url if group.image else '',
+                    'attributes': attributes
+                }
+            })
+
+        messages.success(request, "Variant group created successfully.")
+        return redirect('product_variant', product_id=product.id)
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def edit_variant_group(request, pk):
+    group = get_object_or_404(ProductVariantGroup, id=pk)
+    product = group.product
+    existing_variants = VariantAttributeValue.objects.all()
+
+    # AJAX GET - send JSON data to fill form
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        data = {
+            'id': group.id,
+            'price': str(group.price),
+            'stock': str(group.stock),
+            'sku': group.sku,
+            'image_url': group.image.url if group.image else '',
+            'attributes': list(group.attribute.values_list('id', flat=True)),
+        }
+        return JsonResponse(data)
+
+    # POST - update variant group
+    if request.method == 'POST':
+        group.price = request.POST.get('price')
+        group.stock = request.POST.get('stock')
+        group.sku = request.POST.get('sku')
+        image = request.FILES.get('image')
+        attribute_values = request.POST.getlist('attribute_values')
+
+        if image:
+            group.image = image
+
+        group.save()
+        group.attribute.set(attribute_values)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success', 'message': 'Variant group updated!'})
+
+        messages.success(request, 'Variant group updated!')
+        return redirect('product_variant_page', product_id=product.id)
+
+    # Normal GET (page load)
+    return render(request, 'vendor/add_variant.html', {
+        'group': group,
+        'product': product,
+        'existing_variants': existing_variants,
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(check_role_vendor)
+def delete_variant_group(request, pk):
+    if request.headers.get('x-requested-with') != 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+    group = get_object_or_404(ProductVariantGroup, id=pk)
+    group.delete()
+    return JsonResponse({'status': 'success', 'message': 'Variant group deleted!'})

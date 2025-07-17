@@ -83,6 +83,17 @@
     margin-bottom: 10px;
     display: inline-block;
   }
+  .btn-outline-update_color {
+  color: #007bff !important;
+  border: 1px solid #007bff !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-update_color:hover {
+  background-color: #007bff !important;
+  color: white !important;
+}
+  
 </style>
 <!-- Main Section Start -->
 <div class="main-section">
@@ -260,9 +271,15 @@
                 <li style="color: red">{{ error }}</li>
                 {% endfor %} {% endfor %} {% endcomment %}
 
-                <button type="submit" class="btn btn-info mb-3">
-                  <i class="fa fa-check" aria-hidden="true"></i> Create
-                </button>
+                <div class="d-flex justify-content-end gap-3 mb-3">
+                  <button type="submit" name="action" value="create" class="btn btn-outline-update_color me-2">
+              <i class="fa fa-check" aria-hidden="true"></i> Save
+            </button>
+                  
+                  <button type="submit" name="action" value="next" class="btn update_color">
+                    Create Variant <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                  </button>
+                </div>
               </form>
             </div>
           </div>

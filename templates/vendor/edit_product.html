@@ -85,6 +85,17 @@
     margin-bottom: 10px;
     display: inline-block;
   }
+    .btn-outline-update_color {
+  color: #007bff !important;
+  border: 1px solid #007bff !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-update_color:hover {
+  background-color: #007bff !important;
+  color: white !important;
+}
+
 </style>
 <div class="main-section">
     {% include 'includes/cover.html' %}
@@ -287,7 +298,16 @@
                                     {% endif %}
                                 {% endfor %}
 
-                                <button type="submit" class="btn btn-info mb-3"><i class="fa fa-check" aria-hidden="true"></i> Update</button>
+                                <div class="d-flex justify-content-end gap-3 mb-3">
+                                    <button type="submit" name="submit_type" value="save" class="btn btn-outline-update_color mb-3">
+                                    <i class="fa fa-check" aria-hidden="true"></i> Update
+                                    </button>
+
+                                    <button type="submit" name="submit_type" value="next" class="btn update_color mb-3 float-right">
+                                    Manage Variant <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                                    </button>
+
+                                </div>
                             </form>
                         </div>
                     </div>
