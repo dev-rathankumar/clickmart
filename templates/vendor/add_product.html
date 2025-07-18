@@ -84,8 +84,8 @@
     display: inline-block;
   }
   .btn-outline-update_color {
-  color: #007bff !important;
-  border: 1px solid #007bff !important;
+  color: #181970 !important;
+  border: 1px solid #181970 !important;
   background-color: transparent !important;
 }
 
@@ -338,110 +338,132 @@
   });
 </script>
 <script>
-  // Data from Django context:
-  const allAttributes = [
-    {% for attr in attributes %}
-      {id: "{{ attr.id }}", name: "{{ attr.name|escapejs }}"},
-    {% endfor %}
-  ];
-
-  function getUnusedAttributes(selectedIds) {
-    return allAttributes.filter(attr => !selectedIds.includes(attr.id));
-  }
-
-let attrIdx = 0;
-function createAttributeRow(idx, selectedIds=[]) {
-  const unused = getUnusedAttributes(selectedIds);
-  if (unused.length === 0) return null;
-  const row = document.createElement('div');
-  row.className = 'd-flex align-items-center mb-2 attribute-row';
-  row.dataset.idx = idx;
-
-  // Dropdown
-  const select = document.createElement('select');
-  select.name = `attribute_${idx}`;
-  select.className = 'form-select attr-select';
-  select.required = false;
-
-  unused.forEach(attr => {
-    const option = document.createElement('option');
-    option.value = attr.id;
-    option.textContent = attr.name;
-    select.appendChild(option);
-  });
-  row.appendChild(select);
-
-  // Text input
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.name = `attr_value_${idx}`;
-  input.placeholder = 'Enter value';
-  input.className = 'form-control ms-2';
-  input.required = false;
-  row.appendChild(input);
-
-  // Remove button (always show)
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
-  removeBtn.innerHTML = '<i class="fa fa-times"></i>';
-  removeBtn.onclick = function() {
-    row.remove();
-    refreshAttributeDropdowns();
-  };
-  row.appendChild(removeBtn);
-
-  return row;
-}
-  function getSelectedAttrIds() {
-    return Array.from(document.querySelectorAll('.attr-select')).map(s => s.value);
-  }
-
-  function refreshAttributeDropdowns() {
-    // Rebuild dropdowns to only offer unselected attributes
-    const allRows = document.querySelectorAll('.attribute-row');
-    const ids = getSelectedAttrIds();
-    allRows.forEach((row, idx) => {
-      const select = row.querySelector('.attr-select');
-      const currentVal = select.value;
-      // Build options
-      select.innerHTML = '';
-      allAttributes.forEach(attr => {
-        if (!ids.includes(attr.id) || attr.id === currentVal) {
-          const option = document.createElement('option');
-          option.value = attr.id;
-          option.textContent = attr.name;
-          select.appendChild(option);
-        }
-      });
-      select.value = currentVal;
-    });
-  }
-
   document.addEventListener("DOMContentLoaded", function () {
+    const allAttributes = {{ all_attributes|safe }};
     const wrapper = document.getElementById('attributes-wrapper');
     const addBtn = document.getElementById('add-attribute-btn');
+    const categorySelect = document.querySelector('[name="category"]');
 
-    function addRow() {
-      const selectedIds = getSelectedAttrIds();
-      const row = createAttributeRow(attrIdx, selectedIds);
-      if (row) {
-        wrapper.appendChild(row);
-        attrIdx++;
-        refreshAttributeDropdowns();
-      }
+    let attrIdx = 0;
+
+    // Create a row for existing attribute (readonly name + input value + hidden id)
+    function createExistingAttributeRow(idx, attr) {
+      const row = document.createElement('div');
+      row.className = 'd-flex align-items-center mb-2 attribute-row';
+      row.dataset.idx = idx;
+
+      // Hidden input for attribute id
+      const hiddenId = document.createElement('input');
+      hiddenId.type = 'hidden';
+      hiddenId.name = 'existing_attribute_ids[]';
+      hiddenId.value = attr.id;
+      row.appendChild(hiddenId);
+
+      // Readonly attribute name input
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.name = `attribute_name_${idx}`;
+      nameInput.className = 'form-control me-2 attr-name';
+      nameInput.value = attr.name;
+      nameInput.readOnly = true;
+      nameInput.style.backgroundColor = '#f0f0f0';
+      row.appendChild(nameInput);
+
+      // Value input
+      const valueInput = document.createElement('input');
+      valueInput.type = 'text';
+      valueInput.name = `attribute_value_${idx}`;
+      valueInput.placeholder = 'Enter value';
+      valueInput.className = 'form-control ms-2';
+      row.appendChild(valueInput);
+
+      // Remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
+      removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+      removeBtn.onclick = () => {
+        row.remove();
+      };
+      row.appendChild(removeBtn);
+
+      return row;
     }
 
-    addBtn.onclick = addRow;
-    // Add at least one row by default
-    // addRow();
+    // Create a row for new attribute (editable name + value)
+    function createNewAttributeRow(idx) {
+      const row = document.createElement('div');
+      row.className = 'd-flex align-items-center mb-2 attribute-row new-attribute-row';
+      row.dataset.idx = idx;
 
-    // If user changes dropdown, refresh all
-    wrapper.addEventListener('change', function(e) {
-      if (e.target.classList.contains('attr-select')) {
-        refreshAttributeDropdowns();
+      // Editable attribute name input
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.name = `new_attribute_name_${idx}`;
+      nameInput.className = 'form-control me-2 attr-name';
+      nameInput.placeholder = 'Enter new attribute name';
+      nameInput.required = true;
+      row.appendChild(nameInput);
+
+      // Value input
+      const valueInput = document.createElement('input');
+      valueInput.type = 'text';
+      valueInput.name = `new_attribute_value_${idx}`;
+      valueInput.placeholder = 'Enter value';
+      valueInput.className = 'form-control ms-2';
+      valueInput.required = true;
+      row.appendChild(valueInput);
+
+      // Remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
+      removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+      removeBtn.onclick = () => {
+        row.remove();
+      };
+      row.appendChild(removeBtn);
+
+      return row;
+    }
+
+    // Load all attributes for the selected category as readonly rows
+    function loadAttributesByCategory(categoryId) {
+      wrapper.innerHTML = '';
+      attrIdx = 0;
+      const filtered = allAttributes.filter(attr => attr.category_id == categoryId);
+      filtered.forEach(attr => {
+        const row = createExistingAttributeRow(attrIdx, attr);
+        wrapper.appendChild(row);
+        attrIdx++;
+      });
+    }
+
+    // On category change, load attributes for that category
+    categorySelect.addEventListener('change', function () {
+      const categoryId = this.value;
+      if (categoryId) {
+        loadAttributesByCategory(categoryId);
+      } else {
+        wrapper.innerHTML = '';
+        attrIdx = 0;
       }
     });
+
+    // Add new attribute row (editable) on button click
+    addBtn.addEventListener('click', function () {
+      const row = createNewAttributeRow(attrIdx);
+      wrapper.appendChild(row);
+      attrIdx++;
+    });
+
+    // Optionally, trigger initial load if category preselected
+    if (categorySelect.value) {
+      loadAttributesByCategory(categorySelect.value);
+    }
   });
 </script>
+
+
+
 {% endblock %}

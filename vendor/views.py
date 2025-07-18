@@ -601,11 +601,16 @@ def add_product(request):
     vendor = get_vendor(request)
 
     ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)
-    attributes = ProductAttribute.objects.filter(is_active=True).order_by('name')
+
+    attributes = ProductAttribute.objects.filter(Q(vendor=vendor) | Q(vendor__isnull=True),is_active=True).order_by('name')
+
+    all_attributes = list(attributes.values('id', 'name', 'category_id'))
+
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, vendor_id=vendor_id)
         formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
-        action = request.POST.get('action')  # <- Check which button was clicked
+        action = request.POST.get('action')  # Button clicked
+
         try:
             if form.is_valid() and formset.is_valid():
                 with transaction.atomic():
@@ -613,66 +618,109 @@ def add_product(request):
                     product.vendor = vendor
                     product.slug = slugify(product.product_name)
                     product.save()
+
                     # Save gallery images
                     for f in formset:
                         if f.cleaned_data.get('image'):
                             gallery = f.save(commit=False)
                             gallery.product = product
                             gallery.save()
-                    # Handle product attributes
-                    attr_ids = set()
+
                     errors = []
-                    idx = 0
-                    while True:
-                        attr_key = f'attribute_{idx}'
-                        val_key = f'attr_value_{idx}'
-                        attr_id = request.POST.get(attr_key)
-                        val = request.POST.get(val_key)
-                        print("val=>", val)
-                        print("attr_id=>", attr_id)
-                        if attr_id is None:  # No more
-                            break
-                        if not attr_id or not val:
-                            idx += 1
-                            continue  # skip incomplete rows
+                    attr_ids = set()
+
+                    # Handle existing attributes
+                    existing_attr_ids = request.POST.getlist('existing_attribute_ids[]')
+                    for idx, attr_id in enumerate(existing_attr_ids):
+                        val = request.POST.get(f'attribute_value_{idx}', '').strip()
+                        if not val:
+                            continue
                         if attr_id in attr_ids:
                             errors.append(f"Duplicate attribute selected: {ProductAttribute.objects.get(id=attr_id).name}")
-                        else:
-                            attr_ids.add(attr_id)
-                            ProductAttributeValue.objects.create(
-                                product=product,
-                                attribute_id=attr_id,
-                                value=val
-                            )
-                        idx += 1
+                            continue
+                        attr_ids.add(attr_id)
+                        ProductAttributeValue.objects.create(
+                            product=product,
+                            attribute_id=attr_id,
+                            value=val
+                        )
+
+                    # Handle new attributes
+                    new_attr_keys = [key for key in request.POST if key.startswith('new_attribute_name_')]
+                    for key in new_attr_keys:
+                        idx = key.split('_')[-1]
+                        name = request.POST.get(key, '').strip()
+                        val = request.POST.get(f'new_attribute_value_{idx}', '').strip()
+                        if not name or not val:
+                            continue
+
+                        category = form.cleaned_data['category']
+
+                        # 1. Check if global attribute with same name/category exists
+                        global_exists = ProductAttribute.objects.filter(
+                            name__iexact=name,
+                            category=category,
+                            vendor__isnull=True
+                        ).exists()
+
+                        # 2. (Optional) Prevent same vendor from creating duplicates
+                        vendor_exists = ProductAttribute.objects.filter(
+                            name__iexact=name,
+                            category=category,
+                            vendor=vendor
+                        ).exists()
+
+                        if global_exists:
+                            errors.append(f"A global attribute with name '{name}' already exists in this category. Please select it from existing attributes.")
+                            continue
+
+                        if vendor_exists:
+                            errors.append(f"Attribute '{name}' already exists under your account in this category. Please select it from existing attributes.")
+                            continue
+
+                        # Create new vendor-specific attribute
+                        new_attr = ProductAttribute.objects.create(
+                            name=name,
+                            category=category,
+                            vendor=vendor,
+                            is_active=True
+                        )
+                        ProductAttributeValue.objects.create(
+                            product=product,
+                            attribute=new_attr,
+                            value=val
+                        )
+
                     if errors:
                         messages.error(request, " ".join(errors))
                         raise Exception("Product attributes error.")
+
                     messages.success(request, 'Product added successfully!')
+
                     if action == 'next':
                         return redirect(reverse('product_variant', kwargs={'product_id': product.id}))
                     else:
                         return redirect('vendor_products_list')
-                    # return redirect('vendor_products_list')
+
         except Exception as e:
             messages.error(request, f"An error occurred: {e}")
+
     else:
         form = ProductForm(vendor_id=vendor_id)
         formset = ProductGalleryFormSet(queryset=ProductGallery.objects.none())
 
     categories = Category.objects.filter(parent__isnull=True, store_type=vendor.store_type)
+
     context = {
         'form': form,
         'categories': categories,
         'formset': formset,
         'attributes': attributes,
+        'all_attributes': json.dumps(all_attributes),
     }
     return render(request, 'vendor/add_product.html', context)
 
-def get_attributes_by_category(request, category_id):
-    attributes = ProductAttribute.objects.filter(category_id=category_id, is_active=True)
-    data = [{'id': attr.id, 'name': attr.name} for attr in attributes]
-    return JsonResponse({'attributes': data})
+
 
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
@@ -685,7 +733,7 @@ def edit_product(request, product_id):
         extra=1,
         can_delete=True
     )
-    attributes = ProductAttribute.objects.filter(is_active=True).order_by('name')
+    attributes = ProductAttribute.objects.filter(Q(vendor=vendor) | Q(vendor__isnull=True),is_active=True).order_by('name')
     existing_attrvalues = ProductAttributeValue.objects.filter(product=product).select_related('attribute')
     # Used to pass to template: list of dicts with id, value, name
     attrvalue_list = [
@@ -1778,10 +1826,16 @@ def create_variant_group(request, product_id):
         price = request.POST.get('price')
         stock = request.POST.get('stock')
         sku = request.POST.get('sku')
+        sku = sku.strip() if sku else None
         attribute_ids = request.POST.getlist('attribute_values')
         image = request.FILES.get('image')
 
-        if ProductVariantGroup.objects.filter(sku=sku).exists():
+        try:
+            price = Decimal(price) if price else None
+        except InvalidOperation:
+            price = None
+
+        if sku and ProductVariantGroup.objects.filter(sku=sku).exists():
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'error', 'message': 'SKU must be unique.'})
             messages.error(request, "SKU must be unique.")

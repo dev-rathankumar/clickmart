@@ -4,7 +4,8 @@ from vendor.models import Vendor, StoreType
 from django.template.defaultfilters import slugify
 from inventory.models import tax as TaxCategory
 from inventory.models import deposit as DepositCategory
-
+from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 class Category(models.Model):
     parent = models.ForeignKey(
@@ -266,8 +267,39 @@ class ProductAttribute(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
     class Meta:
-        unique_together = ('name', 'category')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'category'],
+                condition=Q(vendor__isnull=True),
+                name='unique_global_attribute'
+            )
+        ]
+
+    def clean(self):
+
+        if self.vendor is not None:
+            # Check if a global attribute with same name+category already exists
+            exists = ProductAttribute.objects.filter(
+                name=self.name,
+                category=self.category,
+                vendor__isnull=True
+            ).exists()
+
+            if exists:
+                raise ValidationError(f"A global attribute with name '{self.name}' and category already exists.")
+        
+        else:
+            # If global, ensure no vendor-specific duplicates exist (optional)
+            exists = ProductAttribute.objects.filter(
+                name=self.name,
+                category=self.category,
+                vendor__isnull=False
+            ).exists()
+
+            if exists:
+                raise ValidationError(f"Vendor-specific attributes already exist for this name and category. Cannot create global.")
 
     def __str__(self):
         return self.name

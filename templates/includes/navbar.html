@@ -341,7 +341,7 @@
         <!-- Middle: Search Bar -->
         <div class="flex-grow-1">
           <div class="search-style-2">
-            <form action="{% url 'all_products' %}" method="get" class="d-flex">
+            <form action="{% url 'all_products' %}" method="get" id="searchForm" class="d-flex">
               <select
                 name="store_type"
                 class="select-active me-2"
@@ -363,6 +363,8 @@
                 autocomplete="off"
               />
               <ul id="suggestions-list" class="dropdown-menu show" style="position:absolute; z-index:1000; display:none;"></ul>
+               
+                <input type="hidden" name="type" id="searchType" value=""> <!-- Hidden input to switch between products/stores -->
 
               <button
                 type="submit"
@@ -700,6 +702,7 @@
                     autocomplete="off"
                     style="font-size: 14px; height: 40px; line-height: 40px; padding-top: 0; padding-bottom: 0;"
                   />
+                   <input type="hidden" name="type" value="">
                   <button type="submit" hidden></button>
                 </div>
                 
@@ -943,101 +946,114 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const searchInputs = [
-    {
-      input: document.getElementById("live-search-input"),
-      list: document.getElementById("suggestions-list"),
-    },
-    {
-      input: document.getElementById("mobile-search-input"),
-      list: document.getElementById("mobile-suggestions-list"),
-    },
-  ];
+  document.addEventListener("DOMContentLoaded", function () {
+    const configs = [
+      {
+        inputId: "live-search-input",
+        listId: "suggestions-list",
+        formSelector: "#searchForm"
+      },
+      {
+        inputId: "mobile-search-input",
+        listId: "mobile-suggestions-list",
+        formSelector: ".autocomplete_mobile_container form"
+      }
+    ];
 
-  searchInputs.forEach(({ input, list }) => {
-    if (!input || !list) return;
+    configs.forEach(({ inputId, listId, formSelector }) => {
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(listId);
+      const form = document.querySelector(formSelector);
 
-    input.addEventListener("keyup", function () {
-      const query = input.value.trim();
+      if (!input || !list || !form) return;
 
-      if (query.length < 1) {
-        list.style.display = "none";
-        list.innerHTML = "";
-        return;
+      // Create hidden input for type (if not present)
+      let typeInput = form.querySelector("input[name='type']");
+      if (!typeInput) {
+        typeInput = document.createElement("input");
+        typeInput.type = "hidden";
+        typeInput.name = "type";
+        form.appendChild(typeInput);
       }
 
-      fetch(`/marketplace/live/search/?term=${encodeURIComponent(query)}`)
-        .then((response) => response.json())
-        .then((data) => {
+      // Live search on keyup
+      input.addEventListener("keyup", function () {
+        const query = input.value.trim();
+        if (!query) {
+          list.style.display = "none";
           list.innerHTML = "";
+          return;
+        }
 
-          // Combine vendors and products into one list
-          const combinedResults = [...(data.vendors || []), ...(data.products || [])];
+        fetch(`/marketplace/live/search/?term=${encodeURIComponent(query)}`)
+          .then(res => res.json())
+          .then(data => {
+            const combined = [...(data.vendors || []), ...(data.products || [])];
+            list.innerHTML = "";
 
-          if (combinedResults.length === 0) {
-            list.innerHTML = `<li class="dropdown-item text-muted">No results found</li>`;
-          } else {
-            combinedResults.forEach((item) => {
-              const li = document.createElement("li");
-              li.className = "dropdown-item";
-
-              // Determine link URL
-              const link =
-                item.type === "vendor"
+            if (combined.length === 0) {
+              list.innerHTML = `<li class="dropdown-item text-muted">No results found</li>`;
+            } else {
+              combined.forEach(item => {
+                const li = document.createElement("li");
+                li.className = "dropdown-item";
+                const link = item.type === "vendor"
                   ? `/marketplace/${item.vendor_slug}/`
                   : `/marketplace/product/${item.vendor_slug}/${item.slug}`;
+                const image = item.image || "/static/images/placeholder.jpg";
+                const extra = item.type === "vendor"
+                  ? `<div class="d-flex align-items-center gap-1 text-muted" style="font-size: 13px;">
+                      ${item.name}
+                      ${item.distance ? `<i class="bi bi-geo-alt"></i> ${item.distance} km` : ""}
+                    </div><small class="text-muted">Visit Store</small>`
+                  : `<div>${item.name}</div><small>₹${item.price}</small>`;
 
-              // Image with fallback
-              const image = item.image || "/static/images/placeholder.jpg";
+                li.innerHTML = `
+                  <a href="${link}" class="d-flex align-items-center text-dark text-decoration-none">
+                    <img src="${image}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
+                    <div style="font-size: 13px;">${extra}</div>
+                  </a>`;
+                list.appendChild(li);
+              });
+            }
 
-              // Extra info HTML (distance for vendors, price & seller for products)
-              let extraInfo = "";
-              if (item.type === "vendor") {
-                extraInfo = `<div class="d-flex align-items-center gap-1 text-muted" style="font-size: 13px;">
-                  ${item.name}
-                  ${
-                    item.distance
-                    ? `<i class="bi bi-geo-alt" style="font-size: 16px; color: #555; margin-left: 6px;"></i> ${item.distance} km`
-                    : ""
-                  }
-                </div>
-                <small class="text-muted">Visit Store</small>`;
-              } else {
-                extraInfo = `<div>${item.name}</div>
-                <small>₹${item.price}</small><br>`;
-              }
+            list.style.display = "block";
+          })
+          .catch(() => {
+            list.innerHTML = `<li class="dropdown-item text-danger">Error loading results</li>`;
+            list.style.display = "block";
+          });
+      });
 
-              li.innerHTML = `
-                <a href="${link}" class="d-flex align-items-center text-dark text-decoration-none">
-                  <img src="${image}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
-                  <div style="font-size: 13px;">
-                    ${extraInfo}
-                  </div>
-                </a>
-              `;
-              list.appendChild(li);
-            });
-          }
+      // Hide on outside click
+      document.addEventListener("click", function (e) {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+          list.style.display = "none";
+        }
+      });
 
-          list.style.display = "block";
-        })
-        .catch(() => {
-          list.innerHTML = `<li class="dropdown-item text-danger">Error loading results</li>`;
-          list.style.display = "block";
-        });
-    });
+      // Auto set `type=stores/products` before submit
+      form.addEventListener("submit", function (e) {
+        const query = input.value.trim().toLowerCase();
+        if (!query) return;
 
-    // Hide dropdown on click outside
-    document.addEventListener("click", function (e) {
-      if (!input.contains(e.target) && !list.contains(e.target)) {
-        list.style.display = "none";
-      }
+        e.preventDefault();
+        fetch(`/marketplace/live/search/?term=${encodeURIComponent(query)}`)
+          .then(res => res.json())
+          .then(data => {
+            const vendors = data.vendors || [];
+            const exactVendor = vendors.find(v => v.name.toLowerCase() === query);
+            typeInput.value = exactVendor ? "stores" : "products";
+            form.submit(); // now submit
+          })
+          .catch(() => {
+            form.submit(); // fallback
+          });
+      });
     });
   });
-});
-
 </script>
+
 
 
 

@@ -34,8 +34,6 @@ urlpatterns = [
     path('variant-group/create/<int:product_id>/', views.create_variant_group, name='create_variant_group'),
     path('variant-group/edit/<int:pk>/', views.edit_variant_group, name='edit_variant_group'),
     path('variant-group/delete/<int:pk>/', views.delete_variant_group, name='delete_variant_group'),
-    path('get-attributes/<int:category_id>/', views.get_attributes_by_category, name='get_attributes_by_category'),
-
 
 
     

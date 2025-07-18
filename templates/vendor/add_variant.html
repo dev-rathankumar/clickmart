@@ -69,7 +69,7 @@
                 {% for var in existing_variants %}
                   <div class="row mb-3 variant-row align-items-end g-2" data-id="{{ var.id }}">
                     <div class="col-md-5">
-                      <input type="text" class="form-control h-100" value="{{ var.attribute.name }}" disabled />
+                      <input type="text" class="form-control h-100" value="{{ var.attribute.name|capfirst }}" disabled />
                     </div>
                     <div class="col-md-5">
                       <input type="text" class="form-control h-100" name="value" value="{{ var.value }}" readonly />
@@ -91,17 +91,17 @@
                 {% if existing_variants|length == 0 %}
                   <!-- Show add input row only if no existing variants -->
                   <div class="row mb-3 variant-row align-items-end g-2">
-                    <div class="col-md-4">
+                    <div class="col-md-5">
                       <select class="form-select h-100" name="attribute">
                         {% for attr in variant_attributes %}
-                          <option value="{{ attr.id }}">{{ attr.name }}</option>
+                          <option value="{{ attr.id }}">{{ attr.name|capfirst }}</option>
                         {% endfor %}
                       </select>
                     </div>
                     <div class="col-md-5">
                       <input type="text" class="form-control h-100" name="value" placeholder="Enter value" />
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                       <button class="btn update_color h-100" style="height:35px !important; min-width:90px;" onclick="saveSingleVariant(this, {{ product.id }})">Save</button>
                     </div>
                   </div>
@@ -109,6 +109,12 @@
               </div>
 
               <button type="button" class="btn btn-sm update_color mt-2" onclick="addVariantRow()">➕ Add Another</button>
+              {% if existing_variants|length == 0 %}
+                <div class="d-flex justify-content-end mt-80 mr-30" style="position: relative;">
+                  <button type="button" id="finishBtn" class="btn update_color h-100" style="height:35px !important; min-width:90px;">Skip</button>
+                </div>
+              {% endif %}
+              {% comment %} {% endif %} {% endcomment %}
                 {% if variant_groups %}
                     <div class="mb-4 mt-4">
                       <h5 class="mb-3">Variant Products</h5>
@@ -141,7 +147,7 @@
                               <td>{{ group.sku }}</td>
                               <td>
                                 {% for attr in group.attribute.all %}
-                                  <span class="badge bg-secondary me-1 mt-1">{{ attr.attribute.name }}: {{ attr.value }}</span>
+                                  <span class="badge bg-secondary me-1 mt-1">{{ attr.attribute.name|capfirst }}: {{ attr.value }}</span>
                                 {% endfor %}
                               </td>
                               <td style="white-space: nowrap;">
@@ -168,6 +174,7 @@
 
                     </div>
                 {% endif %}
+                
 
                 <!--  Image Modal -->
               <div class="modal fade" id="variantImageModal" tabindex="-1" aria-labelledby="variantImageModalLabel" aria-hidden="true">
@@ -183,6 +190,8 @@
                   </div>
                 </div>
               </div>
+
+              
 
                {% if existing_variants|length > 0 %}
                 <hr>
@@ -202,10 +211,10 @@
                       <label class="form-label">Select Variant Attributes</label>
 
                       <!-- Hidden multi-select for backend -->
-                      <select id="hidden-variant-select" name="attribute_values" multiple hidden>
+                      <select id="hidden-variant-select" required name="attribute_values" multiple hidden>
                         {% for var in existing_variants %}
                           <option value="{{ var.id }}" {% if group and var in group.attribute.all %}selected{% endif %}>
-                            {{ var.attribute.name }} : {{ var.value }}
+                            {{ var.attribute.name|capfirst }} : {{ var.value }}
                           </option>
                         {% endfor %}
                       </select>
@@ -222,7 +231,7 @@
                           {% for var in existing_variants %}
                             <li>
                               <a class="dropdown-item" href="#" data-id="{{ var.id }}" data-text="{{ var.attribute.name }} : {{ var.value }}">
-                                {{ var.attribute.name }} : {{ var.value }}
+                                {{ var.attribute.name|capfirst }} : {{ var.value }}
                               </a>
                             </li>
                           {% endfor %}
@@ -269,7 +278,7 @@
                     </button>
                   </div>
                 </form>
-                {% endif %}
+              {% endif %}
 
             </div>
             </div>
@@ -663,7 +672,7 @@ function resetRowButtons(row) {
       <div class="col-md-5">
         <select class="form-select h-100" name="attribute">
           {% for attr in variant_attributes %}
-            <option value="{{ attr.id }}">{{ attr.name }}</option>
+            <option value="{{ attr.id }}">{{ attr.name|capfirst }}</option>
           {% endfor %}
         </select>
       </div>
