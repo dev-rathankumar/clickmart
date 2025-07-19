@@ -196,6 +196,7 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         'show_pagination':show_pagination,
         'cart_product_ids': cart_product_ids,
         'cart_items': cart_items,
+        'total_vendor_products': products,
 
     }
     return render(request, 'marketplace/vendor_detail.html', context)

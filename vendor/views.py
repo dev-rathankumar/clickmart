@@ -582,8 +582,13 @@ def delete_subcategory(request, pk=None):
 def product_list_view(request):
     vendor = get_vendor(request)
     products = Product.objects.filter(vendor=vendor).order_by('-id')
+
+    paginator = Paginator(products, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
-        'products': products,
+         'page_obj': page_obj,
+         'products': page_obj.object_list,
     }
     return render(request, 'vendor/products_list.html', context)
 

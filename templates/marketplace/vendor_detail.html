@@ -297,8 +297,8 @@
             <div class="col-lg-8">
                 <div class="shop-product-fillter">
                     <div class="totall-product">
-                        {% if products %}
-                        <p>We found <strong class="text-brand">{{ products|length }}</strong> items for you!</p>
+                        {% if total_vendor_products %}
+                        <p>We found <strong class="text-brand">{{ total_vendor_products|length }}</strong> items for you!</p>
                         {% else %}
                         <p>No products found in this store.</p>
                         {% endif %}

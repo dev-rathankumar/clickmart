@@ -10,6 +10,22 @@
     display: block;
    }
   }
+  .page-item.active .page-link {
+    color: white !important;
+}
+.page-item:not(.active):not(.disabled) .page-link:hover {
+    color: white !important;
+}
+.pagination {
+    flex-wrap: wrap;
+    gap: 4px; /* Optional spacing between items */
+}
+
+.pagination-area nav {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
 
 </style>
 <!-- Main Section Start -->
@@ -40,54 +56,111 @@
                                         <div class="responsive-table">
                                             <table class="table table-hover table-bordered" id="myProductsTable">
                                                 <thead>
-                                                  <tr>
-                                                    <th scope="col" style="display: none !important;">id</th>
-                                                    <th scope="col">Barcode/ID</th>
-                                                    <th scope="col">Product Name</th>
-                                                    <th scope="col" class="pro-cat">Category</th>
-                                                    <th scope="col" class="pro-sub-cat">SubCategory</th>
-                                                    <th scope="col">Price</th>
-                                                    <th scope="col">Stock</th>
-                                                    <th scope="col">Availability</th>
-                                                    <th scope="col">Actions</th>
-                                                  </tr>
+                                                    <tr>
+                                                        <th scope="col" style="display: none !important;">id</th>
+                                                        <th scope="col">Barcode/ID</th>
+                                                        <th scope="col">Product Name</th>
+                                                        <th scope="col" class="pro-cat">Category</th>
+                                                        <th scope="col" class="pro-sub-cat">SubCategory</th>
+                                                        <th scope="col">Price</th>
+                                                        <th scope="col">Stock</th>
+                                                        <th scope="col">Availability</th>
+                                                        <th scope="col">Actions</th>
+                                                    </tr>
                                                 </thead>
                                                 <tbody style="padding:5px 5px">
                                                     {% for product in products %}
-                                                  <tr>
-                                                    <td style="display: none !important;">{{ product.id }}</td>
-                                                    <td style="padding:5px 5px">{{ product.barcode }}</td>
-                                                    <td style="padding:5px 5px">{{ product.product_name }}</td>
-                                                    <td style="padding:5px 5px" class="pro-cat-val">{{ product.category.category_name }}</td>
-                                                    <td style="padding:5px 5px" class="pro-sub-cat-val">{{ product.subcategory.category_name }}</td>
-                                                    
-                                                    {% if product.sales_price %}
-                                                    <td style="padding:5px 5px">₹ {{ product.sales_price }}</td>                                                        
-                                                    {% else %}
-                                                    <td style="padding:5px 5px">{{ product.regular_price }}</td>
-                                                    {% endif %}
-                                                    
-                                                   
-                                                        
-                                                    <td style="padding:5px 5px">{{ product.qty|floatformat }}  {% if product.unit_type == 'm2' %} m² {% else %} {{product.unit_type}} {% endif %}</td>
-                                                    <td style="padding:5px 5px">{{ product.is_available|yesno:"Yes,No" }}</td>
-                                                    <td style="padding:5px 5px">
-                                                        <a href="{% url 'edit_product' product.id %}" style="color: unset;"><i class="fa fa-pencil" aria-hidden="true"></i></a> &nbsp;</a> 
-                                                        <a href="{% url 'delete_product' product.id %}" onclick="return confirm('Are you sure you want to delete this Product?')"><i class="fa fa-trash text-danger delete_icon_color" aria-hidden="true"></i></a></td>
-                                                    </td>
-                                                  </tr>
-                                                  {% empty %}
-                                                  <tr>
-                                                    <td colspan="6" class="text-center">No products available.</td>
-                                                  </tr>
-                                                  {% endfor %}
-                                                </tbody>
-                                              </table>
+                                                    <tr>
+                                                        <td style="display: none !important;">{{ product.id }}</td>
+                                                        <td style="padding:5px 5px">{{ product.barcode }}</td>
+                                                        <td style="padding:5px 5px">{{ product.product_name }}</td>
+                                                        <td style="padding:5px 5px" class="pro-cat-val">{{ product.category.category_name }}</td>
+                                                        <td style="padding:5px 5px" class="pro-sub-cat-val">{{ product.subcategory.category_name }}</td>
 
-                                        </div>												
+                                                        {% if product.sales_price %}
+                                                        <td style="padding:5px 5px">₹ {{ product.sales_price }}</td>
+                                                        {% else %}
+                                                        <td style="padding:5px 5px">{{ product.regular_price }}</td>
+                                                        {% endif %}
+
+                                                        <td style="padding:5px 5px">
+                                                            {{ product.qty|floatformat }}
+                                                            {% if product.unit_type == 'm2' %} m² {% else %} {{ product.unit_type }} {% endif %}
+                                                        </td>
+                                                        <td style="padding:5px 5px">{{ product.is_available|yesno:"Yes,No" }}</td>
+                                                        <td style="padding:5px 5px">
+                                                            <a href="{% url 'edit_product' product.id %}" style="color: unset;">
+                                                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                                                            </a>&nbsp;
+                                                            <a href="{% url 'delete_product' product.id %}"
+                                                            onclick="return confirm('Are you sure you want to delete this Product?')">
+                                                                <i class="fa fa-trash text-danger delete_icon_color" aria-hidden="true"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    {% empty %}
+                                                    <tr>
+                                                        <td colspan="9" class="text-center">No products available.</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
+
+                                    <!--  Pagination -->
+                                    {% if page_obj.paginator.num_pages > 1 %}
+                                    <div class="pagination-area mt-20 mb-20">
+                                        <nav aria-label="Page navigation example">
+                                            <ul class="pagination justify-content-center">
+                                                {% if page_obj.has_previous %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                                        <i class="fi-rs-arrow-small-left"></i>
+                                                    </a>
+                                                </li>
+                                                {% else %}
+                                                <li class="page-item disabled">
+                                                    <a class="page-link"><i class="fi-rs-arrow-small-left"></i></a>
+                                                </li>
+                                                {% endif %}
+
+                                                {% with current=page_obj.number total=page_obj.paginator.num_pages %}
+                                                {% for num in page_obj.paginator.page_range %}
+                                                    {% if num == 1 or num == total %}
+                                                        <li class="page-item {% if num == current %}active{% endif %}">
+                                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                        </li>
+                                                    {% elif num >= current|add:'-2' and num <= current|add:'2' %}
+                                                        <li class="page-item {% if num == current %}active{% endif %}">
+                                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                        </li>
+                                                    {% elif num == current|add:'-3' or num == current|add:'3' %}
+                                                        <li class="page-item disabled">
+                                                            <a class="page-link">...</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% endwith %}
+
+                                                {% if page_obj.has_next %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                                        <i class="fi-rs-arrow-small-right"></i>
+                                                    </a>
+                                                </li>
+                                                {% else %}
+                                                <li class="page-item disabled">
+                                                    <a class="page-link"><i class="fi-rs-arrow-small-right"></i></a>
+                                                </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
+
                             
                         </div>
                     </div>
