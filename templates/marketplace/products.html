@@ -115,7 +115,22 @@
   justify-content: center !important;
   text-align: center !important;
 }
+  .page-item.active .page-link {
+    color: white !important;
+}
+.page-item:not(.active):not(.disabled) .page-link:hover {
+    color: white !important;
+}
+.pagination {
+    flex-wrap: wrap;
+    gap: 4px; /* Optional spacing between items */
+}
 
+.pagination-area nav {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
 
 </style>
 {% include 'includes/alerts.html' %}
@@ -165,7 +180,7 @@
                             {% if search_type == 'stores' %}
                                 <p>We found <strong class="text-brand">{{ vendors|length }}</strong> stores for you!</p>
                             {% else %}
-                                <p>We found <strong class="text-brand">{{ products|length }}</strong> products for you!</p>
+                                <p>We found <strong class="text-brand">{{ total_vendor_products|length }}</strong> products for you!</p>
                             {% endif %}
                             
                         </div>
@@ -469,51 +484,63 @@
                     </div>
                     <!--product grid-->
                     
-                    {% if show_pagination %}
-                        
+                     {% if show_pagination %}
                     
+                    <!--product grid-->
                     <div class="pagination-area mt-20 mb-20">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-start">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-center">
                                 {% if products.has_previous %}
                                 <li class="page-item">
                                     <a class="page-link" href="?page={{ products.previous_page_number }}">
                                         <i class="fi-rs-arrow-small-left"></i>
-                                    </a>
-                                </li>
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <a class="page-link"><i class="fi-rs-arrow-small-left"></i></a>
-                                </li>
-                                {% endif %}
-                                
-                                {% for num in products.paginator.page_range %}
-                                {% if products.number == num %}
-                                <li class="page-item active">
-                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                                </li>
-                                {% else %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                                        </li>
-                                        {% endif %}
-                                        {% endfor %}
-                    
-                                        {% if products.has_next %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ products.next_page_number }}">
-                                                <i class="fi-rs-arrow-small-right"></i>
                                         </a>
                                     </li>
                                     {% else %}
                                     <li class="page-item disabled">
+                                        <a class="page-link"><i class="fi-rs-arrow-small-left"></i></a>
+                                    </li>
+                                    {% endif %}
+
+                                    {% if products.paginator.num_pages > 1 %}
+                                        {% with current=products.number total=products.paginator.num_pages %}
+                                        {% for num in products.paginator.page_range  %}
+                                         {% if num == 1 or num == total %}
+                                          <li class="page-item {% if num == current %}active{% endif %}">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                           </li>
+                                        {% elif num >= current|add:'-2' and num <= current|add:'2' %}
+                                            <li class="page-item {% if num == current %}active{% endif %}">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% elif num == current|add:'-3' or num == current|add:'3' %}
+                                            <li class="page-item disabled">
+                                                <a class="page-link">...</a>
+                                            </li>
+                                                            
+                                         {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% endwith %}
+                                    
+                                    
+                                    {% endif %}
+                                
+                                {% if products.has_next %}
+                                <li class="page-item">
+                                        <a class="page-link" href="?page={{ products.next_page_number }}">
+                                            <i class="fi-rs-arrow-small-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                <li class="page-item disabled">
                                         <a class="page-link"><i class="fi-rs-arrow-small-right"></i></a>
                                     </li>
                                     {% endif %}
                                 </ul>
                             </nav>
                         </div>
-                        {% endif %}
+                {% endif %}
                         {% endif %}
                         
                     </div>

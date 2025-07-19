@@ -739,6 +739,7 @@ def All_products(request, category_id=None, subcategory_id=None):
             'cart_product_ids': cart_product_ids,
             'cart_items': cart_items,
             'current_category_id': category_id,
+            'total_vendor_products': products,
         })
 
     return render(request, 'marketplace/products.html', context)

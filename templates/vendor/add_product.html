@@ -343,23 +343,19 @@
     const wrapper = document.getElementById('attributes-wrapper');
     const addBtn = document.getElementById('add-attribute-btn');
     const categorySelect = document.querySelector('[name="category"]');
-
     let attrIdx = 0;
 
-    // Create a row for existing attribute (readonly name + input value + hidden id)
     function createExistingAttributeRow(idx, attr) {
       const row = document.createElement('div');
       row.className = 'd-flex align-items-center mb-2 attribute-row';
       row.dataset.idx = idx;
 
-      // Hidden input for attribute id
       const hiddenId = document.createElement('input');
       hiddenId.type = 'hidden';
       hiddenId.name = 'existing_attribute_ids[]';
       hiddenId.value = attr.id;
       row.appendChild(hiddenId);
 
-      // Readonly attribute name input
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
       nameInput.name = `attribute_name_${idx}`;
@@ -369,7 +365,6 @@
       nameInput.style.backgroundColor = '#f0f0f0';
       row.appendChild(nameInput);
 
-      // Value input
       const valueInput = document.createElement('input');
       valueInput.type = 'text';
       valueInput.name = `attribute_value_${idx}`;
@@ -377,35 +372,38 @@
       valueInput.className = 'form-control ms-2';
       row.appendChild(valueInput);
 
-      // Remove button
+      const removeFlag = document.createElement('input');
+      removeFlag.type = 'hidden';
+      removeFlag.name = `attribute_removed_${idx}`;
+      removeFlag.value = '0';
+      row.appendChild(removeFlag);
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
-      removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
+      removeBtn.className = 'btn btn-link text-danger ms-2';
       removeBtn.innerHTML = '<i class="fa fa-times"></i>';
       removeBtn.onclick = () => {
-        row.remove();
+        removeFlag.value = '1';
+        row.classList.add('d-none');
       };
       row.appendChild(removeBtn);
 
       return row;
     }
 
-    // Create a row for new attribute (editable name + value)
     function createNewAttributeRow(idx) {
       const row = document.createElement('div');
-      row.className = 'd-flex align-items-center mb-2 attribute-row new-attribute-row';
+      row.className = 'd-flex align-items-center mb-2 attribute-row';
       row.dataset.idx = idx;
 
-      // Editable attribute name input
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
       nameInput.name = `new_attribute_name_${idx}`;
-      nameInput.className = 'form-control me-2 attr-name';
+      nameInput.className = 'form-control me-2';
       nameInput.placeholder = 'Enter new attribute name';
       nameInput.required = true;
       row.appendChild(nameInput);
 
-      // Value input
       const valueInput = document.createElement('input');
       valueInput.type = 'text';
       valueInput.name = `new_attribute_value_${idx}`;
@@ -414,20 +412,25 @@
       valueInput.required = true;
       row.appendChild(valueInput);
 
-      // Remove button
+      const removeFlag = document.createElement('input');
+      removeFlag.type = 'hidden';
+      removeFlag.name = `attribute_removed_${idx}`;
+      removeFlag.value = '0';
+      row.appendChild(removeFlag);
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
-      removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
+      removeBtn.className = 'btn btn-link text-danger ms-2';
       removeBtn.innerHTML = '<i class="fa fa-times"></i>';
       removeBtn.onclick = () => {
-        row.remove();
+        removeFlag.value = '1';
+        row.classList.add('d-none');
       };
       row.appendChild(removeBtn);
 
       return row;
     }
 
-    // Load all attributes for the selected category as readonly rows
     function loadAttributesByCategory(categoryId) {
       wrapper.innerHTML = '';
       attrIdx = 0;
@@ -439,7 +442,6 @@
       });
     }
 
-    // On category change, load attributes for that category
     categorySelect.addEventListener('change', function () {
       const categoryId = this.value;
       if (categoryId) {
@@ -450,14 +452,12 @@
       }
     });
 
-    // Add new attribute row (editable) on button click
     addBtn.addEventListener('click', function () {
       const row = createNewAttributeRow(attrIdx);
       wrapper.appendChild(row);
       attrIdx++;
     });
 
-    // Optionally, trigger initial load if category preselected
     if (categorySelect.value) {
       loadAttributesByCategory(categorySelect.value);
     }

@@ -606,15 +606,13 @@ def add_product(request):
     vendor = get_vendor(request)
 
     ProductGalleryFormSet = modelformset_factory(ProductGallery, form=ProductGalleryForm, extra=3, max_num=3)
-
-    attributes = ProductAttribute.objects.filter(Q(vendor=vendor) | Q(vendor__isnull=True),is_active=True).order_by('name')
-
+    attributes = ProductAttribute.objects.filter(Q(vendor=vendor) | Q(vendor__isnull=True), is_active=True).order_by('name')
     all_attributes = list(attributes.values('id', 'name', 'category_id'))
 
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, vendor_id=vendor_id)
         formset = ProductGalleryFormSet(request.POST, request.FILES, queryset=ProductGallery.objects.none())
-        action = request.POST.get('action')  # Button clicked
+        action = request.POST.get('action')
 
         try:
             if form.is_valid() and formset.is_valid():
@@ -624,7 +622,6 @@ def add_product(request):
                     product.slug = slugify(product.product_name)
                     product.save()
 
-                    # Save gallery images
                     for f in formset:
                         if f.cleaned_data.get('image'):
                             gallery = f.save(commit=False)
@@ -637,12 +634,17 @@ def add_product(request):
                     # Handle existing attributes
                     existing_attr_ids = request.POST.getlist('existing_attribute_ids[]')
                     for idx, attr_id in enumerate(existing_attr_ids):
+                        if request.POST.get(f'attribute_removed_{idx}') == '1':
+                            continue
+
                         val = request.POST.get(f'attribute_value_{idx}', '').strip()
                         if not val:
                             continue
+
                         if attr_id in attr_ids:
-                            errors.append(f"Duplicate attribute selected: {ProductAttribute.objects.get(id=attr_id).name}")
+                            errors.append(f"Duplicate attribute: {ProductAttribute.objects.get(id=attr_id).name}")
                             continue
+
                         attr_ids.add(attr_id)
                         ProductAttributeValue.objects.create(
                             product=product,
@@ -651,24 +653,26 @@ def add_product(request):
                         )
 
                     # Handle new attributes
-                    new_attr_keys = [key for key in request.POST if key.startswith('new_attribute_name_')]
+                    new_attr_keys = [k for k in request.POST if k.startswith('new_attribute_name_')]
                     for key in new_attr_keys:
                         idx = key.split('_')[-1]
+                        if request.POST.get(f'attribute_removed_{idx}') == '1':
+                            continue
+
                         name = request.POST.get(key, '').strip()
                         val = request.POST.get(f'new_attribute_value_{idx}', '').strip()
+
                         if not name or not val:
                             continue
 
                         category = form.cleaned_data['category']
 
-                        # 1. Check if global attribute with same name/category exists
                         global_exists = ProductAttribute.objects.filter(
                             name__iexact=name,
                             category=category,
                             vendor__isnull=True
                         ).exists()
 
-                        # 2. (Optional) Prevent same vendor from creating duplicates
                         vendor_exists = ProductAttribute.objects.filter(
                             name__iexact=name,
                             category=category,
@@ -676,14 +680,13 @@ def add_product(request):
                         ).exists()
 
                         if global_exists:
-                            errors.append(f"A global attribute with name '{name}' already exists in this category. Please select it from existing attributes.")
+                            errors.append(f"Global attribute '{name}' already exists. Please select it.")
                             continue
 
                         if vendor_exists:
-                            errors.append(f"Attribute '{name}' already exists under your account in this category. Please select it from existing attributes.")
+                            errors.append(f"Attribute '{name}' already exists under your account.")
                             continue
 
-                        # Create new vendor-specific attribute
                         new_attr = ProductAttribute.objects.create(
                             name=name,
                             category=category,
@@ -698,14 +701,13 @@ def add_product(request):
 
                     if errors:
                         messages.error(request, " ".join(errors))
-                        raise Exception("Product attributes error.")
+                        raise Exception("Attribute validation error")
 
                     messages.success(request, 'Product added successfully!')
 
                     if action == 'next':
                         return redirect(reverse('product_variant', kwargs={'product_id': product.id}))
-                    else:
-                        return redirect('vendor_products_list')
+                    return redirect('vendor_products_list')
 
         except Exception as e:
             messages.error(request, f"An error occurred: {e}")
@@ -724,6 +726,7 @@ def add_product(request):
         'all_attributes': json.dumps(all_attributes),
     }
     return render(request, 'vendor/add_product.html', context)
+
 
 
 
@@ -767,29 +770,45 @@ def edit_product(request, product_id):
                         gallery.save()
                 # --- HANDLE PRODUCT ATTRIBUTES ---
                 # Remove or update old, add new as needed
+                original_attrs = set(existing_attrvalues.values_list('attribute_id', flat=True))
                 submitted_attrs = set()
-                idx = 0
-                while True:
+
+                # Find max index from POST keys
+                indexes = set()
+                for key in request.POST.keys():
+                    if key.startswith('attribute_'):
+                        try:
+                            idx = int(key.split('_')[1])
+                            indexes.add(idx)
+                        except:
+                            continue
+
+                for idx in sorted(indexes):
                     attr_key = f'attribute_{idx}'
                     val_key = f'attr_value_{idx}'
                     attr_id = request.POST.get(attr_key)
                     val = request.POST.get(val_key)
-                    if attr_id is None:
-                        break
-                    # Only update if both are present and non-empty
+
                     if attr_id and val:
-                        submitted_attrs.add(int(attr_id))
+                        attr_id_int = int(attr_id)
+                        submitted_attrs.add(attr_id_int)
                         pav, created = ProductAttributeValue.objects.get_or_create(
                             product=product,
-                            attribute_id=attr_id,
+                            attribute_id=attr_id_int,
                             defaults={'value': val}
                         )
                         if not created and pav.value != val:
                             pav.value = val
                             pav.save()
-                    idx += 1
-                # Remove ProductAttributeValue objects that are no longer present
-                ProductAttributeValue.objects.filter(product=product).exclude(attribute_id__in=submitted_attrs).delete()
+
+                # Only delete attributes that were originally there but not submitted anymore
+                to_delete = original_attrs - submitted_attrs
+                if to_delete:
+                    ProductAttributeValue.objects.filter(
+                        product=product,
+                        attribute_id__in=to_delete
+                    ).delete()
+
                 messages.success(request, 'Product updated successfully!')
                 if request.POST.get("submit_type") == "next":
                     return redirect('product_variant', product_id=product.id)
