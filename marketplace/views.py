@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import UserProfile, DeliveryAddress
 from .context_processors import get_cart_counter, get_cart_amounts
-from unified.models import Category, CategoryBrowsePage, ProductGallery
+from unified.models import Category, CategoryBrowsePage, ProductGallery,VariantAttributeValue, ProductVariantGroup
 
 from unified.models import Product
 
@@ -35,7 +35,9 @@ from django.core.paginator import Paginator
 from foodOnline_main.views import get_or_set_current_location
 from django.db.models import Sum, F, Value
 from django.db.models.functions import Coalesce
-
+from collections import defaultdict
+from django.forms.models import model_to_dict
+from .utils import get_matching_variant_group
 def marketplace(request):
     if get_or_set_current_location(request) is not None:
 
@@ -172,19 +174,69 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
             })
     else:
         cart = request.session.get('cart', {})
-        product_ids = list(cart.keys())
-        cart_products  = Product.objects.filter(id__in=product_ids)
         cart_items = []
-        for product in cart_products :
-            print("product_id ===>", product.id)
-            quantity = cart.get(str(product.id))
-            cart_items.append({
-                'product': product,
-                'quantity': quantity,
-                'cart_id': product.id,  # session cart uses product id
-            })
-    cart_product_ids = list(item['product'].id for item in cart_items)
+        
+        # Separate regular products and variant products
+        regular_products = {}
+        variant_products = {}
+        
+        for cart_id, quantity in cart.items():
+            if '-' in cart_id:
+                # Variant product (format: "product_id-variant_id")
+                product_id, variant_id = cart_id.split('-')
+                variant_products.setdefault(product_id, {})[variant_id] = quantity
+            else:
+                # Regular product (format: "product_id")
+                regular_products[cart_id] = quantity
+        
+        # Convert string IDs to integers for database lookup
+        product_id_ints = [int(pid) for pid in regular_products.keys()]
+        product_id_ints.extend([int(pid) for pid in variant_products.keys()])
+        
+        # Fetch all products and variants in bulk
+        products = Product.objects.filter(id__in=product_id_ints).in_bulk()
+        
+        variant_ids = [int(vid) for vid_dict in variant_products.values() for vid in vid_dict.keys()]
+        variants = ProductVariantGroup.objects.filter(id__in=variant_ids).in_bulk()
+        
+        # Build cart items for regular products
+        for product_id_str, quantity in regular_products.items():
+            product_id = int(product_id_str)
+            product = products.get(product_id)
+            if product:
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'variant': None,
+                    'cart_id': product_id_str,  # Keep original string ID for session
+                    'price': product.sales_price or product.regular_price,
+                })
+        
+        # Build cart items for variant products
+        for product_id_str, variant_dict in variant_products.items():
+            product_id = int(product_id_str)
+            product = products.get(product_id)
+            if product:
+                for variant_id_str, quantity in variant_dict.items():
+                    variant_id = int(variant_id_str)
+                    variant = variants.get(variant_id)
+                    if variant:
+                        cart_id = f"{product_id_str}-{variant_id_str}"
+                        cart_items.append({
+                            'product': product,
+                            'quantity': quantity,
+                            'variant': variant,
+                            'cart_id': cart_id,
+                            'price': variant.price,
+                        })
 
+    # Get product IDs - handle both dictionary items and model instances
+    cart_product_ids = set()
+    for item in cart_items:
+        if isinstance(item, dict) and 'product' in item and item['product']:
+            cart_product_ids.add(item['product'].id)
+        elif hasattr(item, 'product') and item.product:  # For model instances
+            cart_product_ids.add(item.product.id)
     context = {
         'vendor': vendor,
         'categories': categories,
@@ -200,84 +252,245 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     }
     return render(request, 'marketplace/vendor_detail.html', context)
 
-
 def view_Product(request, vendor_slug, product_slug):
-    # Get the main product
+    # Get the main product and vendor
     product = get_object_or_404(Product, vendor__vendor_slug=vendor_slug, slug=product_slug)
-    if request.user.is_authenticated:
-        address = DeliveryAddress.objects.filter(user=request.user, is_primary=True).first()
-    else:
-        address=None
+    vendor = get_object_or_404(Vendor, vendor_slug=vendor_slug)
     
-    vendor = Vendor.objects.get(vendor_slug=vendor_slug)
-    # Vendor distance 
+    # Get user's primary address if authenticated
+    address = DeliveryAddress.objects.filter(user=request.user, is_primary=True).first() if request.user.is_authenticated else None
+    
+    # Calculate vendor distance if location is available
     if get_or_set_current_location(request) is not None:
-
         pnt = GEOSGeometry('POINT(%s %s)' % (get_or_set_current_location(request)))
-
-        vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=100000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
-        print("vendros ===> ", vendors)
+        vendors = Vendor.objects.filter(
+            user_profile__location__distance_lte=(pnt, D(km=100000))
+        ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+        
         for v in vendors:
             if v.id == vendor.id: 
                 vendor.kms = round(v.distance.km, 1)
 
+    # Initialize cart-related variables
+    chkCart = None
+    chkCart_count = 0
+    cart_items = []
+    cart_product_ids = set()
 
     if request.user.is_authenticated:
+        # Authenticated user - get cart from database
         chkCart = Cart.objects.filter(product=product, user=request.user)
         chkCart_count = chkCart.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+        
+        cart_items = [
+            {
+                'product': cart_obj.product,
+                'quantity': cart_obj.quantity,
+                'variant': cart_obj.product_variant_group,
+                'cart_id': cart_obj.id,
+                'price': cart_obj.product_variant_group.price if cart_obj.product_variant_group else cart_obj.product.sales_price,
+            }
+            for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at')
+        ]
     else:
-        product_id_str = str(product.id)
+        # Guest user - get cart from session
         cart = request.session.get('cart', {})
-        if product_id_str in cart:
-            chkCart = True
-            chkCart_count = cart[product_id_str]
-        else:
-            chkCart = None
-            chkCart_count = 0
+        chkCart_count = 0
+        
+        # Check both regular product and any variants in cart
+        product_id_str = str(product.id)
+        for cart_id, quantity in cart.items():
+            if cart_id.startswith(product_id_str):
+                if '-' in cart_id:
+                    # This is a variant of our product
+                    variant_id = cart_id.split('-')[1]
+                    try:
+                        variant = ProductVariantGroup.objects.get(id=variant_id, product=product)
+                        chkCart_count += quantity
+                    except ProductVariantGroup.DoesNotExist:
+                        continue
+                else:
+                    # This is the base product
+                    chkCart_count += quantity
+        
+        # Build full cart items list for guest user
+        regular_products = {}
+        variant_products = {}
+        
+        for cart_id, quantity in cart.items():
+            if '-' in cart_id:
+                product_id, variant_id = cart_id.split('-')
+                variant_products.setdefault(product_id, {})[variant_id] = quantity
+            else:
+                regular_products[cart_id] = quantity
+        
+        # Fetch all products and variants in bulk
+        product_ids = list(regular_products.keys()) + list(variant_products.keys())
+        products_in_cart = Product.objects.filter(id__in=product_ids).in_bulk()
+        
+        variant_ids = []
+        for variant_dict in variant_products.values():
+            variant_ids.extend(variant_dict.keys())
+        variants = ProductVariantGroup.objects.filter(id__in=variant_ids).in_bulk()
+        
+        # Build cart items
+        for product_id, quantity in regular_products.items():
+            cart_product = products_in_cart.get(product_id)
+            if cart_product:
+                cart_items.append({
+                    'id': cart_product.id,
+                    'product': cart_product,
+                    'quantity': quantity,
+                    'variant': None,
+                    'cart_id': product_id,
+                    'price': cart_product.sales_price or cart_product.regular_price,
+                })
+                cart_product_ids.add(cart_product.id)
+        
+        for product_id, variant_dict in variant_products.items():
+            cart_product = products_in_cart.get(product_id)
+            if cart_product:
+                for variant_id, quantity in variant_dict.items():
+                    variant = variants.get(variant_id)
+                    if variant:
+                        cart_items.append({
+                            'id': f"{product_id}-{variant_id}",
+                            'product': cart_product,
+                            'quantity': quantity,
+                            'variant': variant,
+                            'cart_id': f"{product_id}-{variant_id}",
+                            'price': variant.price,
+                        })
+                        cart_product_ids.add(cart_product.id)
+
+    # Get product gallery and similar products
     product_gallery = ProductGallery.objects.filter(product=product)
-    # Fetch similar products from the same category, excluding the current product
     similar_products = Product.objects.filter(
         category=product.category,
         is_available=True,
     ).exclude(id=product.id).annotate(
         total_sold=Coalesce(Sum('orderedfood__quantity'), 0)
     ).order_by('-total_sold')[:10]
-    if request.user.is_authenticated:
-        cart_items = []
-        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
-            cart_items.append({
-                'product': cart_obj.product,
-                'quantity': cart_obj.quantity,
-                'cart_id': cart_obj.id,  # DB cart uses Cart PK
-            })
-    else:
-        cart = request.session.get('cart', {})
-        product_ids = list(cart.keys())
-        cart_products  = Product.objects.filter(id__in=product_ids)
-        cart_items = []
-        for cart_product in cart_products :
-            print("product_id ===>", cart_product.id)
-            quantity = cart.get(str(cart_product.id))
-            cart_items.append({
-                'product': cart_product,
-                'quantity': quantity,
-                'cart_id': cart_product.id,  # session cart uses product id
-            })
-    cart_product_ids = set(item['product'].id for item in cart_items)
+
+    # Prepare variant data
+    product_variant_values = VariantAttributeValue.objects.filter(
+        product=product
+    ).select_related('attribute')
+    
+    attribute_groups = defaultdict(list)
+    for value in product_variant_values:
+        attribute_groups[value.attribute].append(value)
+    
+    product_variant_map = [
+        {
+            "attribute": attr,
+            "values": sorted(vals, key=lambda v: v.value)
+        }
+        for attr, vals in sorted(attribute_groups.items(), key=lambda t: t[0].name)
+    ]
+
+    # Get all variant combinations
+    variant_combinations = [
+        {
+            "group_id": group.id,
+            "attributes": [str(v_id) for v_id in group.attribute.values_list('id', flat=True)]
+        }
+        for group in ProductVariantGroup.objects.filter(product=product)
+    ]
 
     context = {
-        'vendor':vendor,
+        'vendor': vendor,
         'product': product,
         'similar_products': similar_products,
-        'check_cart':chkCart,
-        'chkCart_count':chkCart_count,
-        'product_gallery':product_gallery,
-        'address':address,
+        'check_cart': chkCart,
+        'chkCart_count': chkCart_count,
+        'product_gallery': product_gallery,
+        'address': address,
         'cart_items': cart_items,
         'cart_product_ids': cart_product_ids,
+        'product_variant_map': product_variant_map,
+        'variant_combinations_json': json.dumps(variant_combinations)
     }
     
     return render(request, 'vendor/product_view.html', context)
+
+
+def get_cart_count(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        selected_value_ids = data.get('attributes', [])
+        
+        try:
+            product = Product.objects.get(id=product_id)
+            variant = None
+            
+            # Find the ProductVariantGroup with exact attribute values if attributes are selected
+            if selected_value_ids:
+                qset = ProductVariantGroup.objects.filter(product=product)
+                for value_id in selected_value_ids:
+                    qset = qset.filter(attribute__id=value_id)
+                variant = qset.distinct().first()
+            
+            if request.user.is_authenticated:
+                cart_items = Cart.objects.filter(user=request.user, product=product)
+                if variant:
+                    cart_items = cart_items.filter(product_variant_group=variant)
+                
+                total_quantity = sum(item.quantity for item in cart_items)
+                return JsonResponse({
+                    'success': True,
+                    'quantity': total_quantity,
+                    'has_items': cart_items.exists()
+                })
+            else:
+                # Handle anonymous user case if needed
+                return JsonResponse({
+                    'success': True,
+                    'quantity': 0,
+                    'has_items': False
+                })
+                
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            })
+        
+def find_variations_data(request):
+    """
+    Expects POST with:
+    - product_id
+    - attributes: list of attribute value ids (e.g., [1, 5])
+    Returns: image, price, stock, etc. of the matching ProductVariantGroup
+    """
+    if request.method == "POST":
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        selected_value_ids = data.get('attributes', [])  # list of value ids
+
+        try:
+            product = Product.objects.get(id=product_id)
+            # Find the ProductVariantGroup with exact attribute values
+            qset = ProductVariantGroup.objects.filter(product=product)
+            for value_id in selected_value_ids:
+                qset = qset.filter(attribute__id=value_id)
+            variant = qset.distinct().first()
+            if variant:
+                result = {
+                    "success": True,
+                    "image": variant.image.url if variant.image else "",
+                    "price": str(variant.price),
+                    "stock": str(variant.stock),
+                }
+            else:
+                result = {"success": False,'Notfounded':True, "error": "No such variant found."}
+        except Product.DoesNotExist:
+            result = {"success": False, "error": "Product not found."}
+        return JsonResponse(result)
+    return JsonResponse({"success": False, "error": "Invalid request."})
+
+
 
 def add_to_cart(request, food_id):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -285,23 +498,35 @@ def add_to_cart(request, food_id):
             product = Product.objects.get(id=food_id)
         except Product.DoesNotExist:
             return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
+        
         try:
             qty = int(request.GET.get('quantity', 1))
-            print("qty just after get =>", qty)
             if qty < 1:
                 qty = 1
         except (ValueError, TypeError):
             qty = 1
+            
+        # Get variant data
+        variant_data = {}
+        for key in request.GET:
+            if key.startswith('variants[') and key.endswith(']'):
+                attr = key[9:-1]
+                variant_data[attr] = request.GET.get(key)
+
+        # Get matching variant group if variants exist
+        variant_group = None
+        if variant_data:
+            variant_group = get_matching_variant_group(product, variant_data)
+
         # --- Authenticated user ---
         if request.user.is_authenticated:
             try:
-                chkCart = Cart.objects.get(user=request.user, product=product)
+                chkCart = Cart.objects.get(user=request.user, product=product, product_variant_group=variant_group)
                 new_quantity = chkCart.quantity + qty
-                if new_quantity > product.qty:
+                if new_quantity > (variant_group.stock if variant_group else product.qty):
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
                         'status': 'Failed',
-                        # 'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
                         'cart_counter': cart_counter['cart_count'],
                         'qty': chkCart.quantity,
                         'cart_amount': get_cart_amounts(request)
@@ -314,60 +539,75 @@ def add_to_cart(request, food_id):
                     'message': 'Increased the cart quantity',
                     'cart_counter': cart_counter['cart_count'],
                     'qty': chkCart.quantity,
-                    'cart_amount': get_cart_amounts(request)
+                    'cart_amount': get_cart_amounts(request),
+                    'variant_group': bool(variant_group),
                 })
             except Cart.DoesNotExist:
-                if product.qty < qty:
+                available_qty = variant_group.stock if variant_group else product.qty
+                if available_qty < qty:
                     cart_counter = get_cart_counter(request)
                     return JsonResponse({
                         'status': 'Failed',
                         'message': f'{product.product_name} is out of stock.',
-                        'cart_counter':cart_counter['cart_count'],
+                        'cart_counter': cart_counter['cart_count'],
                         'qty': 0,
-                        'cart_amount': get_cart_amounts(request)
+                        'cart_amount': get_cart_amounts(request),
+                        'variant_group': bool(variant_group),
                     })
-                chkCart = Cart.objects.create(user=request.user, product=product, quantity=qty)
+                chkCart = Cart.objects.create(
+                    user=request.user, 
+                    product=product, 
+                    quantity=qty, 
+                    product_variant_group=variant_group
+                )
                 cart_counter = get_cart_counter(request)
                 return JsonResponse({
                     'status': 'Success',
                     'message': 'Added the product to the cart',
                     'cart_counter': cart_counter['cart_count'],
                     'qty': chkCart.quantity,
-                    'cart_amount': get_cart_amounts(request)
+                    'cart_amount': get_cart_amounts(request),
+                    'variant_group': bool(variant_group),
                 })
 
         # --- Guest user (session cart) ---
         else:
             cart = request.session.get('cart', {})
-            product_id = str(product.id)
-            prev_qty = int(cart.get(product_id, 0))
+            
+            # Create a unique key for this product + variant combination
+            if variant_group:
+                cart_id = f"{product.id}-{variant_group.id}"
+            else:
+                cart_id = str(product.id)
+            
+            prev_qty = cart.get(cart_id, 0)
             new_qty = prev_qty + qty
-
-            if new_qty > product.qty:
+            
+            # Check stock
+            available_qty = variant_group.stock if variant_group else product.qty
+            if new_qty > available_qty:
                 return JsonResponse({
                     'status': 'Failed',
-                    # 'message': f'Only {product.qty} units of {product.product_name} are available in stock.',
-                    'cart_counter': sum(cart.values()),
+                    'cart_counter': sum(int(q) for q in cart.values()),
                     'qty': prev_qty,
-                    'cart_amount': get_cart_amounts(request, session_cart=cart)
+                    'cart_amount': get_cart_amounts(request, session_cart=cart),
                 })
-
-            cart[product_id] = new_qty
+                
+            cart[cart_id] = new_qty
             request.session['cart'] = cart
             request.session.modified = True
 
             return JsonResponse({
                 'status': 'Success',
                 'message': 'Added the product to the cart',
-                'cart_counter': sum(cart.values()),
-                'qty': cart[product_id],
-                'cart_amount': get_cart_amounts(request, session_cart=cart)
+                'cart_counter': sum(int(q) for q in cart.values()),
+                'qty': cart[cart_id],
+                'cart_amount': get_cart_amounts(request, session_cart=cart),
+                'variant_group': bool(variant_group),
             })
     else:
         return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
     
-
-
 
 def decrease_cart(request, food_id):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -376,9 +616,18 @@ def decrease_cart(request, food_id):
         except Product.DoesNotExist:
             return JsonResponse({'status': 'Failed', 'message': 'This product does not exist!'})
 
+        # Get variant data
+        variant_data = {}
+        for key in request.GET:
+            if key.startswith('variants[') and key.endswith(']'):
+                attr = key[9:-1]
+                variant_data[attr] = request.GET.get(key)
+
+        variant_group = get_matching_variant_group(product, variant_data) if variant_data else None
+
         if request.user.is_authenticated:
             try:
-                chkCart = Cart.objects.get(user=request.user, product=product)
+                chkCart = Cart.objects.get(user=request.user, product=product, product_variant_group=variant_group)
                 if chkCart.quantity > 1:
                     chkCart.quantity -= 1
                     chkCart.save()
@@ -390,56 +639,99 @@ def decrease_cart(request, food_id):
                     'status': 'Success',
                     'cart_counter': cart_counter['cart_count'],
                     'qty': chkCart.quantity,
-                    'cart_amount': get_cart_amounts(request)
+                    'cart_amount': get_cart_amounts(request),
+                    'variant_group': bool(variant_group),
                 })
             except Cart.DoesNotExist:
                 return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
         else:
             cart = request.session.get('cart', {})
-            product_id = str(product.id)
-            qty = int(cart.get(product_id, 0))
+            
+            # Create unique key for product + variant combination
+            cart_id = f"{product.id}-{variant_group.id}" if variant_group else str(product.id)
+            
+            qty = int(cart.get(cart_id, 0))
             if qty > 1:
-                cart[product_id] = qty - 1
-                new_qty = cart[product_id]
+                cart[cart_id] = qty - 1
+                new_qty = cart[cart_id]
             elif qty == 1:
-                del cart[product_id]
+                del cart[cart_id]
                 new_qty = 0
             else:
                 return JsonResponse({'status': 'Failed', 'message': 'You do not have this item in your cart!'})
+            
             request.session['cart'] = cart
             request.session.modified = True
             return JsonResponse({
                 'status': 'Success',
-                'cart_counter': sum(cart.values()),
+                'cart_counter': sum(int(q) for q in cart.values()),
                 'qty': new_qty,
-                'cart_amount': get_cart_amounts(request, session_cart=cart)
+                'cart_amount': get_cart_amounts(request, session_cart=cart),
+                'variant_group': bool(variant_group),
             })
     else:
         return JsonResponse({'status': 'Failed', 'message': 'Invalid request!'})
-    
-
 def cart(request):
     if request.user.is_authenticated:
-        cart_items = []
-        for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
-            cart_items.append({
-                'product': cart_obj.product,
-                'quantity': cart_obj.quantity,
-                'cart_id': cart_obj.id,  # DB cart uses Cart PK
-            })
+        cart_items = Cart.objects.filter(user=request.user).order_by('created_at').select_related(
+            'product', 'product_variant_group'
+        )
     else:
         cart = request.session.get('cart', {})
-        product_ids = list(cart.keys())
-        products = Product.objects.filter(id__in=product_ids)
         cart_items = []
-        for product in products:
-            cart_items.append({
-                'product': product,
-                'quantity': cart[str(product.id)],
-                'cart_id': product.id,  # session cart uses product id
-            })
+        
+        # Separate regular products and variant products
+        regular_products = {}
+        variant_products = {}
+        
+        for cart_id, quantity in cart.items():
+            if '-' in cart_id:
+                # Variant product
+                product_id, variant_id = cart_id.split('-')
+                variant_products.setdefault(product_id, {})[variant_id] = quantity
+            else:
+                # Regular product
+                regular_products[cart_id] = quantity
+        
+        # Fetch all products and variants in bulk
+        product_ids = list(regular_products.keys()) + list(variant_products.keys())
+        products = Product.objects.filter(id__in=product_ids).in_bulk()
+        
+        variant_ids = []
+        for variant_dict in variant_products.values():
+            variant_ids.extend(variant_dict.keys())
+        
+        variants = ProductVariantGroup.objects.filter(id__in=variant_ids).in_bulk()
+        
+        # Build cart items for regular products
+        for product_id, quantity in regular_products.items():
+            product = products.get(int(product_id))  # Convert to int since IDs are numeric
+            if product:
+                cart_items.append({
+                    'id': product.id,
+                    'product': product,
+                    'quantity': quantity,
+                    'product_variant_group': None,
+                    'cart_id': product_id,  # Use consistent key name
+                    'price': product.sales_price or product.regular_price,
+                })
+        
+        # Build cart items for variant products
+        for product_id, variant_dict in variant_products.items():
+            product = products.get(int(product_id))  # Convert to int
+            if product:
+                for variant_id, quantity in variant_dict.items():
+                    variant = variants.get(int(variant_id))  # Convert to int
+                    if variant:
+                        cart_items.append({
+                            'id': f"{product_id}-{variant_id}",
+                            'product': product,
+                            'quantity': quantity,
+                            'product_variant_group': variant,
+                            'cart_id': f"{product_id}-{variant_id}",
+                            'price': variant.price,
+                        })
 
-            print("cart_items ===> ", cart_items)
     context = {
         'cart_items': cart_items,
     }
@@ -468,32 +760,39 @@ def delete_cart(request, cart_id):
         # Authenticated user: remove from DB
         if request.user.is_authenticated:
             try:
-                print("cart_id ===> ", cart_id)
-                print("cart ---> ", Cart.objects.filter(user=request.user) )
                 cart_item = Cart.objects.get(user=request.user, id=cart_id)
                 cart_item.delete()
                 cart_counter = get_cart_counter(request)
                 return JsonResponse({
                     'status': 'Success',
                     'message': 'Cart item has been deleted!',
-                    'cart_counter':cart_counter['cart_count'],
+                    'cart_counter': cart_counter['cart_count'],
                     'cart_amount': get_cart_amounts(request)
                 })
             except Cart.DoesNotExist:
                 return JsonResponse({'status': 'Failed', 'message': 'Cart Item does not exist!'})
+        
         # Guest user: remove from session cart
         else:
             cart = request.session.get('cart', {})
-            product_id = str(cart_id)
-            if product_id in cart:
-                del cart[product_id]
+            
+            # Check if this is a variant product (has hyphen in key)
+            if '-' in str(cart_id):
+                # For variant products, cart_id should be the full composite key
+                cart_id = str(cart_id)
+            else:
+                # For regular products, cart_id is just the product ID
+                cart_id = str(cart_id)
+            
+            if cart_id in cart:
+                del cart[cart_id]
                 request.session['cart'] = cart
                 request.session.modified = True
                 
                 return JsonResponse({
                     'status': 'Success',
                     'message': 'Cart item has been deleted!',
-                    'cart_counter': sum(cart.values()),
+                    'cart_counter': sum(int(qty) for qty in cart.values()),
                     'cart_amount': get_cart_amounts(request, session_cart=cart)
                 })
             else:
@@ -604,7 +903,6 @@ def checkout(request):
         'RZP_LOAD': RZP_LOAD,
     }
     return render(request, 'marketplace/checkout.html', context)
-
 def All_products(request, category_id=None, subcategory_id=None):
     # Get only base categories (top-level)
     categories = Category.objects.filter(is_active=True, parent=None)
@@ -628,24 +926,24 @@ def All_products(request, category_id=None, subcategory_id=None):
     sort_type = request.GET.get('sort', None)
     search_type = request.GET.get('type', 'products')
 
-    # ---- Initialize context here ----
+    # Initialize context with default values
     context = {
         'categories': categories,
         'search_type': search_type,
         'search_query': search_query,
+        'cart_items': [],
+        'cart_product_ids': set(),  # Initialize with empty set
     }
 
     if search_type == 'stores':
         if get_or_set_current_location(request) is not None:
-
             location = get_or_set_current_location(request)
-            print('location', location)
             if location is not None:
                 lng, lat = location
                 pnt = GEOSGeometry(f'POINT({lng} {lat})', srid=4326)
-                vendors = Vendor.objects.filter(user_profile__location__distance_lte=(pnt, D(km=10000))).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
-                print("Pnt", pnt)
-                print("vendor", vendors)
+                vendors = Vendor.objects.filter(
+                    user_profile__location__distance_lte=(pnt, D(km=10000))
+                ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
             for v in vendors:
                 v.kms = round(v.distance.km, 1)
         else:
@@ -667,6 +965,7 @@ def All_products(request, category_id=None, subcategory_id=None):
             'show_pagination': paginator.num_pages > 1,
         })
     else:
+        # Start with base queryset
         products = Product.objects.filter(is_available=True, is_active=True)
 
         # Handle category/subcategory filter
@@ -676,61 +975,137 @@ def All_products(request, category_id=None, subcategory_id=None):
         elif category_id:
             selected_category = get_object_or_404(Category, id=category_id, is_active=True)
             products = products.filter(category=selected_category)
-        # If not category search, filter by product name/desc as usual
+
+        # Apply search filter
         if search_query:
             products = products.filter(
-                models.Q(product_name__icontains=search_query) | models.Q(product_desc__icontains=search_query)
+                models.Q(product_name__icontains=search_query) | 
+                models.Q(product_desc__icontains=search_query)
             )
 
-        # Handle search by category name
-        if search_query and products.count() <= 0:
-            # Try to find a matching category (case-insensitive, partial match)
-            matching_categories = Category.objects.filter(
-                category_name__icontains=search_query,
-                is_active=True
-            )
-            if matching_categories.exists():
-                matched_category = matching_categories.first()
-                subcategories = matched_category.subcategories.all()
-                products = Product.objects.filter(subcategory__in=subcategories, is_available=True, is_active=True)
+            # If no products found, try searching by category name
+            if not products.exists():
+                matching_categories = Category.objects.filter(
+                    category_name__icontains=search_query,
+                    is_active=True
+                )
+                if matching_categories.exists():
+                    matched_category = matching_categories.first()
+                    subcategories = matched_category.subcategories.all()
+                    products = Product.objects.filter(
+                        subcategory__in=subcategories, 
+                        is_available=True, 
+                        is_active=True
+                    )
 
         # Filter by store type if provided
         if store_type:
             vendors = Vendor.objects.filter(store_type__slug=store_type, is_approved=True)
             products = products.filter(vendor__in=vendors)
         
+        # Apply sorting
         if sort_type == 'dsec':
             products = products.order_by('-sales_price')
-        if sort_type == "asec":
+        elif sort_type == "asec":
             products = products.order_by('sales_price')
+        else:
+            # Default ordering to avoid pagination warning
+            products = products.order_by('id')
 
+        # Handle cart items for both authenticated and guest users
+        cart_items = []
+        cart_product_ids = set()
 
         if request.user.is_authenticated:
-            cart_items = []
             for cart_obj in Cart.objects.filter(user=request.user).order_by('created_at'):
                 cart_items.append({
                     'product': cart_obj.product,
                     'quantity': cart_obj.quantity,
-                    'cart_id': cart_obj.id,  # DB cart uses Cart PK
+                    'variant': cart_obj.product_variant_group,
+                    'cart_id': cart_obj.id,
+                    'price': cart_obj.product_variant_group.price if cart_obj.product_variant_group else cart_obj.product.sales_price,
                 })
+                cart_product_ids.add(cart_obj.product.id)
         else:
             cart = request.session.get('cart', {})
-            product_ids = list(cart.keys())
-            cart_products  = Product.objects.filter(id__in=product_ids)
-            cart_items = []
-            for product in cart_products :
-                print("product_id ===>", product.id)
-                quantity = cart.get(str(product.id))
-                cart_items.append({
-                    'product': product,
-                    'quantity': quantity,
-                    'cart_id': product.id,  # session cart uses product id
-                })
-        cart_product_ids = list(item['product'].id for item in cart_items)
-    
+            
+            # Separate regular products and variant products
+            regular_products = {}
+            variant_products = {}
+            
+            for cart_id, quantity in cart.items():
+                if '-' in cart_id:
+                    # Variant product (format: "product_id-variant_id")
+                    product_id, variant_id = cart_id.split('-')
+                    variant_products.setdefault(product_id, {})[variant_id] = quantity
+                else:
+                    # Regular product (format: "product_id")
+                    regular_products[cart_id] = quantity
+            
+            # Convert string IDs to integers for database lookup
+            product_id_ints = [int(pid) for pid in regular_products.keys()]
+            product_id_ints.extend([int(pid) for pid in variant_products.keys()])
+            
+            # Fetch all products and variants in bulk
+            products_in_cart = Product.objects.filter(id__in=product_id_ints).in_bulk()
+            
+            variant_ids = []
+            for variant_dict in variant_products.values():
+                variant_ids.extend([int(vid) for vid in variant_dict.keys()])
+            variants = ProductVariantGroup.objects.filter(id__in=variant_ids).in_bulk()
+            
+            # Build cart items for regular products
+            for product_id_str, quantity in regular_products.items():
+                product_id = int(product_id_str)
+                product = products_in_cart.get(product_id)
+                if product:
+                    cart_items.append({
+                        'product': product,
+                        'quantity': quantity,
+                        'variant': None,
+                        'cart_id': product_id_str,
+                        'price': product.sales_price or product.regular_price,
+                    })
+                    cart_product_ids.add(product.id)
+            
+            # Build cart items for variant products
+            for product_id_str, variant_dict in variant_products.items():
+                product_id = int(product_id_str)
+                product = products_in_cart.get(product_id)
+                if product:
+                    for variant_id_str, quantity in variant_dict.items():
+                        variant_id = int(variant_id_str)
+                        variant = variants.get(variant_id)
+                        if variant:
+                            cart_items.append({
+                                'product': product,
+                                'quantity': quantity,
+                                'variant': variant,
+                                'cart_id': f"{product_id_str}-{variant_id_str}",
+                                'price': variant.price,
+                            })
+                            cart_product_ids.add(product.id)
+                
+                # Build cart items for variant products
+                for product_id, variant_dict in variant_products.items():
+                    product = products_in_cart.get(product_id)
+                    if product:
+                        for variant_id, quantity in variant_dict.items():
+                            variant = variants.get(variant_id)
+                            if variant:
+                                cart_items.append({
+                                    'product': product,
+                                    'quantity': quantity,
+                                    'variant': variant,
+                                    'cart_id': f"{product_id}-{variant_id}",
+                                    'price': variant.price,
+                                })
+                                cart_product_ids.add(product.id)
+
+        # Paginate products
         paginator = Paginator(products, 20)
         page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)      
+        page_obj = paginator.get_page(page_number)
 
         context.update({
             'products': page_obj,
@@ -741,7 +1116,6 @@ def All_products(request, category_id=None, subcategory_id=None):
         })
 
     return render(request, 'marketplace/products.html', context)
-
 
 def product_search_for_vendor(request):
     query = request.GET.get("term", "")
@@ -950,37 +1324,49 @@ def add_product_to_cart(request, product_id):
     else:
         cart = request.session.get('cart', {})
         product_id_str = str(product_id)
-        existing_quantity = int(cart.get(product_id_str, 0))
+        
+        # Check if we have variant data
+        variant_data = data.get('variants', {})
+        variant_group = None
+        
+        if variant_data:
+            variant_group = get_matching_variant_group(product, variant_data)
+        
+        # Create appropriate cart key
+        if variant_group:
+            cart_id = f"{product_id_str}-{variant_group.id}"
+        else:
+            cart_id = product_id_str
+        
+        existing_quantity = int(cart.get(cart_id, 0))
         total_quantity = existing_quantity + quantity
 
         # Stock check
-        if total_quantity > product.qty:
+        available_qty = variant_group.stock if variant_group else product.qty
+        if total_quantity > available_qty:
             return JsonResponse({
                 'success': True,
                 'status': 'stock_out',
-                'message': f"Only {product.qty} units of {product.product_name} are available.",
+                'message': f"Only {available_qty} units are available.",
                 'redirect_url': referer
             })
 
-        cart[product_id_str] = total_quantity
+        cart[cart_id] = total_quantity
         request.session['cart'] = cart
         request.session.modified = True
 
         if existing_quantity == 0:
             message = f"{product.product_name} has been added to your cart."
         else:
-            message = f"The quantity of {product.product_name} has been updated in your cart."
-        chkCart_count = total_quantity
-
+            message = f"The quantity has been updated in your cart."
+        
         return JsonResponse({
             'success': True,
             'message': message,
-            'cart_counter': sum(cart.values()),
+            'cart_counter': sum(int(q) for q in cart.values()),
             'redirect_url': referer,
-            'chkCart_count':chkCart_count,
-
+            'chkCart_count': total_quantity,
         })
-
 
 
 
@@ -1010,22 +1396,71 @@ def browse(request, category_slug):
             })
     else:
         cart = request.session.get('cart', {})
-        product_ids = list(cart.keys())
-        cart_products  = Product.objects.filter(id__in=product_ids)
         cart_items = []
-        for product in cart_products :
-            print("product_id ===>", product.id)
-            quantity = cart.get(str(product.id))
-            cart_items.append({
-                'product': product,
-                'quantity': quantity,
-                'cart_id': product.id,  # session cart uses product id
-            })
-    print("cart_items", type(cart_items))
-    cart_product_ids = set(item['product'].id for item in cart_items)
+        
+        # Separate regular products and variant products
+        regular_products = {}
+        variant_products = {}
+        
+        for cart_id, quantity in cart.items():
+            if '-' in cart_id:
+                # Variant product (format: "product_id-variant_id")
+                product_id, variant_id = cart_id.split('-')
+                variant_products.setdefault(product_id, {})[variant_id] = quantity
+            else:
+                # Regular product (format: "product_id")
+                regular_products[cart_id] = quantity
+        
+        # Convert string IDs to integers for database lookup
+        product_id_ints = [int(pid) for pid in regular_products.keys()]
+        product_id_ints.extend([int(pid) for pid in variant_products.keys()])
+        
+        # Fetch all products and variants in bulk
+        products = Product.objects.filter(id__in=product_id_ints).in_bulk()
+        
+        variant_ids = [int(vid) for vid_dict in variant_products.values() for vid in vid_dict.keys()]
+        variants = ProductVariantGroup.objects.filter(id__in=variant_ids).in_bulk()
+        
+        # Build cart items for regular products
+        for product_id_str, quantity in regular_products.items():
+            product_id = int(product_id_str)
+            product = products.get(product_id)
+            if product:
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'variant': None,
+                    'cart_id': product_id_str,  # Keep original string ID for session
+                    'price': product.sales_price or product.regular_price,
+                })
+        
+        # Build cart items for variant products
+        for product_id_str, variant_dict in variant_products.items():
+            product_id = int(product_id_str)
+            product = products.get(product_id)
+            if product:
+                for variant_id_str, quantity in variant_dict.items():
+                    variant_id = int(variant_id_str)
+                    variant = variants.get(variant_id)
+                    if variant:
+                        cart_items.append({
+                            'product': product,
+                            'quantity': quantity,
+                            'variant': variant,
+                            'cart_id': f"{product_id_str}-{variant_id_str}",
+                            'price': variant.price,
+                        })
+
+    # Get product IDs
+    cart_product_ids = set()
+    for item in cart_items:
+        if isinstance(item, dict) and 'product' in item and item['product']:
+            cart_product_ids.add(item['product'].id)
+        elif hasattr(item, 'product') and item.product:  # For model instances
+            cart_product_ids.add(item.product.id)
+
+    print("cart_items", cart_items)
     print("cart_product_ids", cart_product_ids)
-    print("sections ===> ", sections)
-    print("browse_page ===> ", browse_page)
     context = {
         'page': browse_page,
         'sections': sections ,

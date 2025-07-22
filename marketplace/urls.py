@@ -9,6 +9,8 @@ urlpatterns = [
     path('products/', views.All_products, name='all_products'),
     path('products/category/<int:category_id>/', views.All_products, name='filter_by_category'),
     path('products/subcategory/<int:subcategory_id>/', views.All_products, name='filter_by_subcategory'),
+    path('find-variations/', views.find_variations_data, name='find_variations_data'),
+    path('get-cart-count/', views.get_cart_count, name='get_cart_count'),
     
     path('product/<slug:vendor_slug>/<slug:product_slug>/', views.view_Product, name='view_product'),
 
@@ -22,7 +24,7 @@ urlpatterns = [
     # DECREASE CART
     path('decrease_cart/<int:food_id>/', views.decrease_cart, name='decrease_cart'),
     # DELETE CART ITEM
-    path('delete_cart/<int:cart_id>/', views.delete_cart, name='delete_cart'),
+    path('delete_cart/<str:cart_id>/', views.delete_cart, name='delete_cart'),
 
     path('browse/<slug:category_slug>/', views.browse, name='browse'),
     path("live/search/", views.product_search, name="product_search"),

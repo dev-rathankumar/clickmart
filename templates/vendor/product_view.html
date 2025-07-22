@@ -164,7 +164,37 @@
 .register-now-v{
   text-decoration: underline
 }
-
+.variant-btn {
+  border:1px solid #000000;
+  min-width: 88px;
+  border-radius: 8px;
+  position: relative;
+  background: #fff;
+  color: #222;
+  font-weight: 500;
+  padding: .5rem !important;
+  line-height: 1;
+  cursor: pointer !important;
+  outline: none;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  overflow: hidden;
+  background: #fff !important;
+  border-radius: .5rem !important;
+}
+.variant-btn.selected,
+.variant-btn:focus {
+  background: #ffe7f44f;
+  color: #dc3575;
+  border: 2px solid #dc3575;
+}
+.variant-btn:not(:last-child) {
+  margin-right: 8px;
+}
+.variant-btn.disabled-btn {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
 </style>
 {% include 'includes/alerts.html' %}
   <!-- content -->
@@ -236,7 +266,7 @@
                                         <h2 class="title-detail">{{ product.product_name }}</h2>
                                         
                                         <div class="clearfix product-price-cover">
-                                            <div class="product-price primary-color float-left">
+                                            <div class="product-price primary-color float-left" style="margin-bottom:10px; margin-top:10px;">
                                                 <span class="current-price text-brand">₹{{ product.sales_price }}</span>
                                                 <span>
                                                   {% if product.get_discount_percentage > 0 %}
@@ -246,13 +276,37 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="short-desc mb-30">
+                                        <div class="short-desc mb-15">
                                             <p class="font-md">{{ product.product_desc | truncatechars:400}}</p>
                                         </div>
+                                        {% if product_variant_map %}
+                                        <hr class='mb-0 mt-0 '>
+                                          <div class="product-variants-section" style="margin-top: 14px;">
+                                            {% for attr_group in product_variant_map %}
+                                              <div class="variant-attribute-group" style="margin-bottom: 18px;">
+                                                <div class="variant-attribute-label" style="font-weight: 600; font-size: 15px; margin-bottom: 5px;">
+                                                  {{ attr_group.attribute.name }}
+                                                </div>
+                                                <div class="variant-value-buttons" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                                  {% for variant_value in attr_group.values %}
+                                                    <button
+                                                      type="button"
+                                                      class="variant-btn{% if forloop.first %} selected{% endif %}"
+                                                      data-attribute="{{ attr_group.attribute.name }}"
+                                                      data-value="{{ variant_value.value }}"
+                                                      data-value-id="{{ variant_value.id }}"
+                                                      onclick="selectVariantValue(this)"
+                                                    >{{ variant_value.value }}</button>
+                                                  {% endfor %}
+                                                </div>
+                                              </div>
+                                            {% endfor %}
+                                          </div>
+                                        {% endif %}
                                          {% if product.qty <= 0 %}
                                         <h4 class="text-danger">Out of Stock</h4>
                                         {% else %}
-                                        <div class="detail-extralink mb-10">
+                                        <div class="detail-extralink mb-10 d-flex">
                                             <!-- Fixed Add to Cart Bar: Only shown on mobile -->
                                             <div class="mobile-fixed-cart-bar">
                                                <!-- Only visible on mobile screens -->
@@ -283,7 +337,7 @@
                                                     </a>
                                                     <label id="mb-qty-{{ product.id }}">
                                                       {% for item in cart_items %}
-                                                        {% if product.id == item.product.id %}
+                                                         {% if product.id == item.product.id and not item.product_variant_group %}
                                                           {{ item.quantity }}
                                                         {% endif %}
                                                       {% endfor %}
@@ -313,11 +367,7 @@
                                                       <i class="icon-minus text-dark" style="cursor: pointer;"></i>
                                                     </span>
                                                     <label id="dkstp-qty-{{ product.id }}">
-                                                      {% for item in cart_items %}
-                                                        {% if product.id == item.product.id %}
-                                                          {{ item.quantity }}
-                                                        {% endif %}
-                                                      {% endfor %}
+                                                     0
                                                     </label>
                                                     <span class="add_to_cart text-dark" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
                                                       <i class="icon-plus text-dark" style="cursor: pointer;"></i>
@@ -327,11 +377,6 @@
                                                 <button class="button button-add-to-cart add_to_cart" disabled style="background:#ccc;color:#666;">Out of Stock</button>
                                                 {% endif %}
                                             </div>
-                                             
-                                            
-                                       <p class="text-success" id="product_count_main" style="font-weight: 600;{% if check_cart %} display: block;{% else %} display: none;{% endif %}">
-                                        <span id="product_count">{{ chkCart_count }}</span> items added to the cart.</p>
-
                                         </div>
                                          {% endif %}
                                          <hr class='mb-3'>
@@ -658,5 +703,170 @@ function getCookie(name) {
       });
     });
   </script>
+  <script>
+  const variantCombinations = {{ variant_combinations_json|safe }};
+</script>
+<script>
+ function updateCartDisplay(productId, quantity, hasItems) {
+    // Update desktop view
+    const desktopQtyLabel = document.getElementById(`dkstp-qty-${productId}`);
+    const desktopAddBtn = document.getElementById(`add_to_cart_btn-${productId}`);
+    const desktopQtyBox = document.getElementById(`dkstp-quantity-btn-box-${productId}`);
+    const desktopQtyInput = document.getElementById(`dkstp-qty-input-${productId}`);
+    
+    // Update mobile view
+    const mobileQtyLabel = document.getElementById(`mb-qty-${productId}`);
+    const mobileAddBtn = document.getElementById(`mb-add_to_cart_btn-${productId}`);
+    const mobileQtyBox = document.getElementById(`quantity-btn-box-${productId}`);
+    
+    if (hasItems) {
+        // Update quantity display
+        if (desktopQtyLabel) desktopQtyLabel.textContent = quantity;
+        if (mobileQtyLabel) mobileQtyLabel.textContent = quantity;
+        
+        // Show quantity controls, hide add button
+        if (desktopAddBtn) desktopAddBtn.style.display = 'none';
+        if (desktopQtyInput) desktopQtyInput.style.display = 'none';
+        if (desktopQtyBox) desktopQtyBox.style.display = 'flex';
+        if (mobileAddBtn) mobileAddBtn.style.display = 'none';
+        if (mobileQtyBox) mobileQtyBox.style.display = 'flex';
+    } else {
+        // Show add button, hide quantity controls
+        if (desktopAddBtn) desktopAddBtn.style.display = 'block';
+        if (desktopQtyInput) desktopQtyInput.style.display = 'block';
+        if (desktopQtyBox) desktopQtyBox.style.display = 'none';
+        if (mobileAddBtn) mobileAddBtn.style.display = 'block';
+        if (mobileQtyBox) mobileQtyBox.style.display = 'none';
+    }
+    
+    // Update the cart count summary
+    const productCountElement = document.getElementById('product_count');
+    if (productCountElement) {
+        productCountElement.textContent = quantity;
+    }
+}
+function getCartCount(productId, selectedValueIds = []) {
+    fetch("{% url 'get_cart_count' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            attributes: selectedValueIds,
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartDisplay(productId, data.quantity, data.has_items);
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching cart count:', error);
+    });
+}
+
+function selectVariantValue(btn) {
+  const group = btn.closest('.variant-attribute-group');
+
+  // Step 1: Mark current button as selected
+  group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  // Step 2: Collect currently selected values
+  const selectedValues = {};
+  document.querySelectorAll('.variant-attribute-group').forEach(g => {
+    const selectedBtn = g.querySelector('.variant-btn.selected');
+    if (selectedBtn) {
+      const attr = selectedBtn.getAttribute('data-attribute');
+      const valId = selectedBtn.getAttribute('data-value-id');
+      selectedValues[attr] = valId;
+    }
+  });
+
+  // ✅ Step 3: Disable invalid combinations based on selection
+  document.querySelectorAll('.variant-attribute-group').forEach(group => {
+    const attr = group.querySelector('.variant-btn').getAttribute('data-attribute');
+    group.querySelectorAll('.variant-btn').forEach(button => {
+      const valueId = button.getAttribute('data-value-id');
+      const testSelection = {...selectedValues, [attr]: valueId};
+
+      const valid = variantCombinations.some(combo => {
+        return Object.values(testSelection).every(val => combo.attributes.includes(val));
+      });
+
+      button.disabled = !valid;
+      button.classList.toggle('disabled-btn', !valid);
+    });
+  });
+ 
+  
+  // ✅ Step 4: Your existing fetch logic (price/image/stock update)
+  const old_image = '{{ product.image.url }}';
+  const old_price = '{{ product.sales_price }}';
+  const productId = "{{ product.id }}"; 
+  // Extract selected value IDs
+  const selectedValueIds = Object.values(selectedValues);
+  getCartCount(productId, selectedValueIds);
+
+  fetch("{% url 'find_variations_data' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie('csrftoken'),
+    },
+    body: JSON.stringify({
+      product_id: productId,
+      attributes: selectedValueIds,
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.querySelector('.product-image-slider img').src = data.image || old_image;
+      document.querySelector('.current-price').textContent = "₹" + (data.price || old_price);
+      if (data.stock && parseFloat(data.stock) > 0) {
+
+      } else {
+
+      }
+    } else if (data.success === false && data.Notfounded === true) {
+      document.querySelector('.product-image-slider img').src = old_image;
+      document.querySelector('.current-price').textContent = "₹" + old_price;
+    }
+  });
+
+}
+// Call getCartCount on page load for the default variant
+// Function to get the default selected variant IDs (if product has variants)
+function getDefaultSelectedVariantIds() {
+    const selectedValueIds = [];
+    
+    // Only proceed if this is a variant product
+    if (document.querySelector('.variant-attribute-group')) {
+        document.querySelectorAll('.variant-attribute-group').forEach(group => {
+            const selectedBtn = group.querySelector('.variant-btn.selected');
+            if (selectedBtn) {
+                selectedValueIds.push(selectedBtn.getAttribute('data-value-id'));
+            }
+        });
+    }
+    
+    return selectedValueIds;
+}
+
+// Call getCartCount on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const productId = "{{ product.id }}";
+    const selectedValueIds = getDefaultSelectedVariantIds();
+    
+    // Get cart count for either:
+    // - The default selected variant (if product has variants)
+    // - The product itself (if no variants)
+    getCartCount(productId, selectedValueIds.length > 0 ? selectedValueIds : null);
+});
+</script>
 
 {% endblock %}

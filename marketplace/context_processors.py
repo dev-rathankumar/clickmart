@@ -1,5 +1,5 @@
 from .models import Cart
-from menu.models import Product, Category
+from unified.models import Product, Category, ProductVariantGroup
 from inventory.models import tax
 from vendor.models import StoreType
 from mobile.utils import get_current_event
@@ -23,11 +23,12 @@ def get_cart_counter(request, session_cart=None):
         cart_count = sum(int(qty) for qty in cart.values())
 
     return dict(cart_count=cart_count)
+
 def get_cart_amounts(request, session_cart=None):
     """
     Returns a dictionary with subtotal, tax, grand_total, and tax_dict for the cart.
     Supports both authenticated users (DB) and guests (session cart).
-    Accepts an optional session_cart (dict) for custom use, otherwise uses request/session/user.
+    Handles both regular products and variant products.
     """
     from django.db import models
 
@@ -40,40 +41,23 @@ def get_cart_amounts(request, session_cart=None):
     cart = session_cart if session_cart is not None else (request.session.get('cart', {}) if not request.user.is_authenticated else None)
 
     if request.user.is_authenticated and session_cart is None:
+        # Authenticated user - get from database
         cart_items = Cart.objects.filter(user=request.user)
         for item in cart_items:
             product_total = 0
             product = item.product
-
-            price = product.sales_price if product.sales_price is not None else product.regular_price
+            
+            # Get price from variant if exists, otherwise from product
+            if item.product_variant_group and item.product_variant_group.price:
+                price = item.product_variant_group.price
+            else:
+                price = product.sales_price if product.sales_price is not None else product.regular_price
+            
             product_total = price * item.quantity
             subtotal += product_total
 
-            # Tax
-            tax_instance = product.tax_category
-            tax_amount = round((tax_instance.tax_percentage * product_total) / 100, 2)
-            tax_value += tax_amount
-
-            tax_entry = {
-                'tax_category': tax_instance.tax_category,
-                'tax_info': {str(tax_instance.tax_percentage): tax_amount},
-                'product_id': product.id
-            }
-            tax_dict.append(tax_entry)
-
-        # grand_total = subtotal + tax_value
-        grand_total = subtotal 
-
-    elif cart:  # Guest session cart
-        # cart is { 'product_id': quantity, ... }
-        for product_id, qty in cart.items():
-            try:
-                product = Product.objects.get(pk=product_id)
-                price = product.sales_price if product.sales_price is not None else product.regular_price
-                product_total = price * int(qty)
-                subtotal += product_total
-
-                # Tax
+            # Tax calculation
+            if product.tax_category:
                 tax_instance = product.tax_category
                 tax_amount = round((tax_instance.tax_percentage * product_total) / 100, 2)
                 tax_value += tax_amount
@@ -84,11 +68,45 @@ def get_cart_amounts(request, session_cart=None):
                     'product_id': product.id
                 }
                 tax_dict.append(tax_entry)
-            except Product.DoesNotExist:
+
+    elif cart:  # Guest session cart
+        # cart is { 'product_id': quantity } or { 'product_id-variant_id': quantity }
+        for cart_key, qty in cart.items():
+            try:
+                # Check if this is a variant product (has hyphen in key)
+                if '-' in cart_key:
+                    product_id, variant_id = cart_key.split('-')
+                    try:
+                        variant = ProductVariantGroup.objects.get(id=variant_id)
+                        product = variant.product
+                        price = variant.price
+                    except ProductVariantGroup.DoesNotExist:
+                        continue
+                else:
+                    # Regular product
+                    product_id = cart_key
+                    product = Product.objects.get(pk=product_id)
+                    price = product.sales_price if product.sales_price is not None else product.regular_price
+
+                product_total = price * int(qty)
+                subtotal += product_total
+
+                # Tax calculation
+                if product.tax_category:
+                    tax_instance = product.tax_category
+                    tax_amount = round((tax_instance.tax_percentage * product_total) / 100, 2)
+                    tax_value += tax_amount
+
+                    tax_entry = {
+                        'tax_category': tax_instance.tax_category,
+                        'tax_info': {str(tax_instance.tax_percentage): tax_amount},
+                        'product_id': product.id
+                    }
+                    tax_dict.append(tax_entry)
+            except (Product.DoesNotExist, ValueError):
                 continue
 
-        # grand_total = subtotal + tax_value
-        grand_total = subtotal
+    grand_total = subtotal
 
     return {
         'subtotal': subtotal,

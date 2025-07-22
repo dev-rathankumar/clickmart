@@ -41,29 +41,42 @@ def place_order(request):
     k = {}
     items_count= 0
     for i in cart_items:
+        print("i product cart items", i.product.variants)
+        for v in i.product.variants.all():
+            if v == i.product_variant_group:
+                print("variant found", v)
         product_total = 0
         product = Product.objects.get(pk=i.product.id, vendor_id__in=vendors_ids)
         v_id = product.vendor.id
         if v_id in k:
             subtotal = k[v_id]
-            if product.sales_price is not None:
-                product_total += (product.sales_price * i.quantity)
-                subtotal += (product.sales_price * i.quantity)
+            if i.product_variant_group and i.product_variant_group.price is not None:
+                    product_total += (i.product_variant_group.price * i.quantity)
+                    subtotal += (i.product_variant_group.price * i.quantity)
             else:
-                product_total += (product.regular_price * i.quantity)
-                subtotal += (product.regular_price * i.quantity)
+                if product.sales_price is not None:
+                    product_total += (product.sales_price * i.quantity)
+                    subtotal += (product.sales_price * i.quantity)
+                else:
+                    product_total += (product.regular_price * i.quantity)
+                    subtotal += (product.regular_price * i.quantity)
 
             k[v_id] = subtotal
             items_count+=i.quantity
         else:
-            if product.sales_price is not None:
-                product_total += (product.sales_price * i.quantity)
-                subtotal += (product.sales_price * i.quantity)
+            if i.product_variant_group and i.product_variant_group.price is not None:
+                product_total += (i.product_variant_group.price * i.quantity)
+                subtotal += (i.product_variant_group.price * i.quantity)
             else:
-                product_total += (product.regular_price * i.quantity)
-                subtotal += (product.regular_price * i.quantity)
+                if product.sales_price is not None:
+                    product_total += (product.sales_price * i.quantity)
+                    subtotal += (product.sales_price * i.quantity)
+                else:
+                    product_total += (product.regular_price * i.quantity)
+                    subtotal += (product.regular_price * i.quantity)
             k[v_id] = subtotal
             items_count+=i.quantity
+
         tax_dict = {}
         tax_instance = tax.objects.get(id=product.tax_category.id) 
         tax_amount = round((tax_instance.tax_percentage * product_total)/100, 2)
@@ -144,7 +157,7 @@ def payments(request):
         order.is_ordered = True
         order.save()
 
-        # MOVE THE CART ITEMS TO ORDERED FOOD MODEL
+        # MOVE THE CART ITEMS TO ORDERED Product MODEL
         cart_items = Cart.objects.filter(user=request.user)
         for item in cart_items:
             product = Product.objects.get(pk=item.product.id)
@@ -162,17 +175,46 @@ def payments(request):
             ordered_food.product = item.product
             ordered_food.quantity = item.quantity
             # DECREASE THE PRODUCT QUANTITY
-            product.qty -= item.quantity
-            product.save()
-            if item.product.sales_price is not None:
-                ordered_food.price = item.product.sales_price
+            if item.product_variant_group and item.product_variant_group.stock is not None:
+                ordered_food.product_variant_group = item.product_variant_group
+                item.product_variant_group.stock -= item.quantity
+                item.product_variant_group.save()
             else:
-                ordered_food.price = item.product.regular_price
-            if item.product.sales_price is not None:
-                ordered_food.amount = item.product.sales_price * item.quantity # total amount
-            else:
-                ordered_food.amount = item.product.regular_price * item.quantity # total amount
+                product.qty -= item.quantity
+                product.save()
 
+            if item.product_variant_group and item.product_variant_group.price is not None:    
+                ordered_food.price = item.product_variant_group.price
+            else:
+                if item.product.sales_price is not None:
+                    ordered_food.price = item.product.sales_price
+                else:
+                    ordered_food.price = item.product.regular_price
+
+
+            if item.product_variant_group and item.product_variant_group.price is not None:
+                ordered_food.amount = item.product_variant_group.price * item.quantity
+            else:
+                if item.product.sales_price is not None:
+                    ordered_food.amount = item.product.sales_price * item.quantity # total amount
+                else:
+                    ordered_food.amount = item.product.regular_price * item.quantity # total amount
+            
+
+
+            if item.product_variant_group:
+                # Convert QuerySet to list of dictionaries first
+                attributes = list(item.product_variant_group.attribute.all().values('attribute__name', 'value'))
+                print("attributes:", attributes)
+                
+                product_variant_info = {
+                    'variant_id': item.product_variant_group.id,
+                    'product_id': item.product.id,
+                    'attributes': attributes,  # Now this is a list, not a QuerySet
+                    'variant_price': str(item.product_variant_group.price) if item.product_variant_group.price else '',
+                    'image': item.product_variant_group.image.url if item.product_variant_group.image else None,
+                }
+            ordered_food.product_variant_info = json.dumps(product_variant_info)
             ordered_food.save()
 
         # SEND ORDER CONFIRMATION EMAIL TO THE CUSTOMER

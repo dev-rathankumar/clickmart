@@ -127,13 +127,17 @@
                             </a>
                             <div>
                       <!-- ADD button -->
+                      
+                      {% if product.variant %}
+                      {% else %}
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
-                        id="add_to_cart_btn-{{product.id}}"
-                        data-id="{{ product.id }}"
-                        data-url="{% url 'add_to_cart' product.id %}"
-                        style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
-                        ADD
-                      </a>
+                      id="add_to_cart_btn-{{product.id}}"
+                      data-id="{{ product.id }}"
+                      data-url="{% url 'add_to_cart' product.id %}"
+                      style="{% if product.id in cart_product_ids %}display:none;{% endif %}">
+                      ADD
+                    </a>
+                    {% endif %}
                       <!-- Quantity controls -->
                       <div class="quantity-box"
                           id="quantity-btn-box-{{ product.id }}"

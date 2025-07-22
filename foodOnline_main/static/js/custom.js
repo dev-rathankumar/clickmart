@@ -86,17 +86,60 @@ $(document).ready(function(){
         
         food_id = $(this).attr('data-id');
         url = $(this).attr('data-url');
+        var main_cartitem_id = $(this).attr('main_cartitem_id');
         var qty = $('#main-pv-quantity-input').val();
-        
-        qty = parseInt(qty);
-        if (isNaN(qty) || qty < 1) qty = 1; // Default to 1 if invalid
-        console.log("qqqttyy==>>",qty);
-       if (url.indexOf('?') > -1) {
-        url += '&quantity=' + qty;
-        } else {
-            url += '?quantity=' + qty;
+        var variantsString = $(this).attr('data-variants');
+        console.log('variantsString ===> ', variantsString)
+        const selectedValues = {};
+        if (variantsString) {
+        try {
+            // Convert "Color:10,Size:5" format to {Color: "10", Size: "5"}
+            variantsString.split(',').forEach(function(pair) {
+                var parts = pair.split(':');
+                if (parts.length === 2) {
+                    selectedValues[parts[0]] = parts[1];
+                }
+
+            });
+        } catch (e) {
+            console.error('Error parsing variants:', e);
         }
-        
+    }
+    
+     
+        if (isNaN(qty) || qty < 1) qty = 1; // Default to 1 if invalid
+        console.log("Quantity: ", qty);
+        // Collect selected variant values
+        document.querySelectorAll('.variant-attribute-group').forEach(g => {
+            const selectedBtn = g.querySelector('.variant-btn.selected');
+            if (selectedBtn) {
+                const attr = selectedBtn.getAttribute('data-attribute');
+                const valId = selectedBtn.getAttribute('data-value-id');
+                selectedValues[attr] = valId;
+            }
+        });
+
+        console.log('Selected Values:', selectedValues);
+
+        // Add quantity
+        const urlParams = new URLSearchParams();
+        urlParams.append('quantity', qty);
+
+        // Add selectedValues only if not empty
+        if (Object.keys(selectedValues).length > 0) {
+            for (const [key, value] of Object.entries(selectedValues)) {
+                urlParams.append(`variants[${key}]`, value); // Use variants[key] to group them
+            }
+        }
+
+        // Final URL
+        if (url.indexOf('?') > -1) {
+            url += '&' + urlParams.toString();
+        } else {
+            url += '?' + urlParams.toString();
+        }
+
+        console.log('Final URL:', url);
 
         $.ajax({
             type: 'GET',
@@ -122,6 +165,10 @@ $(document).ready(function(){
                     $('#mb-hd-cart_count').text(response.cart_counter);
                     // $('#cart_counter').attr('data-count', response.cart_counter['cart_count']);
                     $('#qty-'+food_id).text(response.qty);
+                    if(response.variant_group == false){
+                        $('#qty-crt-'+food_id).text(response.qty);
+                    }
+                    $('#qty-'+food_id+'-'+main_cartitem_id).text(response.qty);
                     $('#dkstp-qty-'+food_id).text(response.qty);
                     $('#mb-qty-'+food_id).text(response.qty);
                     $('#qty-mb-'+food_id).text(response.qty);
@@ -129,6 +176,7 @@ $(document).ready(function(){
                     $('#qty-'+food_id+'-latest-products').text(response.qty);
                     $('#qty-'+food_id+'-lowest-price-guarantee').text(response.qty);
                     $('#main-pv-quantity-input').val(1);
+                    console.log(response.variant_group)
 
       
 
@@ -198,8 +246,56 @@ $(document).ready(function(){
         
         food_id = $(this).attr('data-id');
         url = $(this).attr('data-url');
+        var main_cartitem_id = $(this).attr('main_cartitem_id');
         cart_id = $(this).attr('id');
-        
+        var variantsString = $(this).attr('data-variants');
+        console.log('variantsString ===> ', variantsString)
+        const selectedValues = {};
+        if (variantsString) {
+        try {
+            // Convert "Color:10,Size:5" format to {Color: "10", Size: "5"}
+            variantsString.split(',').forEach(function(pair) {
+                var parts = pair.split(':');
+                if (parts.length === 2) {
+                    selectedValues[parts[0]] = parts[1];
+                }
+
+            });
+        } catch (e) {
+            console.error('Error parsing variants:', e);
+        }
+    }
+       
+        // Collect selected variant values
+        document.querySelectorAll('.variant-attribute-group').forEach(g => {
+            const selectedBtn = g.querySelector('.variant-btn.selected');
+            if (selectedBtn) {
+                const attr = selectedBtn.getAttribute('data-attribute');
+                const valId = selectedBtn.getAttribute('data-value-id');
+                selectedValues[attr] = valId;
+            }
+        });
+
+        console.log('Selected Values:', selectedValues);
+
+        // Add quantity
+        const urlParams = new URLSearchParams();
+        // Add selectedValues only if not empty
+        if (Object.keys(selectedValues).length > 0) {
+            for (const [key, value] of Object.entries(selectedValues)) {
+                urlParams.append(`variants[${key}]`, value); // Use variants[key] to group them
+            }
+        }
+
+        // Final URL
+        if (url.indexOf('?') > -1) {
+            url += '&' + urlParams.toString();
+        } else {
+            url += '?' + urlParams.toString();
+        }
+
+        console.log('Final URL:', url);
+
         
         $.ajax({
             type: 'GET',
@@ -217,6 +313,10 @@ $(document).ready(function(){
                     $('#mb-cart_count').text(response.cart_counter);
                     $('#mb-hd-cart_count').text(response.cart_counter);
                     $('#qty-'+food_id).text(response.qty);
+                    if(response.variant_group == false){
+                        $('#qty-crt-'+food_id).text(response.qty);
+                    }
+                    $('#qty-'+food_id+'-'+main_cartitem_id).text(response.qty);
                     $('#dkstp-qty-'+food_id).text(response.qty);
                     $('#mb-qty-'+food_id).text(response.qty);
                     $('#qty-mb-'+food_id).text(response.qty);
@@ -288,6 +388,7 @@ $(document).ready(function(){
         e.preventDefault();
         
         cart_id = $(this).attr('data-id');
+        console.log("cart_id", cart_id)
         url = $(this).attr('data-url');
         product_id = $(this).attr('data-product-id');
         
