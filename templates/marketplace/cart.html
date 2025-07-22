@@ -49,7 +49,9 @@
                                                             <li id="cart-item-{{item.product.id}}">
                                                     {% endif %}
                                                    <div class="image-holder">
-                                                    {% if item.product.image %}
+                                                   {% if item.product_variant_group and item.product_variant_group.image %}
+                                                        <img src="{{ item.product_variant_group.image.url }}" alt="">
+                                                    {% elif item.product.image %}
                                                         <img src="{{ item.product.image.url }}" alt="">
                                                     {% else %}
                                                         <img src="{% static 'images/placeholder.jpg' %}" alt="No image available">
@@ -58,30 +60,41 @@
 
                                                     <div class="text-holder ms-3" style="width: 390px;">
                                                         <h6>{{ item.product }}</h6>
+                                                         {% if item.product_variant_group  %}
+                                                                {% for attr_value in item.product_variant_group.attribute.all %}
+                                                               <span style="color:#7a7272;"><strong>{{ attr_value.attribute.name }}</strong>: {{ attr_value.value }}</span>
+                                                                {% endfor %}
+                                                        {% endif %}
                                                         <span>{{item.product.product_desc | truncatewords:25}}</span>
                                                         <a href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}" class="badge store_name">{{ item.product.vendor }}</a>
                                                     </div>
                                                     <div class="price-holder">
-                                                        
-                                                        {% if item.product.sales_price %}
-                                                            <span class="bold">₹ {{ item.product.sales_price }}</span>
-                                                            {% else %}
-                                                            <span class="bold">₹ {{ item.product.regular_price }}</span>
+                                                   {% if item.product_variant_group and item.product_variant_group.price %}
+                                                        <span class="bold">₹ {{ item.product_variant_group.price }}</span>
+                                                   {% else %}
+                                                            {% if item.product.sales_price %}
+                                                                <span class="bold">₹ {{ item.product.sales_price }}</span>
+                                                                {% else %}
+                                                                <span class="bold">₹ {{ item.product.regular_price }}</span>
+                                                            {% endif %}
                                                         {% endif %}
-                                                            
                                                         {% if item.cart_id %}
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.cart_id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus blue_color"></i></a>
+                                                        <a href="#" class="decrease_cart"  {% if item.product_variant_group %} data-variants='{% for attr in item.product_variant_group.attribute.all %}{{attr.attribute.name}}:{{attr.id}}{% if not forloop.last %},{% endif %}{% endfor %}'{% endif %}data-id="{{ item.product.id }}" main_cartitem_id="{{item.id}}" id="{{item.cart_id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus blue_color"></i></a>
                                                         {% else %}
-                                                        <a href="#" class="decrease_cart" data-id="{{ item.product.id }}" id="{{item.product.id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus blue_color"></i></a>
+                                                        <a href="#" class="decrease_cart"  {% if item.product_variant_group %} data-variants='{% for attr in item.product_variant_group.attribute.all %}{{attr.attribute.name}}: {{attr.id}}{% if not forloop.last %},{% endif %}{% endfor %}'{% endif %} data-id="{{ item.product.id }}" main_cartitem_id="{{item.id}}" id="{{item.product.id}}" data-url="{% url 'decrease_cart' item.product.id %}" style="margin-right: 28px;"><i class="icon-minus blue_color"></i></a>
                                                         {% endif %}
                                                         
-                                                        <label id="qty-{{item.product.id}}">0</label>
-                                                        <a href="#" class="add_to_cart" data-id="{{ item.product.id }}" data-url="{% url 'add_to_cart' item.product.id %}"><i class="icon-plus4 blue_color"></i></a>
+                                                        {% if item.product_variant_group %}
+                                                            <label id="qty-{{item.product.id}}-{{item.id}}">{{ item.quantity }}</label>
+                                                        {% else %}
+                                                            <label id="qty-crt-{{item.product.id}}">{{ item.quantity }}</label>
+                                                        {% endif %}
+                                                        <a href="#" class="add_to_cart"  {% if item.product_variant_group %} data-variants='{% for attr in item.product_variant_group.attribute.all %}{{attr.attribute.name}}: {{attr.id}} {% if not forloop.last %},{% endif %}{% endfor %}'{% endif %} data-id="{{ item.product.id }}" main_cartitem_id="{{item.id}}" data-url="{% url 'add_to_cart' item.product.id %}"><i class="icon-plus4 blue_color"></i></a>
                                                         
                                                         {% if item.cart_id %}
-                                                        <a href="#" class="delete_cart" data-id="{{ item.cart_id }}" data-url="{% url 'delete_cart' item.cart_id %}" data-product-id="{{item.product.id}}"><i class="icon-delete delete_icon_color"></i></a>       
+                                                        <a href="#" class="delete_cart" data-id="{{ item.cart_id }}" data-url="{% url 'delete_cart' item.id %}" main_cartitem_id="{{item.id}}" data-product-id="{{item.product.id}}"><i class="icon-delete delete_icon_color"></i></a>       
                                                         {% else %}
-                                                        <a href="#" class="delete_cart" data-id="{{ item.product.id }}" data-url="{% url 'delete_cart' item.product.id %}" data-product-id="{{item.product.id}}"><i class="icon-delete delete_icon_color"></i></a>       
+                                                        <a href="#" class="delete_cart" data-id="{{ item.product.id }}" data-url="{% url 'delete_cart' item.id %}" main_cartitem_id="{{item.id}}" data-product-id="{{item.product.id}}"><i class="icon-delete delete_icon_color"></i></a>       
                                                         {% endif %}
                                                             
                                                         

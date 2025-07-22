@@ -5,7 +5,7 @@ from mobile.utils import get_current_event
 from homepage.product_collections import get_products_for_collection
 from vendor.models import AdBanner, Vendor
 # from menu.models import Product
-from unified.models import Product, Category
+from unified.models import Product, Category,ProductVariantGroup
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import D # ``D`` is a shortcut for ``Distance``
 from django.contrib.gis.db.models.functions import Distance
@@ -89,22 +89,67 @@ def home(request):
             cart_items.append({
                 'product': cart_obj.product,
                 'quantity': cart_obj.quantity,
-                'cart_id': cart_obj.id,  # DB cart uses Cart PK
+                'cart_id': cart_obj.id,
             })
     else:
         cart = request.session.get('cart', {})
-        product_ids = list(cart.keys())
-        cart_products  = Product.objects.filter(id__in=product_ids)
         cart_items = []
-        for product in cart_products :
-            print("product_id ===>", product.id)
-            quantity = cart.get(str(product.id))
-            cart_items.append({
-                'product': product,
-                'quantity': quantity,
-                'cart_id': product.id,  # session cart uses product id
-            })
-    cart_product_ids = set(item['product'].id for item in cart_items)
+        
+        regular_products = {}
+        variant_products = {}
+        
+        for cart_key, quantity in cart.items():
+            if '-' in cart_key:
+                product_id, variant_id = cart_key.split('-')
+                variant_products.setdefault(product_id, {})[variant_id] = quantity
+            else:
+                regular_products[cart_key] = quantity
+        
+        product_ids = list(regular_products.keys()) + list(variant_products.keys())
+        products_in_cart = Product.objects.filter(id__in=product_ids).in_bulk()
+        
+        variant_ids = []
+        for variant_dict in variant_products.values():
+            variant_ids.extend(variant_dict.keys())
+        variants = ProductVariantGroup.objects.filter(id__in=variant_ids).in_bulk()
+        
+        for product_id, quantity in regular_products.items():
+            product = products_in_cart.get(int(product_id))  # Convert to int
+            if product:
+                cart_items.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'variant': None,
+                    'cart_id': product_id,
+                    'price': product.sales_price or product.regular_price,
+                })
+        
+        for product_id, variant_dict in variant_products.items():
+            product = products_in_cart.get(int(product_id))  # Convert to int
+            if product:
+                for variant_id, quantity in variant_dict.items():
+                    variant = variants.get(int(variant_id))  # Convert to int
+                    if variant:
+                        cart_items.append({
+                            'product': product,
+                            'quantity': quantity,
+                            'variant': variant,
+                            'cart_id': f"{product_id}-{variant_id}",
+                            'price': variant.price,
+                        })
+
+    # Fix for getting product IDs - handle both dictionary and model cases
+    cart_product_ids = set()
+    for item in cart_items:
+        if isinstance(item, dict):  # Non-logged-in user case
+            if 'product' in item and item['product']:
+                cart_product_ids.add(item['product'].id)
+        else:  # Logged-in user case (Cart model instance)
+            if hasattr(item, 'product') and item.product:
+                cart_product_ids.add(item.product.id)
+
+    print('cart_product ids', cart_product_ids)
+
 
     # Mobile homepage banners
     current_event = get_current_event()

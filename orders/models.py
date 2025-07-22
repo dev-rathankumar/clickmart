@@ -193,6 +193,7 @@ class OrderedFood(models.Model):
     price = models.FloatField()
     amount = models.FloatField()
     status = models.CharField(max_length=15, choices=STATUS, default='Processing')
+    variant_info = models.JSONField(blank=True, null=True, help_text="Snapshot of variant details at the time of order")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

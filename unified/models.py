@@ -153,7 +153,6 @@ class Product(models.Model):
             return 0
 
 
-from django.db import models
 
 class ProductCloneTable(models.Model):
     # Mirror the fields in Product, but add extra session/user/vendor tracking fields as needed.
@@ -345,4 +344,4 @@ class ProductVariantGroup(models.Model):
     sku = models.CharField(max_length=32, blank=True, null=True, unique=True)
 
     def __str__(self):
-        return f"{self.product.product_name}"
+        return f"{self.product.product_name} - {', '.join([str(attr.value) for attr in self.attribute.all()])}"

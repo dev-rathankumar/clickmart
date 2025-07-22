@@ -2,11 +2,13 @@ from django.db import models
 
 from accounts.models import User
 from menu.models import Product
+from unified.models import ProductVariantGroup
 
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    product_variant_group = models.ForeignKey(ProductVariantGroup, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
