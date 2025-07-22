@@ -680,7 +680,6 @@ def cart(request):
     else:
         cart = request.session.get('cart', {})
         cart_items = []
-        
         # Separate regular products and variant products
         regular_products = {}
         variant_products = {}
@@ -732,6 +731,7 @@ def cart(request):
                             'cart_id': f"{product_id}-{variant_id}",
                             'price': variant.price,
                         })
+
 
     context = {
         'cart_items': cart_items,
@@ -836,7 +836,7 @@ def search(request):
 
 
 
-@login_required(login_url='login')
+
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
     cart_count = cart_items.count()
@@ -904,6 +904,9 @@ def checkout(request):
         'RZP_LOAD': RZP_LOAD,
     }
     return render(request, 'marketplace/checkout.html', context)
+
+
+
 def All_products(request, category_id=None, subcategory_id=None):
     # Get only base categories (top-level)
     categories = Category.objects.filter(is_active=True, parent=None)

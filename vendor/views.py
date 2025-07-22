@@ -1914,12 +1914,18 @@ def edit_variant_group(request, pk):
 
     # POST - update variant group
     if request.method == 'POST':
-        group.price = request.POST.get('price')
-        group.stock = request.POST.get('stock')
-        group.sku = request.POST.get('sku')
+        price = request.POST.get('price')
+        stock = request.POST.get('stock')
+        sku = request.POST.get('sku')
         image = request.FILES.get('image')
         attribute_values = request.POST.getlist('attribute_values')
 
+        if price:
+            group.price = price
+        if stock:
+            group.stock = stock
+        if sku:  # Only update if SKU is not empty
+            group.sku = sku
         if image:
             group.image = image
 

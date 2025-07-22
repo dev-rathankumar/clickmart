@@ -208,7 +208,7 @@
 
                     <!-- Variant Attributes -->
                     <div class="col-md-6">
-                      <label class="form-label">Select Variant Attributes</label>
+                      <label class="form-label">Select Variant Attributes  <span class="text-danger">*</span></label>
 
                       <!-- Hidden multi-select for backend -->
                       <select id="hidden-variant-select" required name="attribute_values" multiple hidden>
@@ -256,7 +256,7 @@
 
                     <!-- Stock -->
                     <div class="col-md-4">
-                      <label for="stock" class="form-label">Stock</label>
+                      <label for="stock" class="form-label">Stock  <span class="text-danger">*</span></label>
                       <input type="number" step="0.001" name="stock" class="form-control" required value="{% if group %}{{ group.stock }}{% endif %}">
                     </div>
 
@@ -748,8 +748,19 @@ function resetRowButtons(row) {
 
     const actionCol = button.parentElement;
     actionCol.innerHTML = `
-      <button class="btn update_color me-2" style="height:35px !important; min-width:45px;" onclick="updateInlineVariant(this, ${variantId})">Update</button>
-      <button class="btn  btn-danger" style="height:35px !important; min-width:45px;" onclick="cancelEditInline(this, ${variantId})">Cancel</button>
+     <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="btn update_color"
+        style="height: 35px; min-width: 60px; padding: 0 10px; display: flex; justify-content: center; align-items: center;"
+        onclick="updateInlineVariant(this, ${variantId})">
+        Update
+      </button>
+      <button class="btn btn-danger"
+        style="height: 35px; min-width: 60px; padding: 0 10px; display: flex; justify-content: center; align-items: center;"
+        onclick="cancelEditInline(this, ${variantId})">
+        Cancel
+      </button>
+    </div>
+
     `;
   }
 

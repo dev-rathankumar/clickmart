@@ -114,19 +114,29 @@
                                                 <tbody>
                                                     {% for item in ordered_food %}
                                                     <tr> 
-                                                        {% if item.product.image %}
-                                                        <td><img src="{{ item.product.image.url }}" width="60" alt="Food Image"></td>
-                                                        {% else %}
-                                                        <td><img class="product-img" src="{% static 'images/placeholder.jpg' %}" width="60" alt="No image available" /></td>
-                                                        {% endif %}
                                                         <td>
-                                                            <p class="mb-0"><b>{{ item.product }}</b></p>
-                                                            <a class="text-muted" href="{% url 'vendor_detail' item.product.vendor.vendor_slug %}">
-                                                                {{ item.product.vendor.vendor_name }}
-                                                            </a>
+                                                            <div class="d-flex align-items-center  gap-3">
+                                                                <div>
+                                                                    {% if item.variant_info.image %}
+                                                                        <img src="{{ item.variant_info.image }}" width="60" alt="Variant Image"><br>
+                                                                    {% elif item.product.image %}
+                                                                        <img src="{{ item.product.image.url }}" width="60" alt="Product Image"><br>
+                                                                    {% else %}     
+                                                                        <img src="" width="60" alt="No image available" /><br>
+                                                                    {% endif %}
+                                                                </div>  
+                                                                <div class="w-20">
+                                                                    {% if item.variant_info.attributes %}
+                                                                        {% for attr in item.variant_info.attributes %}
+                                                                            <small>{{ attr.attribute__name }}: {{ attr.value }}</small><br>
+                                                                        {% endfor %}
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
                                                         </td>
+                                                        <td class='w-25'>{{ item.product }}</td>
                                                         <td>{{ item.quantity }} QTY</td>
-                                                        <td>₹{{ item.product.sales_price|default:item.product.regular_price }}</td>
+                                                        <td>₹{{ item.price }}</td>
                                                         <td>{{ item.product.tax_category }}</td>
                                                         <td>
                                                             <form class="update-product-status-form">
@@ -168,7 +178,7 @@
                                                 {% else %}
                                                 <div class="col-md-6">
                                                 {% endif %}
-                                                                    <ul>
+                                                <ul>
                                                     <li style="list-style-type: none;" class="d-flex justify-content-between align-items-center">
                                                         Subtotal
                                                         <span class="price float-right">

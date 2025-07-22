@@ -69,20 +69,30 @@
         {% for food in ordered_food_to_vendor %}
         <tr>
             
-            {% if food.prodcut.image %}
-            <td><img src="https://{{domain}}{{ food.product.image.url }}" alt="Food Image" width="60"></td>
-            {% else %}
-            <td><img src="#" alt="Food Image" width="60"></td>
-            {% endif %}
-            <td><p style="margin: 0;">{{ food.product }}</p>
-            <small><a href="https://{{ domain }}{% url 'vendor_detail' food.product.vendor.vendor_slug %}" style="color:#ccc;">{{ food.product.vendor.vendor_name }}</a></small>
+            <td>
+          
+                  {% if food.variant_info.image %}
+                      <img src="{{ food.variant_info.image }}" width="60" alt="Variant Image"><br>
+                  {% elif food.product.image %}
+                      <img src="{{ food.product.image.url }}" width="60" alt="Product Image"><br>
+                  {% else %}     
+                      <img src="" width="60" alt="No image available" /><br>
+                  {% endif %}
+                   
+            </td>
+            <td>
+                <b>{{ food.product}}</b><br>
+                {% if food.variant_info.attributes %}
+                    {% for attr in food.variant_info.attributes %}
+                        <small>{{ attr.attribute__name }}: {{ attr.value }}</small><br>
+                    {% endfor %}
+                {% endif %}
+                <small><a href="https://{{ domain }}{% url 'vendor_detail' food.product.vendor.vendor_slug %}" style="color:#ccc;">{{ food.product.vendor.vendor_name }}</a></small>
+              </td>
             </td>
             <td>{{ food.quantity }}</td>
-          {% if food.product.sales_price %}
-            <td>₹{{ food.product.sales_price }}</td>
-          {% else %}
-            <td>₹{{ food.product.regular_price }}</td>
-          {% endif %}
+            <td>₹{{ food.price }}</td>
+
         </tr>
         {% endfor %}
     </tbody>

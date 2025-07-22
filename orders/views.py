@@ -205,7 +205,6 @@ def payments(request):
             if item.product_variant_group:
                 # Convert QuerySet to list of dictionaries first
                 attributes = list(item.product_variant_group.attribute.all().values('attribute__name', 'value'))
-                print("attributes:", attributes)
                 
                 product_variant_info = {
                     'variant_id': item.product_variant_group.id,
@@ -214,7 +213,7 @@ def payments(request):
                     'variant_price': str(item.product_variant_group.price) if item.product_variant_group.price else '',
                     'image': item.product_variant_group.image.url if item.product_variant_group.image else None,
                 }
-            ordered_food.product_variant_info = json.dumps(product_variant_info)
+                ordered_food.variant_info =  product_variant_info
             ordered_food.save()
 
         # SEND ORDER CONFIRMATION EMAIL TO THE CUSTOMER
@@ -235,7 +234,6 @@ def payments(request):
             'customer_subtotal': customer_subtotal,
             'tax_data': tax_data,
         }
-        print('sending notification email')
         pdf = generate_receipt_pdf(order,ordered_food,tax_data)
         send_notification(mail_subject, mail_template, context,pdf)
         print('email sent')

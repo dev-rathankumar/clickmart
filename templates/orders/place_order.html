@@ -74,7 +74,9 @@
                                             {% for item in cart_items %}
                                             <tr>
                                                 <td>
-                                                    {% if item.product.image %}
+                                                    {% if item.product_variant_group and item.product_variant_group.image %}
+                                                    <img src="{{ item.product_variant_group.image.url }}" alt="Variant Image" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    {% elif item.product.image %}
                                                         <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
                                                     {% else %}
                                                         <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
@@ -83,11 +85,16 @@
                                                 <td><b>{{ item.product }}</b></td>
                                                 <td>{{ item.quantity }}</td>
                                                 <td>
-                                                    {% if item.product.sales_price %}
-                                                        ₹{{ item.product.sales_price }}
+                                                    {% if item.product_variant_group %}
+                                                        {{ item.product_variant_group.price }}
+                                                
                                                     {% else %}
-                                                        ₹{{ item.product.regular_price }}
-                                                    {% endif %}
+                                                        {% if item.product.sales_price %}
+                                                            {{ item.product.sales_price }}
+                                                        {% else %}
+                                                                {{ item.product.regular_price }}
+                                                        {% endif %}
+                                                 {% endif %}
                                                 </td>
                                                 <td>{{ item.product.tax_category }}</td>
                                             </tr>
@@ -163,7 +170,7 @@
                                             <!-- PayPal Checkout Button -->
                                             <div id="paypal-button-container"></div>
                                             {% elif order.payment_method == 'COD' %}
-                                            <button id="placeOrderBtn" type="submit" class="btn btn-danger w-100 p-2 mt-3 mb-4" onclick="placeOrder()">Place Order</button>
+                                            <button id="placeOrderBtn" type="submit" class="btn update_color w-100 p-2 mt-3 mb-4" onclick="placeOrder()">Place Order</button>
                                             <div id="pay-loading" class="my-4"style="display:none;"></div>
                                             {% endif %}
                                     </ul>
