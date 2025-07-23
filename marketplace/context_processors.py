@@ -46,6 +46,8 @@ def get_cart_amounts(request, session_cart=None):
         for item in cart_items:
             product_total = 0
             product = item.product
+
+            variant_id = item.product_variant_group.id if item.product_variant_group else None
             
             # Get price from variant if exists, otherwise from product
             if item.product_variant_group and item.product_variant_group.price:
@@ -65,7 +67,8 @@ def get_cart_amounts(request, session_cart=None):
                 tax_entry = {
                     'tax_category': tax_instance.tax_category,
                     'tax_info': {str(tax_instance.tax_percentage): tax_amount},
-                    'product_id': product.id
+                    'product_id': product.id,
+                    'product_variant_id': variant_id
                 }
                 tax_dict.append(tax_entry)
 
@@ -100,7 +103,8 @@ def get_cart_amounts(request, session_cart=None):
                     tax_entry = {
                         'tax_category': tax_instance.tax_category,
                         'tax_info': {str(tax_instance.tax_percentage): tax_amount},
-                        'product_id': product.id
+                        'product_id': product.id,
+                        'variant_id': variant_id
                     }
                     tax_dict.append(tax_entry)
             except (Product.DoesNotExist, ValueError):

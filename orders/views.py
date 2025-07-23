@@ -285,7 +285,7 @@ def order_complete(request):
 
         tax_data = json.loads(order.tax_data)
         all_paid = all(item.status in ['Paid', 'Completed'] for item in ordered_food)
-        print(tax_data)
+
         context = {
             'order': order,
             'ordered_food': ordered_food,
