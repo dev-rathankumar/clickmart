@@ -232,7 +232,12 @@
                   {% endif %}
 
                     <div>
+                      {% if product.variants and product.variants.all|length > 0 %}
                       <!-- ADD button -->
+                       <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="button-add-to-cart text-white update_color">
+                      View
+                    </a>
+                      {% else %}
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
                         id="add_to_cart_btn-{{product.id}}"
                         data-id="{{ product.id }}"
@@ -242,24 +247,25 @@
                       </a>
                       <!-- Quantity controls -->
                       <div class="quantity-box"
-                          id="quantity-btn-box-{{ product.id }}"
-                          style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
-                        <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
-                          <i class="icon-minus text-white"></i>
-                        </a>
-                        <label id="qty-{{ product.id }}">
-                          {% for item in cart_items %}
-                            {% if product.id == item.product.id %}
-                              {{ item.quantity }}
-                            {% endif %}
-                          {% endfor %}
-                        </label>
-                        <a href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
-                          <i class="icon-plus text-white"></i>
-                        </a>
-                      </div>
+                      id="quantity-btn-box-{{ product.id }}"
+                      style="{% if product.id not in cart_product_ids %}display:none;{% endif %}">
+                      <a href="#" class="decrease_cart" data-id="{{ product.id }}" data-url="{% url 'decrease_cart' product.id %}">
+                        <i class="icon-minus text-white"></i>
+                      </a>
+                      <label id="qty-{{ product.id }}">
+                        {% for item in cart_items %}
+                        {% if product.id == item.product.id %}
+                        {{ item.quantity }}
+                        {% endif %}
+                        {% endfor %}
+                      </label>
+                      <a href="#" class="add_to_cart" data-id="{{ product.id }}" data-url="{% url 'add_to_cart' product.id %}">
+                        <i class="icon-plus text-white"></i>
+                      </a>
                     </div>
-									</div>
+                    {% endif %}
+                  </div>
+                </div>
 									{% if product.get_discount_percentage > 0 %}
 										<div class="product-badges product-badges-position product-badges-mrg">
 											<span class="hot">{{product.get_discount_percentage}}%</span>
@@ -270,7 +276,7 @@
 									<div class="product-category">
 										<small class="text-muted" style="font-size: 12px;">{{product.category}}</small>
 									</div>
-									<h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{product.product_name}}</a></h2>
+									<h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{product.product_name | truncatechars:30}}</a></h2>
 									
 									<div>
 										<div class="product-price">
@@ -403,6 +409,11 @@
                     </a>
 
                       <div>
+                      {% if product.variants and product.variants.all|length > 0 %}
+                       <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="button-add-to-cart text-white update_color">
+                          View
+                        </a>
+                      {% else %}
                       <!-- ADD button -->
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
                         id="add_to_cart_btn-{{product.id}}-{{collection.slug}}"
@@ -429,6 +440,7 @@
                           <i class="icon-plus text-white"></i>
                         </a>
                       </div>
+                      {% endif %}
                     </div>
                     </div>
                     {% if product.get_discount_percentage > 0 %}
@@ -441,7 +453,7 @@
                     <div class="product-category">
                       <small class="text-muted" style="font-size: 12px;">{{ product.category }}</small>
                     </div>
-                    <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name }}</a></h2>
+                    <h2><a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}">{{ product.product_name | truncatechars:30 }}</a></h2>
                     <div class="product-price">
                       <span>₹{{ product.sales_price }}</span>
                       <span class="old-price">₹{{ product.regular_price }}</span>

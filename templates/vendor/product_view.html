@@ -291,7 +291,7 @@
                                                   {% for variant_value in attr_group.values %}
                                                     <button
                                                       type="button"
-                                                      class="variant-btn{% if forloop.first %} selected{% endif %}"
+                                                      class="variant-btn{% if variant_combinations and forloop.first %} selected{% endif %}"
                                                       data-attribute="{{ attr_group.attribute.name }}"
                                                       data-value="{{ variant_value.value }}"
                                                       data-value-id="{{ variant_value.id }}"
@@ -729,81 +729,185 @@ function getCookie(name) {
     });
   </script>
   <script>
-  const variantCombinations = {{ variant_combinations_json|safe }};
+window.attributeGroups = {{ product_variant_map_json|safe }};
 </script>
 <script>
- function updateCartDisplay(productId, quantity, hasItems) {
-    // Update desktop view
+  const variantCombinations = {{ variant_combinations_json|safe }};
+  console.log('Variant Combinations:', variantCombinations);
+  const defaultProductPrice = {{ product.sales_price }};
+  const defaultProductImage = "{{ product.image.url|default:'' }}";
+  const productId = "{{ product.id }}";
+
+  // Utility function to get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Update cart display across desktop and mobile views
+  function updateCartDisplay(productId, quantity, hasItems) {
+    // Desktop view elements
     const desktopQtyLabel = document.getElementById(`dkstp-qty-${productId}`);
     const desktopAddBtn = document.getElementById(`add_to_cart_btn-${productId}`);
     const desktopQtyBox = document.getElementById(`dkstp-quantity-btn-box-${productId}`);
     const desktopQtyInput = document.getElementById(`dkstp-qty-input-${productId}`);
     
-    // Update mobile view
+    // Mobile view elements
     const mobileQtyLabel = document.getElementById(`mb-qty-${productId}`);
     const mobileAddBtn = document.getElementById(`mb-add_to_cart_btn-${productId}`);
     const mobileQtyBox = document.getElementById(`quantity-btn-box-${productId}`);
     
     if (hasItems) {
-        // Update quantity display
-        if (desktopQtyLabel) desktopQtyLabel.textContent = quantity;
-        if (mobileQtyLabel) mobileQtyLabel.textContent = quantity;
-        
-        // Show quantity controls, hide add button
-        if (desktopAddBtn) desktopAddBtn.style.display = 'none';
-        if (desktopQtyInput) desktopQtyInput.style.display = 'none';
-        if (desktopQtyBox) desktopQtyBox.style.display = 'flex';
-        if (mobileAddBtn) mobileAddBtn.style.display = 'none';
-        if (mobileQtyBox) mobileQtyBox.style.display = 'flex';
+      // Update quantity display
+      if (desktopQtyLabel) desktopQtyLabel.textContent = quantity;
+      if (mobileQtyLabel) mobileQtyLabel.textContent = quantity;
+      
+      // Show quantity controls, hide add button
+      if (desktopAddBtn) desktopAddBtn.style.display = 'none';
+      if (desktopQtyInput) desktopQtyInput.style.display = 'none';
+      if (desktopQtyBox) desktopQtyBox.style.display = 'flex';
+      if (mobileAddBtn) mobileAddBtn.style.display = 'none';
+      if (mobileQtyBox) mobileQtyBox.style.display = 'flex';
     } else {
-        // Show add button, hide quantity controls
-        if (desktopAddBtn) desktopAddBtn.style.display = 'block';
-        if (desktopQtyInput) desktopQtyInput.style.display = 'block';
-        if (desktopQtyBox) desktopQtyBox.style.display = 'none';
-        if (mobileAddBtn) mobileAddBtn.style.display = 'block';
-        if (mobileQtyBox) mobileQtyBox.style.display = 'none';
+      // Show add button, hide quantity controls
+      if (desktopAddBtn) desktopAddBtn.style.display = 'block';
+      if (desktopQtyInput) desktopQtyInput.style.display = 'block';
+      if (desktopQtyBox) desktopQtyBox.style.display = 'none';
+      if (mobileAddBtn) mobileAddBtn.style.display = 'block';
+      if (mobileQtyBox) mobileQtyBox.style.display = 'none';
     }
     
     // Update the cart count summary
     const productCountElement = document.getElementById('product_count');
     if (productCountElement) {
-        productCountElement.textContent = quantity;
+      productCountElement.textContent = quantity;
     }
-}
-function getCartCount(productId, selectedValueIds = []) {
+  }
+
+  // Get cart count from server
+  function getCartCount(productId, selectedValueIds = []) {
     fetch("{% url 'get_cart_count' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie('csrftoken'),
-        },
-        body: JSON.stringify({
-            product_id: productId,
-            attributes: selectedValueIds,
-        })
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie('csrftoken'),
+      },
+      body: JSON.stringify({
+        product_id: productId,
+        attributes: selectedValueIds,
+      })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            updateCartDisplay(productId, data.quantity, data.has_items);
-        }
+      if (data.success) {
+        updateCartDisplay(productId, data.quantity, data.has_items);
+      }
     })
     .catch(error => {
-        console.error('Error fetching cart count:', error);
+      console.error('Error fetching cart count:', error);
     });
+  }
+// Returns array of value IDs in UI order for the "first" valid combination by columns
+function getFirstColumnOrderCombination(variantCombinations, attributeGroups) {
+  if (!variantCombinations.length || !attributeGroups.length) return [];
+
+  // attributeGroups: [{attribute: {name: ...}, values: [{id, value}, ...]}, ...]
+  // We want: for the first value of the first group, try all values of the second, etc., until a valid combo is found
+  function findCombination(level, selected) {
+    if (level === attributeGroups.length) {
+      // Check if this combination exists and is in stock
+      const selectedIds = attributeGroups.map((g, i) => selected[i]);
+      const match = variantCombinations.find(
+        (combo) =>
+          combo.in_stock &&
+          selectedIds.every((id) => combo.attributes.includes(id)) &&
+          combo.attributes.length === selectedIds.length // full match
+      );
+      return match ? selectedIds : null;
+    }
+    // Try each value in this attribute group
+    for (const value of attributeGroups[level].values) {
+      selected[level] = value.id;
+      const result = findCombination(level + 1, selected);
+      if (result) return result;
+    }
+    return null;
+  }
+
+  // Start with first value in first group, try all combinations
+  return findCombination(0, []);
 }
 
-function selectVariantValue(btn) {
-  const group = btn.closest('.variant-attribute-group');
+function initializeVariantButtons() {
+  if (variantCombinations.length === 0) {
+    document.querySelectorAll('.variant-btn').forEach(button => {
+      button.disabled = true;
+      button.classList.remove('selected');
+      button.classList.add('disabled-btn');
+    });
+    return;
+  }
+  // Gather attributeGroups from template data (as rendered by Django)
+  // You need to pass product_variant_map to JS as window.attributeGroups
+  // Example: window.attributeGroups = {{ product_variant_map_json|safe }};
+  const attributeGroups = window.attributeGroups || [];
 
-  // Step 1: Mark current button as selected
-  group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
+  // Get the first-column-order valid combination (by UI order)
+  const firstCombo = getFirstColumnOrderCombination(variantCombinations, attributeGroups);
+  // Fallback: if not found, use previous logic
+  let selectedIds = firstCombo && firstCombo.length ? firstCombo : (variantCombinations.find(c => c.in_stock) || {}).attributes || [];
 
-  // Step 2: Collect currently selected values
+  // Select buttons based on selectedIds
+  document.querySelectorAll('.variant-btn').forEach(button => {
+    button.classList.remove('selected');
+    if (selectedIds.includes(button.getAttribute('data-value-id'))) {
+      button.classList.add('selected');
+    }
+  });
+
+  updateVariantSelection();
+}
+
+
+  // Update product details when variant changes
+  function updateProductDetails(variantData) {
+    // Update price
+    document.querySelector('.current-price').textContent = `₹${variantData.price || defaultProductPrice}`;
+    
+    // Update image if available
+    if (variantData.image) {
+      document.querySelector('.product-image-slider img').src = variantData.image;
+    } else if (defaultProductImage) {
+      document.querySelector('.product-image-slider img').src = defaultProductImage;
+    }
+    
+    // Update stock status
+    const inStock = variantData.in_stock !== false;
+    document.querySelectorAll('.add_to_cart').forEach(btn => {
+      btn.disabled = !inStock;
+    });
+    
+    // Update quantity input max value
+    const quantityInput = document.getElementById('main-pv-quantity-input');
+    if (quantityInput && variantData.stock && variantData.stock > 0) {
+      quantityInput.max = variantData.stock;
+    }
+  }
+
+function updateVariantSelection() {
   const selectedValues = {};
-  document.querySelectorAll('.variant-attribute-group').forEach(g => {
-    const selectedBtn = g.querySelector('.variant-btn.selected');
+  document.querySelectorAll('.variant-attribute-group').forEach(group => {
+    const selectedBtn = group.querySelector('.variant-btn.selected');
     if (selectedBtn) {
       const attr = selectedBtn.getAttribute('data-attribute');
       const valId = selectedBtn.getAttribute('data-value-id');
@@ -811,87 +915,94 @@ function selectVariantValue(btn) {
     }
   });
 
-  // ✅ Step 3: Disable invalid combinations based on selection
+  // For each group and each value, check if any in-stock combination is possible
   document.querySelectorAll('.variant-attribute-group').forEach(group => {
     const attr = group.querySelector('.variant-btn').getAttribute('data-attribute');
     group.querySelectorAll('.variant-btn').forEach(button => {
       const valueId = button.getAttribute('data-value-id');
-      const testSelection = {...selectedValues, [attr]: valueId};
 
-      const valid = variantCombinations.some(combo => {
-        return Object.values(testSelection).every(val => combo.attributes.includes(val));
+      // Build a selection where this value is selected in this attribute, and other attributes keep their selected value (if any)
+      const testSelection = {...selectedValues, [attr]: valueId};
+      // Get value IDs in the order of attributeGroups
+      const testSelectedIds = [];
+      (window.attributeGroups || []).forEach(ag => {
+        const aName = ag.attribute.name;
+        if (testSelection[aName]) testSelectedIds.push(testSelection[aName]);
       });
 
-      button.disabled = !valid;
-      button.classList.toggle('disabled-btn', !valid);
+      // Allow this button if there is any in-stock combo that matches these value IDs for the selected attributes
+      const validAndInStock = variantCombinations.some(combo => {
+        // Combo must match all selected IDs for selected attributes, AND be in stock
+        return combo.in_stock && testSelectedIds.every(id => combo.attributes.includes(id));
+      });
+
+      button.disabled = !validAndInStock;
+      button.setAttribute('aria-disabled', !validAndInStock);
+      button.classList.toggle('disabled-btn', !validAndInStock);
     });
   });
- 
-  
-  // ✅ Step 4: Your existing fetch logic (price/image/stock update)
-  const old_image = '{{ product.image.url }}';
-  const old_price = '{{ product.sales_price }}';
-  const productId = "{{ product.id }}"; 
-  // Extract selected value IDs
+
+  // Find matching variant for current selection
   const selectedValueIds = Object.values(selectedValues);
-  getCartCount(productId, selectedValueIds);
-
-  fetch("{% url 'find_variations_data' %}", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": getCookie('csrftoken'),
-    },
-    body: JSON.stringify({
-      product_id: productId,
-      attributes: selectedValueIds,
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      document.querySelector('.product-image-slider img').src = data.image || old_image;
-      document.querySelector('.current-price').textContent = "₹" + (data.price || old_price);
-      if (data.stock && parseFloat(data.stock) > 0) {
-
-      } else {
-
-      }
-    } else if (data.success === false && data.Notfounded === true) {
-      document.querySelector('.product-image-slider img').src = old_image;
-      document.querySelector('.current-price').textContent = "₹" + old_price;
-    }
+  const selectedVariant = variantCombinations.find(combo => {
+    return combo.attributes.every(attrId => selectedValueIds.includes(attrId)) && combo.attributes.length === selectedValueIds.length;
   });
 
+  if (selectedVariant) {
+    updateProductDetails(selectedVariant);
+  } else {
+    // Fallback to default product details if no variant selected
+    updateProductDetails({
+      price: defaultProductPrice,
+      image: defaultProductImage,
+      in_stock: true
+    });
+  }
+
+  // Update cart count
+  getCartCount(productId, selectedValueIds);
 }
-// Call getCartCount on page load for the default variant
-// Function to get the default selected variant IDs (if product has variants)
-function getDefaultSelectedVariantIds() {
+  // Handle variant button click
+  function selectVariantValue(btn) {
+    if (variantCombinations.length === 0) return;
+    
+    const group = btn.closest('.variant-attribute-group');
+    group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    
+    updateVariantSelection();
+  }
+
+  // Initialize everything on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeVariantButtons();
+    
+    // Set up click handlers for variant buttons
+    document.querySelectorAll('.variant-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        selectVariantValue(this);
+      });
+    });
+    
+    // Initial cart count check
+    const selectedValueIds = getDefaultSelectedVariantIds();
+    getCartCount(productId, selectedValueIds.length > 0 ? selectedValueIds : null);
+  });
+
+  // Get default selected variant IDs
+  function getDefaultSelectedVariantIds() {
     const selectedValueIds = [];
     
-    // Only proceed if this is a variant product
     if (document.querySelector('.variant-attribute-group')) {
-        document.querySelectorAll('.variant-attribute-group').forEach(group => {
-            const selectedBtn = group.querySelector('.variant-btn.selected');
-            if (selectedBtn) {
-                selectedValueIds.push(selectedBtn.getAttribute('data-value-id'));
-            }
-        });
+      document.querySelectorAll('.variant-attribute-group').forEach(group => {
+        const selectedBtn = group.querySelector('.variant-btn.selected');
+        if (selectedBtn) {
+          selectedValueIds.push(selectedBtn.getAttribute('data-value-id'));
+        }
+      });
     }
     
     return selectedValueIds;
-}
-
-// Call getCartCount on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const productId = "{{ product.id }}";
-    const selectedValueIds = getDefaultSelectedVariantIds();
-    
-    // Get cart count for either:
-    // - The default selected variant (if product has variants)
-    // - The product itself (if no variants)
-    getCartCount(productId, selectedValueIds.length > 0 ? selectedValueIds : null);
-});
+  }
 </script>
-
 {% endblock %}

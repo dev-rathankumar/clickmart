@@ -435,6 +435,11 @@
                                     </div>
                                           {% if product.qty > 0 %}
                                             <div>
+                                                 {% if product.variants and product.variants.all|length > 0 %}
+                                                  <form action="{% url 'view_product' product.vendor.vendor_slug product.slug %}">
+                                                    <button type=submit class="button text-white w-100 text-center view-button">View Product </button>
+                                                </form>
+                                                {% else %}
                                                 <!-- ADD button -->
                                                 <button href="#" class="button button-add-to-cart add_to_cart text-white w-100 text-center"
                                                     id="add_to_cart_btn-{{product.id}}"
@@ -462,6 +467,7 @@
                                                     <i class="icon-plus"></i>
                                                     </button>
                                                 </div>
+                                                {% endif %}
                                                 </div>
                                      {% else %}
                                              <div class="add-cart">

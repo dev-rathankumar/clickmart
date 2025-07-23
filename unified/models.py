@@ -345,3 +345,7 @@ class ProductVariantGroup(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name} - {', '.join([str(attr.value) for attr in self.attribute.all()])}"
+    @property
+    def in_stock(self):
+        """Returns True if the variant has available stock"""
+        return self.stock > 0 if self.stock is not None else False
