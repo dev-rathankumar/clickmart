@@ -86,7 +86,7 @@
                                                 <td><b>{{ item.product }}</b></td>
                                                 <td>{{ item.quantity }}</td>
                                                 <td>
-                                                    {% if item.product_variant_group %}
+                                                    {% if item.product_variant_group and item.product_variant_group.price %}
                                                         {{ item.product_variant_group.price }}
                                                 
                                                     {% else %}
@@ -118,11 +118,16 @@
                                             <div style="margin-left: 20px";> {{ item.quantity }}</div>
                                             <div  style="width: 20%;margin-left: 20px">
                                             
-                                                {% if item.product.sales_price %}
-                                                    ₹{{ item.product.sales_price }}
-                                                {% else %}
-                                                    ₹{{ item.product.regular_price }}
-                                                {% endif %}
+                                                  {% if item.product_variant_group and item.product_variant_group.price %}
+                                                        {{ item.product_variant_group.price }}
+                                                
+                                                    {% else %}
+                                                        {% if item.product.sales_price %}
+                                                            {{ item.product.sales_price }}
+                                                        {% else %}
+                                                                {{ item.product.regular_price }}
+                                                        {% endif %}
+                                                 {% endif %}
                                             </div>
                                             <div  style="margin-left: 10px">{{ item.product.tax_category }}</div>
                                         </div>

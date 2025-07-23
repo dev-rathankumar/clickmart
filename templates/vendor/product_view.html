@@ -556,27 +556,36 @@
                             {% endif %}
                         </div> {% endcomment %}
 
-                        <div class="sidebar-widget widget-vendor mb-30 bg-grey-9 box-shadow-none">
-                            <h5 class="section-title style-3 mb-20">Seller</h5>
-                            <div class="vendor-logo d-flex mb-30 align-items-center">
-                              {% if product.vendor.user_profile.profile_picture %}
+                       <div class="sidebar-widget widget-vendor mb-30 bg-grey-9 box-shadow-none">
+                          <h5 class="section-title style-3 mb-20">Seller</h5>
+                          <div class="vendor-logo d-flex mb-30 align-items-center">
+                            {% if product.vendor and product.vendor.user_profile and product.vendor.user_profile.profile_picture %}
                               <img src="{{ product.vendor.user_profile.profile_picture.url }}" width="40px" alt="{{ product.vendor.vendor_name }}" style="border-radius: 10px;" />
-
-                              {% else %}
-                              <img src="{% static 'images/default-profile-new.png' %}" width="40px" alt="{{ vendor.vendor_name }}">
-                              {% endif %}
-                                <div class="vendor-name ml-15">
-                                    <h6>
-                                        <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name | truncatechars:18 }}</a>
-                                    </h6>
-                                </div>
+                            {% else %}
+                              <img src="{% static 'images/default-profile-new.png' %}" width="40px" alt="{% if product.vendor %}{{ product.vendor.vendor_name }}{% else %}Seller{% endif %}">
+                            {% endif %}
+                            <div class="vendor-name ml-15">
+                              <h6>
+                                {% if product.vendor %}
+                                  <a href="{% url 'vendor_detail' product.vendor.vendor_slug %}">{{ product.vendor.vendor_name|truncatechars:18 }}</a>
+                                {% else %}
+                                  <span>Unknown Seller</span>
+                                {% endif %}
+                              </h6>
                             </div>
-                            
-                            <ul class="contact-infor" style="padding:0;">
-                                <li><img src="{% static 'assets/imgs/theme/icons/icon-location.svg' %}" alt="" /><strong>Address: </strong> <span>{{ product.vendor.user_profile.address }}</span></li>
-                                <!-- <li><img src="assets/imgs/theme/icons/icon-contact.svg" alt="" /><strong>Contact Seller:</strong><span>(+91) - 540-025-553</span></li> -->
-                                <!-- <li class="hr"><span></span></li> -->
-                            </ul>
+                          </div>
+                          <ul class="contact-infor" style="padding:0;">
+                            <li>
+                              <img src="{% static 'assets/imgs/theme/icons/icon-location.svg' %}" alt="" /><strong>Address: </strong>
+                              <span>
+                                {% if product.vendor and product.vendor.user_profile and product.vendor.user_profile.address %}
+                                  {{ product.vendor.user_profile.address }}
+                                {% else %}
+                                  Not available
+                                {% endif %}
+                              </span>
+                            </li>
+                          </ul>
                             
                             <ul>
                                 <li class="hr"><span></span></li>
@@ -862,14 +871,11 @@ function initializeVariantButtons() {
     });
     return;
   }
-  // Gather attributeGroups from template data (as rendered by Django)
-  // You need to pass product_variant_map to JS as window.attributeGroups
-  // Example: window.attributeGroups = {{ product_variant_map_json|safe }};
+
   const attributeGroups = window.attributeGroups || [];
 
-  // Get the first-column-order valid combination (by UI order)
   const firstCombo = getFirstColumnOrderCombination(variantCombinations, attributeGroups);
-  // Fallback: if not found, use previous logic
+
   let selectedIds = firstCombo && firstCombo.length ? firstCombo : (variantCombinations.find(c => c.in_stock) || {}).attributes || [];
 
   // Select buttons based on selectedIds
@@ -908,9 +914,11 @@ function initializeVariantButtons() {
       quantityInput.max = variantData.stock;
     }
   }
-
 function updateVariantSelection() {
   const selectedValues = {};
+  const attributeGroups = window.attributeGroups || [];
+
+  // Get selected values from each group
   document.querySelectorAll('.variant-attribute-group').forEach(group => {
     const selectedBtn = group.querySelector('.variant-btn.selected');
     if (selectedBtn) {
@@ -920,43 +928,50 @@ function updateVariantSelection() {
     }
   });
 
-  // For each group and each value, check if any in-stock combination is possible
-  document.querySelectorAll('.variant-attribute-group').forEach(group => {
+  // Update buttons based on current selection
+  document.querySelectorAll('.variant-attribute-group').forEach((group, groupIndex) => {
     const attr = group.querySelector('.variant-btn').getAttribute('data-attribute');
+
     group.querySelectorAll('.variant-btn').forEach(button => {
       const valueId = button.getAttribute('data-value-id');
 
-      // Build a selection where this value is selected in this attribute, and other attributes keep their selected value (if any)
-      const testSelection = {...selectedValues, [attr]: valueId};
-      // Get value IDs in the order of attributeGroups
-      const testSelectedIds = [];
-      (window.attributeGroups || []).forEach(ag => {
-        const aName = ag.attribute.name;
-        if (testSelection[aName]) testSelectedIds.push(testSelection[aName]);
-      });
+      if (groupIndex === 0) {
+        // First group: Always enabled
+        button.disabled = false;
+        button.setAttribute('aria-disabled', false);
+        button.classList.remove('disabled-btn');
+        return;
+      }
 
-      // Allow this button if there is any in-stock combo that matches these value IDs for the selected attributes
-      const validAndInStock = variantCombinations.some(combo => {
-        // Combo must match all selected IDs for selected attributes, AND be in stock
+      // For subsequent groups: test possible combinations with earlier selections + this value
+      const testSelection = { ...selectedValues, [attr]: valueId };
+      const testSelectedIds = [];
+
+      for (let i = 0; i <= groupIndex; i++) {
+        const gAttr = attributeGroups[i].attribute.name;
+        if (testSelection[gAttr]) testSelectedIds.push(testSelection[gAttr]);
+      }
+
+      const isValid = variantCombinations.some(combo => {
         return combo.in_stock && testSelectedIds.every(id => combo.attributes.includes(id));
       });
 
-      button.disabled = !validAndInStock;
-      button.setAttribute('aria-disabled', !validAndInStock);
-      button.classList.toggle('disabled-btn', !validAndInStock);
+      button.disabled = !isValid;
+      button.setAttribute('aria-disabled', !isValid);
+      button.classList.toggle('disabled-btn', !isValid);
     });
   });
 
   // Find matching variant for current selection
   const selectedValueIds = Object.values(selectedValues);
   const selectedVariant = variantCombinations.find(combo => {
-    return combo.attributes.every(attrId => selectedValueIds.includes(attrId)) && combo.attributes.length === selectedValueIds.length;
+    return combo.attributes.every(attrId => selectedValueIds.includes(attrId)) &&
+           combo.attributes.length === selectedValueIds.length;
   });
 
   if (selectedVariant) {
     updateProductDetails(selectedVariant);
   } else {
-    // Fallback to default product details if no variant selected
     updateProductDetails({
       price: defaultProductPrice,
       image: defaultProductImage,
@@ -964,20 +979,56 @@ function updateVariantSelection() {
     });
   }
 
-  // Update cart count
   getCartCount(productId, selectedValueIds);
 }
-  // Handle variant button click
-  function selectVariantValue(btn) {
-    if (variantCombinations.length === 0) return;
-    
-    const group = btn.closest('.variant-attribute-group');
-    group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    
-    updateVariantSelection();
+
+function selectVariantValue(btn) {
+  if (variantCombinations.length === 0) return;
+
+  const groups = Array.from(document.querySelectorAll('.variant-attribute-group'));
+  const group = btn.closest('.variant-attribute-group');
+  const groupIdx = groups.indexOf(group);
+
+  // Deselect all in the current group, then select the clicked one
+  group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  // For all groups after this one:
+  let currentSelections = [...groups.slice(0, groupIdx + 1)].map(g => {
+    const sel = g.querySelector('.variant-btn.selected');
+    return sel ? sel.getAttribute('data-value-id') : null;
+  });
+
+  for (let i = groupIdx + 1; i < groups.length; i++) {
+    // Deselect all in this group
+    groups[i].querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+    // Find the first enabled button (valid for the current selection)
+    // Build up a partial selection to this point
+    let found = false;
+    for (const btnCandidate of groups[i].querySelectorAll('.variant-btn')) {
+      // Test: would this full selection be valid?
+      const testSelection = [...currentSelections, btnCandidate.getAttribute('data-value-id')];
+      // We need to check if there exists a variantCombination with all these values in attributes
+      const isValid = variantCombinations.some(combo =>
+        combo.in_stock &&
+        testSelection.every(val => combo.attributes.includes(val)) &&
+        combo.attributes.length >= testSelection.length // supports partial selection
+      );
+      if (isValid) {
+        btnCandidate.classList.add('selected');
+        currentSelections.push(btnCandidate.getAttribute('data-value-id'));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      // No valid selection in this group, break the chain
+      break;
+    }
   }
 
+  updateVariantSelection();
+}
   // Initialize everything on page load
   document.addEventListener('DOMContentLoaded', function() {
     initializeVariantButtons();

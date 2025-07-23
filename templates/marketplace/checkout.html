@@ -103,7 +103,7 @@
 
                                     <!-- Price -->
                                     <div style="width: 90px;" class="text-end">
-                                        {% if item.product_variant_group %}
+                                        {% if item.product_variant_group and item.product_variant_group.price %}
                                             {{ item.product_variant_group.price }}
                                        
                                         {% else %}
