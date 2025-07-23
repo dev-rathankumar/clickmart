@@ -117,7 +117,7 @@
                                                     {% for item in ordered_food %}
                                                     <tr>
                                                         <td>
-                                                            <div class="d-flex align-items-center  gap-3">
+                                                            <div class="d-flex align-items-center justify-content-center  gap-3">
                                                                 <div>
                                                                     {% if item.variant_info.image %}
                                                                         <img src="{{ item.variant_info.image }}" width="60" alt="Variant Image"><br>
@@ -200,9 +200,16 @@
                                                                     {{ single_tax_dict.tax_category }} 
                                                                     <small>({{ key }}%)</small>
                                                                     {% for item in ordered_food %}
-                                                                    {% if item.product.id == single_tax_dict.product_id %}
-                                                                    <small>{{item.product | truncatechars:20}}</small>
-                                                                    {% endif %}
+                                                                        {% if item.variant_info and item.variant_info.variant_id == single_tax_dict.product_variant_id %}
+                                                                            {% for attribue in item.variant_info.attributes %}
+                                                                            <small>{{attribue.value }}</small>
+                                                                            {% endfor %}
+                                                                            <small>{{ item.product|truncatechars:20 }}</small>
+                                                                            
+                                                                            {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
+                                                                                <small>{{ item.product|truncatechars:20 }}</small>
+                                                                        {% endif %}
+
                                                                     {% endfor %}
                                                                 </div>
                                                                 <span class="price float-right">

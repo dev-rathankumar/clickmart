@@ -202,9 +202,16 @@
                                                 {{ single_tax_dict.tax_category }} 
                                                 <small>({{ key }}%)</small>
                                                 {% for item in ordered_food %}
-                                                {% if item.product.id == single_tax_dict.product_id %}
-                                                <small>{{item.product | truncatechars:20}}</small>
-                                                {% endif %}
+                                                    {% if item.variant_info and item.variant_info.variant_id == single_tax_dict.product_variant_id %}
+                                                        {% for attribue in item.variant_info.attributes %}
+                                                        <small>{{attribue.value }}</small>
+                                                        {% endfor %}
+                                                        <small>{{ item.product|truncatechars:20 }}</small>
+                                                        
+                                                        {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
+                                                            <small>{{ item.product|truncatechars:20 }}</small>
+                                                    {% endif %}
+
                                                 {% endfor %}
                                             </div>
                                             <span class="price float-right">
@@ -214,7 +221,7 @@
                                         </li>
                                         {% endif %}
                                     {% endfor %}
-                                {% endfor %}
+                            {% endfor %}
 
                             <li style="list-style-type: none; font-weight: 600;" class="d-flex justify-content-between align-items-center">
                                 TOTAL

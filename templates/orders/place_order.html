@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load custom_filters %}
 {% block content %}
 
 <!-- Main Section Start -->
@@ -145,8 +146,11 @@
                                                                 <div class="tax-info-label">
                                                                     <small  style="font-size: 12px;">({{ key }}%)</small>
                                                                     {% for item in cart_items %}
-                                                                        {% if item.product.id == single_tax_dict.product_id %}
-                                                                            <small  style="font-size: 12px;">{{item.product | truncatechars:40}}</small>
+                                                                        {% if item.product_variant_group and item.product_variant_group.id ==  single_tax_dict.product_variant_id %}
+                                                                            {{ item.product_variant_group|extract_variant }}
+                                                                            {{item.product | truncatechars:30}}
+                                                                            {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
+                                                                                {{ item.product|truncatechars:40 }}
                                                                         {% endif %}
                                                                     {% endfor %}
                                                                 </div>
