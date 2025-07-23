@@ -128,7 +128,12 @@
                             <div>
                       <!-- ADD button -->
                       
-                      {% if product.variant %}
+                      {% if product.variants and product.variants.all|length > 0 %}
+                      {{ product.variants.all|length }} variants available
+                      {{product.variants.first.variant_group }}
+                       <a href="{% url 'view_product' product.vendor.vendor_slug product.slug %}" class="button-add-to-cart text-white update_color">
+                      View
+                    </a>
                       {% else %}
                       <a href="#" class="button-add-to-cart add_to_cart text-white update_color"
                       id="add_to_cart_btn-{{product.id}}"

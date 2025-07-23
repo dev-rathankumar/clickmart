@@ -110,6 +110,11 @@ CSV_FIELD_MAPPINGS = {
         'optional': True,
         'type': 'str',
     },
-   
+   'attribute': {
+        'label': 'Product Attributes',
+        'help': 'Optional: The Attributes of the product, like Brand:Apple, Material:Steel,Wood etc.',
+        'optional': True,
+        'type': 'str',
+    },
 }
 

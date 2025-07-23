@@ -82,7 +82,10 @@ def get_cart_amounts(request, session_cart=None):
                     try:
                         variant = ProductVariantGroup.objects.get(id=variant_id)
                         product = variant.product
-                        price = variant.price
+                        if variant.price is not None:
+                            price = variant.price
+                        else:
+                            price = product.sales_price if product.sales_price is not None else product.regular_price
                     except ProductVariantGroup.DoesNotExist:
                         continue
                 else:
