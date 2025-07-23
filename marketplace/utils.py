@@ -100,3 +100,23 @@ def get_matching_variant_group(product, variant_data):
     )
 
     return matching_variant_group
+
+
+
+# In your view or wherever you're generating the variant combinations:
+def get_variant_combinations(product):
+    variant_groups = ProductVariantGroup.objects.filter(product=product).select_related('product').prefetch_related('attribute')
+    
+    variant_combinations = [
+        {
+            "group_id": group.id,
+            "attributes": [str(attr.id) for attr in group.attribute.all()],
+            "price": float(group.price) if group.price else None,
+            "stock": float(group.stock) if group.stock is not None else 0,
+            "in_stock": group.in_stock,
+            "image": group.image.url if group.image else None,
+            "sku": group.sku
+        }
+        for group in variant_groups
+    ]
+    return variant_combinations

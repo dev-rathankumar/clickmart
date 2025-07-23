@@ -37,7 +37,9 @@ from django.db.models import Sum, F, Value
 from django.db.models.functions import Coalesce
 from collections import defaultdict
 from django.forms.models import model_to_dict
-from .utils import get_matching_variant_group
+from .utils import get_matching_variant_group,get_variant_combinations
+from django.core.serializers.json import DjangoJSONEncoder
+
 def marketplace(request):
     if get_or_set_current_location(request) is not None:
 
@@ -389,15 +391,15 @@ def view_Product(request, vendor_slug, product_slug):
         }
         for attr, vals in sorted(attribute_groups.items(), key=lambda t: t[0].name)
     ]
-
-    # Get all variant combinations
-    variant_combinations = [
+    product_variant_map_json = json.dumps([
         {
-            "group_id": group.id,
-            "attributes": [str(v_id) for v_id in group.attribute.values_list('id', flat=True)]
+            "attribute": {"name": attr_group["attribute"].name},
+            "values": [{"id": str(v.id), "value": v.value} for v in attr_group["values"]]
         }
-        for group in ProductVariantGroup.objects.filter(product=product)
-    ]
+        for attr_group in product_variant_map
+    ], cls=DjangoJSONEncoder)
+
+    variant_combinations = get_variant_combinations(product)
 
     context = {
         'vendor': vendor,
@@ -410,16 +412,17 @@ def view_Product(request, vendor_slug, product_slug):
         'cart_items': cart_items,
         'cart_product_ids': cart_product_ids,
         'product_variant_map': product_variant_map,
+        'product_variant_map_json': product_variant_map_json, 
         'variant_combinations_json': json.dumps(variant_combinations)
     }
     
     return render(request, 'vendor/product_view.html', context)
 
-
 def get_cart_count(request):
     if request.method == "POST":
         data = json.loads(request.body)
         product_id = data.get('product_id')
+        print("Product ID:", product_id)
         selected_value_ids = data.get('attributes', [])
         
         try:
@@ -432,8 +435,10 @@ def get_cart_count(request):
                 for value_id in selected_value_ids:
                     qset = qset.filter(attribute__id=value_id)
                 variant = qset.distinct().first()
-            
+            print("Variant:", variant)
+            print("Variant ID:", variant.id)
             if request.user.is_authenticated:
+                # Handle logged-in users (existing logic)
                 cart_items = Cart.objects.filter(user=request.user, product=product)
                 if variant:
                     cart_items = cart_items.filter(product_variant_group=variant)
@@ -445,11 +450,31 @@ def get_cart_count(request):
                     'has_items': cart_items.exists()
                 })
             else:
-                # Handle anonymous user case if needed
+                # Handle anonymous users with session cart
+                cart = request.session.get('cart', {})
+                total_quantity = 0
+                
+                # Find the matching variant group based on selected attributes
+                variant_group = None
+                if selected_value_ids:
+                    qset = ProductVariantGroup.objects.filter(product=product)
+                    for value_id in selected_value_ids:
+                        qset = qset.filter(attribute__id=value_id)
+                    variant_group = qset.distinct().first()
+                
+                # Build the cart key to look for
+                if variant_group:
+                    cart_key = f"{product_id}-{variant_group.id}"
+                    total_quantity = cart.get(cart_key, 0)
+                else:
+                    # For base product (no variants)
+                    cart_key = str(product_id)
+                    total_quantity = cart.get(cart_key, 0)
+                
                 return JsonResponse({
                     'success': True,
-                    'quantity': 0,
-                    'has_items': False
+                    'quantity': total_quantity,
+                    'has_items': total_quantity > 0
                 })
                 
         except Exception as e:
@@ -457,7 +482,6 @@ def get_cart_count(request):
                 'success': False,
                 'message': str(e)
             })
-        
 def find_variations_data(request):
     """
     Expects POST with:
