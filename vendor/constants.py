@@ -116,5 +116,11 @@ CSV_FIELD_MAPPINGS = {
         'optional': True,
         'type': 'str',
     },
+   'variant': {
+        'label': 'Product Variants',
+        'help': 'Optional: The Variants of the product, like color:Blue, size:50ML, quantity:500, barcode:3423423; etc.',
+        'optional': True,
+        'type': 'str',
+    },
 }
 

@@ -45,6 +45,7 @@ import simplejson as json
 
 from django.core.paginator import Paginator
 
+from difflib import get_close_matches
 import csv, io, os
 from urllib.parse import urlparse
 from decimal import Decimal, InvalidOperation
@@ -61,6 +62,7 @@ from django.template.defaultfilters import slugify
 from django.urls import reverse
 import decimal
 import time
+from .utils import save_product_attributes,safe_decimal,normalize_variant_name,save_product_variants
 
 def get_vendor(request):
     vendor = Vendor.objects.get(user=request.user)
@@ -1250,7 +1252,62 @@ def process_mapped_data(request):
                 if not categories.filter(category_name__iexact=value).exists():
                     field_errors.append(f"{label} must be the correct category based on your store type.")
                     error_fields_for_frontend.append({'row': idx, 'field': internal_field})
+            
+            if value and internal_field == 'variant':
+                allowed_nonvariant = {'quantity', 'stock', 'barcode','price'}
+                mandatory_quantity_variants = {'quantity', 'stock'}
+                valid_variant_names = set(
+                    normalize_variant_name(name)
+                    for name in VariantAttribute.objects.filter(is_active=True).values_list('name', flat=True)
+                )
+                valid_choices = list(VariantAttribute.objects.filter(is_active=True).values_list('name', flat=True))
 
+                variant_combinations = [v.strip() for v in value.split(';') if v.strip()]
+                for combo in variant_combinations:
+                    pairs = [p.strip() for p in combo.split(',') if p.strip()]
+                    found_mandatory = set()
+                    found_close_typo = set()
+                    for pair in pairs:
+                        if ':' not in pair:
+                            field_errors.append(f"Malformed variant entry '{pair}' in row {idx}")
+                            error_fields_for_frontend.append({'row': idx, 'field': internal_field, 'bad_text': pair})
+                            continue
+                        key, val = pair.split(':', 1)
+                        key_norm = normalize_variant_name(key)
+
+                        # Check for exact match to mandatory
+                        if key_norm in mandatory_quantity_variants:
+                            found_mandatory.add(key_norm)
+                            continue
+
+                        # Accept allowed non-variant keys (barcode)
+                        if key_norm in allowed_nonvariant:
+                            continue
+
+                        # Check against valid variants
+                        if key_norm not in valid_variant_names:
+                            # Check for close typo to mandatory
+                            close = get_close_matches(key_norm, mandatory_quantity_variants, n=1, cutoff=0.8)
+                            if close:
+                                # Only suggest the typo fix, don't count as missing
+                                field_errors.append(
+                                    f"In row {idx}, you wrote '{key.strip()}'—did you mean '{close[0]}'? This field is mandatory."
+                                )
+                                error_fields_for_frontend.append({'row': idx, 'field': internal_field, 'bad_text': key.strip(), 'suggested': close[0]})
+                                found_close_typo.add(close[0])
+                            else:
+                                # Not a close match to mandatory, just a bad variant name
+                                field_errors.append(
+                                    f"In row {idx}, you used '{key.strip()}' but valid variant names are: {', '.join(valid_choices)}."
+                                )
+                                error_fields_for_frontend.append({'row': idx, 'field': internal_field, 'bad_text': key.strip(), 'valid_choices': valid_choices})
+
+                    # Only show "missing mandatory" error if neither present nor typo found
+                    if not (found_mandatory & mandatory_quantity_variants) and not (found_close_typo & mandatory_quantity_variants):
+                        field_errors.append(
+                            f"In row {idx}, you must include at least one of the following as a variant key: {', '.join(mandatory_quantity_variants)}."
+                        )
+                        error_fields_for_frontend.append({'row': idx, 'field': internal_field, 'missing_mandatory': list(mandatory_quantity_variants)})
         # Gather errors
         if missing_fields or field_errors:
             error_rows.add(idx - 1)
@@ -1521,13 +1578,6 @@ def download_image_to_field(product_obj, image_url):
         print(f"Image download error: {e}")
 
 
-def safe_decimal(val, default=Decimal(0), field_name=None):
-    try:
-        print("typeof val", field_name, type(val))
-        val = str(val).strip()
-        return Decimal(val) if val not in (None, '', '-') else default
-    except Exception:
-        return default
 def save_to_database(request):
     if request.method != 'POST':
         return HttpResponse("Invalid request method.")
@@ -1677,6 +1727,16 @@ def save_to_database(request):
 
                 download_image_to_field(product_obj, image_url)
                 product_obj.save()
+                
+                # --- SAVE ATTRIBUTES & VALUES ---
+                attribute_str = row.get('attribute', '')
+                save_product_attributes(product_obj, attribute_str, vendor)
+
+                # --- SAVE VARIANTS & VALUES ---
+                variant_str = row.get('variant', '')
+                save_product_variants(product_obj, variant_str)
+
+                # --- SAVE END NOW NEED TO SAVE ANOTHER ---
                 success_count += 1
                 row_num += 1
             except Exception as e:

@@ -341,7 +341,7 @@ class ProductVariantGroup(models.Model):
     attribute = models.ManyToManyField(VariantAttributeValue)
     stock = models.DecimalField(max_digits=10, decimal_places=3, default=0, blank=True, null=True)
     image = models.ImageField(upload_to='store/products/variants/', blank=True, null=True)
-    sku = models.CharField(max_length=32, blank=True, null=True, unique=True)
+    sku = models.CharField(max_length=32, blank=True, null=True)
 
     def __str__(self):
         return f"{self.product.product_name} - {', '.join([str(attr.value) for attr in self.attribute.all()])}"
