@@ -115,7 +115,7 @@
                                                     {% for item in ordered_food %}
                                                     <tr> 
                                                         <td>
-                                                            <div class="d-flex align-items-center  gap-3">
+                                                            <div class="d-flex align-items-center justify-content-center  gap-3">
                                                                 <div>
                                                                     {% if item.variant_info.image %}
                                                                         <img src="{{ item.variant_info.image }}" width="60" alt="Variant Image"><br>
@@ -134,7 +134,7 @@
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td class='w-25'>{{ item.product }}</td>
+                                                        <td >{{ item.product }}</td>
                                                         <td>{{ item.quantity }} QTY</td>
                                                         <td>₹{{ item.price }}</td>
                                                         <td>{{ item.product.tax_category }}</td>

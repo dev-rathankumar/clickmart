@@ -1020,10 +1020,24 @@ def order_status(request):
             product.save()
             ordered_products.status = status
             ordered_products.save()
+
+            variant_info = ordered_products.variant_info or {}
+            variant_details_html = ""
+            if variant_info:
+                variant_attributes = variant_info.get("attributes", [])
+                variant_details_html = "<ul>"
+                for attr in variant_attributes:
+                    variant_details_html += f"<li><strong>{attr['attribute__name']}</strong>: {attr['value']}</li>"
+                variant_details_html += "</ul>"
+
+            full_name = f"{order.user.first_name} {order.user.last_name}".strip()
             mail_subject = f'Order #{order_number} - Items from {vendor.vendor_name} updated to {status}'
             message = f"""
-            Dear {order.user.first_name},<br><br>
+            Dear {full_name},<br><br>
             The items you ordered from <strong>{vendor.vendor_name}</strong> in order #{order_number} are now marked as <strong>{status}</strong>.<br><br>
+            <strong>Product:</strong> {product.product_name}<br>
+            {'<strong>Variant:</strong>' + variant_details_html if variant_info else ''}
+            <br><br>
             Thank you,<br>
             Flickbasket
             """

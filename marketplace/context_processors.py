@@ -107,7 +107,6 @@ def get_cart_amounts(request, session_cart=None):
                         'tax_category': tax_instance.tax_category,
                         'tax_info': {str(tax_instance.tax_percentage): tax_amount},
                         'product_id': product.id,
-                        'variant_id': variant_id
                     }
                     tax_dict.append(tax_entry)
             except (Product.DoesNotExist, ValueError):

@@ -1006,7 +1006,7 @@
                       ${item.name}
                       ${item.distance ? `<i class="bi bi-geo-alt"></i> ${item.distance} km` : ""}
                     </div><small class="text-muted">Visit Store</small>`
-                  : `<div>${item.name}</div><small>₹${item.price}</small>`;
+                  : `<div>${item.name.length > 25 ? item.name.slice(0, 45) + '...' : item.name}</div><small>₹${item.price}</small>`;
 
                 li.innerHTML = `
                   <a href="${link}" class="d-flex align-items-center text-dark text-decoration-none">

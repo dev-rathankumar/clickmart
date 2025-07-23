@@ -735,7 +735,12 @@ window.attributeGroups = {{ product_variant_map_json|safe }};
   const variantCombinations = {{ variant_combinations_json|safe }};
   console.log('Variant Combinations:', variantCombinations);
   const defaultProductPrice = {{ product.sales_price }};
-  const defaultProductImage = "{{ product.image.url|default:'' }}";
+  {% if product.image %}
+    const defaultProductImage = "{{ product.image.url }}";
+  {% else %}
+    const defaultProductImage = "";
+  {% endif %}
+
   const productId = "{{ product.id }}";
 
   // Utility function to get CSRF token
