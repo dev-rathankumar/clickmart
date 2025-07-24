@@ -61,10 +61,11 @@
                                     <div>
 
                                        <!-- Table for large screens -->
-                                    <table class="table table-borderless d-none d-md-table">
+                                    <table class="table table-borderless  d-md-table d-sm-table">
                                         <thead>
                                             <tr>
                                                 <th>Image</th>
+                                                <th></th>
                                                 <th>Product</th>
                                                 <th>Quantity</th>
                                                 <th>Price</th>
@@ -75,16 +76,28 @@
                                             {% for item in cart_items %}
                                             <tr>
                                                 <td>
-                                                    {% if item.product_variant_group and item.product_variant_group.image %}
-                                                    <img src="{{ item.product_variant_group.image.url }}" alt="Variant Image" style="width: 50px; height: 50px; object-fit: cover;">
-                                                    {% elif item.product.image %}
-                                                        <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
-                                                    {% else %}
-                                                        <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
-                                                    {% endif %}
+                                                    <div class="w-100 w-md-25">
+                                                        {% if item.product_variant_group and item.product_variant_group.image %}
+                                                            <img src="{{ item.product_variant_group.image.url }}" 
+                                                                alt="Variant Image" style="width: 50px; height: 50px; object-fit: cover;">
+                                                        {% elif item.product.image %}
+                                                            <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
+                                                        {% else %}
+                                                            <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
+                                                        {% endif %}
+                                                        
+                                                    </div>
                                                 </td>
+                                                <td><div class="small mt-1">{{ item.product_variant_group|extract_variant }}</div></td>
+
                                                 <td><b>{{ item.product }}</b></td>
-                                                <td>{{ item.quantity }}</td>
+                                                <td>
+                                                    <div class="d-md-none d-block d-flex justify-content-center gap-1">
+                                                        <span >Quantity: x</span>
+                                                        <span >{{ item.quantity }}</span>
+
+                                                    </div>  
+                                                    <span class="d-none d-md-block">{{ item.quantity }}</span>
                                                 <td>
                                                     {% if item.product_variant_group and item.product_variant_group.price %}
                                                         {{ item.product_variant_group.price }}
@@ -103,87 +116,80 @@
                                         </tbody>
                                     </table>
 
-                                    <!-- Flex list for small screens -->
-                                    <div class="d-md-none">
-                                        {% for item in cart_items %}
-                                        <div class="cart-item-row d-flex align-items-center mb-3" style="gap: 10px; flex-wrap: wrap;">
-                                            <div style="flex-shrink: 0;">
-                                                {% if item.product.image %}
-                                                    <img src="{{ item.product.image.url }}" width="40" alt="Product Image">
-                                                {% else %}
-                                                    <img src="{% static 'images/placeholder.jpg' %}" width="40" alt="No Image Available">
-                                                {% endif %}
-                                            </div>
-                                            <div class="w-25"><b>{{ item.product }}</b></div>
-                                            <div style="margin-left: 20px";> {{ item.quantity }}</div>
-                                            <div  style="width: 20%;margin-left: 20px">
-                                            
-                                                  {% if item.product_variant_group and item.product_variant_group.price %}
-                                                        {{ item.product_variant_group.price }}
-                                                
-                                                    {% else %}
-                                                        {% if item.product.sales_price %}
-                                                            {{ item.product.sales_price }}
-                                                        {% else %}
-                                                                {{ item.product.regular_price }}
-                                                        {% endif %}
-                                                 {% endif %}
-                                            </div>
-                                            <div  style="margin-left: 10px">{{ item.product.tax_category }}</div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
+                                   
 
-                                       <ul class="order-summary-list">
-                                            <li class="order-summary-item d-flex justify-content-between align-items-center text-start mx-3 mb-1">
-                                                <span>Subtotal</span>
-                                                <span class="price float-right">
-                                                    <span class="currency">₹</span>
-                                                    <span id="subtotal">{{ subtotal }}</span>
-                                                </span>
-                                            </li>
-                                            {% for single_tax_dict in tax_dict %}
-                                                {% for key, value in single_tax_dict.tax_info.items %}
-                                                    {% if value %}  
-                                                        <li class="order-summary-item d-flex justify-content-between align-items-start text-start mx-3 mb-1">
-                                                            <div class="d-flex justify-content-start align-items-center">
-                                                                {{ single_tax_dict.tax_category }}
-                                                                <div class="tax-info-label">
-                                                                    <small  style="font-size: 12px;">({{ key }}%)</small>
-                                                                    {% for item in cart_items %}
-                                                                        {% if item.product_variant_group and item.product_variant_group.id ==  single_tax_dict.product_variant_id %}
-                                                                            {{ item.product_variant_group|extract_variant }}
-                                                                            {{item.product | truncatechars:30}}
-                                                                            {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
-                                                                                {{ item.product|truncatechars:40 }}
-                                                                        {% endif %}
-                                                                    {% endfor %}
-                                                                </div>
-                                                            </div>
-                                                            <span class="price float-right">
-                                                                <span class="currency">₹</span>
-                                                                <span id="tax-{{ single_tax_dict.product_id }}">{{ value }}</span>
-                                                            </span>
-                                                        </li>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            {% endfor %}
-                                            <li class="order-summary-item total d-flex justify-content-between align-items-center text-start mx-3 mb-1">
-                                                <strong>TOTAL</strong>
-                                                <span class="price fw-bolder float-right">
-                                                    <span class="currency">₹</span>
-                                                    <span id="total">{{ grand_total }}</span>
-                                                </span>
-                                            </li>
-                                            {% if order.payment_method == 'PayPal' %}
-                                            <!-- PayPal Checkout Button -->
-                                            <div id="paypal-button-container"></div>
-                                            {% elif order.payment_method == 'COD' %}
-                                            <button id="placeOrderBtn" type="submit" class="btn update_color w-100 p-2 mt-3 mb-4" onclick="placeOrder()">Place Order</button>
-                                            <div id="pay-loading" class="my-4"style="display:none;"></div>
-                                            {% endif %}
-                                    </ul>
-                                    </div>
+    <ul class="order-summary-list list-unstyled px-2">
+        <!-- Subtotal -->
+        <li class="order-summary-item d-flex justify-content-between align-items-center text-start mx-3 mb-2">
+            <span>Subtotal</span>
+            <span class="price text-end">
+                <span class="currency">₹</span>
+                <span id="subtotal">{{ subtotal }}</span>
+            </span>
+        </li>
+
+
+        {% for single_tax_dict in tax_dict %}
+            {% for key, value in single_tax_dict.tax_info.items %}
+                {% if value %}
+                    <li class="order-summary-item d-flex justify-content-between align-items-start text-start mx-3 mb-1">
+                        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                {% comment %} Tax label + product {% endcomment %}
+                                {% for item in cart_items %}
+                                    {% if item.product_variant_group and item.product_variant_group.id == single_tax_dict.product_variant_id %}
+                                        <span class="d-md-block d-none">
+                                            {{ single_tax_dict.tax_category }} ({{ key }}%) -
+                                            {{ item.product_variant_group|extract_variant }}
+                                            {{ item.product|truncatechars:40 }}
+                                        </span>
+                                        <span class="d-block d-md-none">
+                                            {{ single_tax_dict.tax_category }} ({{ key }}%) -
+                                            {{ item.product_variant_group|extract_variant }}
+                                            {{ item.product|truncatechars:10 }}
+                                        </span>
+                                    {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
+                                        <span class="d-md-block d-non">
+                                            {{ single_tax_dict.tax_category }} ({{ key }}%) -                                          
+                                            {{ item.product|truncatechars:40 }}
+                                        </span>
+                                        <span class="d-block d-md-none">
+                                            {{ single_tax_dict.tax_category }} ({{ key }}%) -                                          
+                                            {{ item.product|truncatechars:10 }}
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <div>
+                                <span class="currency">₹</span>{{ value }}
+                            </div>
+                        </div>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+
+        <!-- Total -->
+        <li class="order-summary-item total d-flex justify-content-between align-items-center text-start mx-3 mt-3 fw-bold">
+            <strong>TOTAL</strong>
+            <span class="price fw-bolder">
+                <span id="total">{{ grand_total }}</span>
+            </span>
+        </li>
+
+        <!-- Payment Buttons -->
+        {% if order.payment_method == 'PayPal' %}
+            <div id="paypal-button-container" class="mt-3"></div>
+        {% elif order.payment_method == 'COD' %}
+            <button id="placeOrderBtn" type="submit" class="btn update_color w-100 p-2 mt-3 mb-4" onclick="placeOrder()">Place Order</button>
+            <div id="pay-loading" class="my-4" style="display:none;"></div>
+        {% endif %}
+
+    </ul>
+
+                                </div>
                                     
                                 </div>
                             </div>

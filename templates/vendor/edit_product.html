@@ -261,11 +261,18 @@
                                         </div>
                                     </div>
                                         <div class="col-lg-12 col-md-12 col-sm-12">
+                                            <input type="hidden" id="removed-attr-ids" name="removed_attr_ids" value="">
+                                            <input type="hidden" name="attr_value_id_0" value="123" />
+
+
                                             <div class="field-holder">
                                                 <label>Product Attributes</label>
                                                 <div id="attributes-wrapper"></div>
                                                 <button type="button" class="btn btn-sm mt-2 text-light" style="background-color: #181970;" id="add-attribute-btn">
                                                 <i class="fa fa-plus"></i> Add Attribute
+                                                </button>
+                                                <button type="button" class="btn btn-sm mt-2 ms-2 text-light" style="background-color: #181970;" id="custom-attribute-btn">
+                                                    <i class="fa fa-cogs"></i> Add Custom Attributes
                                                 </button>
                                                 <small style="color: #888;">Add or edit product attributes and their values.</small>
                                             </div>
@@ -360,44 +367,98 @@
     });
 </script>
 <script>
-  // Data from Django context:
+  // List of all available attributes fetched from the backend
   const allAttributes = [
     {% for attr in attributes %}
-      {id: "{{ attr.id }}", name: "{{ attr.name|escapejs }}"},
+      {id: {{ attr.id }}, name: "{{ attr.name|escapejs }}"},
     {% endfor %}
   ];
-  // Pre-existing attribute values for this product
+
+  // Existing attribute values already assigned to the product
   const existingAttrValues = [
     {% for av in attrvalue_list %}
-      {id: "{{ av.id }}", name: "{{ av.name|escapejs }}", value: "{{ av.value|escapejs }}"},
+      {
+        id: {{ av.id }},
+        name: "{{ av.name|escapejs }}",
+        value: "{{ av.value|escapejs }}",
+        attr_value_id: {{ av.attr_value_id }}
+      },
     {% endfor %}
   ];
 
-  function getUnusedAttributes(selectedIds) {
-    return allAttributes.filter(attr => !selectedIds.includes(attr.id));
+  let attrIdx = 0;
+  let customAttrIdx = 0;
+
+  // Get currently selected attribute IDs from all attribute dropdowns on the page
+  function getSelectedAttrIds() {
+    return Array.from(document.querySelectorAll('.attr-select'))
+      .map(select => parseInt(select.value))
+      .filter(val => !isNaN(val));
   }
 
-  let attrIdx = 0;
+  // Refresh all attribute dropdowns to disable options already selected elsewhere,
+  // except for the current dropdown's selected value
+  function refreshAttributeDropdowns() {
+    const rows = document.querySelectorAll('.attribute-row');
+    const selectedIds = getSelectedAttrIds();
 
-  function createAttributeRow(idx, selectedIds=[], selectedId=null, value='') {
-    // If editing, allow the current selectedId to be in dropdown
-    const unused = getUnusedAttributes(selectedIds.filter(id => id !== selectedId));
-    if (!selectedId && unused.length === 0) return null;
+    rows.forEach(row => {
+      const select = row.querySelector('.attr-select');
+      const currentVal = parseInt(select.value) || null;
+      select.innerHTML = "";
+
+      // Add blank option for no selection
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = "Select Attribute";
+      select.appendChild(blank);
+
+      // Add attribute options, excluding those already selected elsewhere
+      allAttributes.forEach(attr => {
+        if (!selectedIds.includes(attr.id) || attr.id === currentVal) {
+          const opt = document.createElement("option");
+          opt.value = attr.id;
+          opt.textContent = attr.name;
+          select.appendChild(opt);
+        }
+      });
+
+      // Restore current selection
+      if (currentVal) {
+        select.value = currentVal;
+      }
+    });
+  }
+
+  // Create a new attribute input row for existing or new attributes,
+  // including hidden input to track DB record if available
+  function createAttributeRow(idx, selectedIds = [], selectedId = null, value = '', attrValueId = null) {
     const row = document.createElement('div');
     row.className = 'd-flex align-items-center mb-2 attribute-row';
     row.dataset.idx = idx;
 
-    // Dropdown
+    // Hidden input to store existing VariantAttributeValue ID for backend updates
+    if (attrValueId !== null && attrValueId !== undefined) {
+      const hiddenIdInput = document.createElement('input');
+      hiddenIdInput.type = 'hidden';
+      hiddenIdInput.name = `attr_value_id_${idx}`;
+      hiddenIdInput.value = attrValueId;
+      row.appendChild(hiddenIdInput);
+    }
+
+    // Dropdown for selecting attribute type
     const select = document.createElement('select');
     select.name = `attribute_${idx}`;
     select.className = 'form-select attr-select';
     select.required = false;
-    // Option: blank
+
+    // Blank default option
     const blank = document.createElement('option');
     blank.value = "";
     blank.textContent = "Select Attribute";
     select.appendChild(blank);
 
+    // Populate dropdown options while respecting already selected attributes
     allAttributes.forEach(attr => {
       if (!selectedIds.includes(attr.id) || attr.id === selectedId) {
         const option = document.createElement('option');
@@ -406,11 +467,12 @@
         select.appendChild(option);
       }
     });
-    if (selectedId) select.value = selectedId;
 
+    // Set current attribute selection
+    if (selectedId) select.value = selectedId;
     row.appendChild(select);
 
-    // Text input
+    // Input for attribute value
     const input = document.createElement('input');
     input.type = 'text';
     input.name = `attr_value_${idx}`;
@@ -420,12 +482,22 @@
     input.value = value || '';
     row.appendChild(input);
 
-    // Remove button (always show)
+    // Button to remove this attribute row
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'btn btn-link text-danger ms-2 remove-attr-btn';
     removeBtn.innerHTML = '<i class="fa fa-times"></i>';
-    removeBtn.onclick = function() {
+    removeBtn.onclick = function () {
+      // When removed, mark DB id for deletion if it exists
+      if (attrValueId !== null && attrValueId !== undefined) {
+        const removedInput = document.getElementById('removed-attr-ids');
+        const current = removedInput.value ? removedInput.value.split(',').map(Number) : [];
+        if (!current.includes(attrValueId)) {
+          current.push(attrValueId);
+        }
+        removedInput.value = current.join(',');
+      }
+
       row.remove();
       refreshAttributeDropdowns();
     };
@@ -434,57 +506,61 @@
     return row;
   }
 
-  function getSelectedAttrIds() {
-    return Array.from(document.querySelectorAll('.attr-select'))
-      .map(s => s.value)
-      .filter(Boolean);
+  // Create a new input row for custom (user-defined) attributes
+  function createCustomAttributeRow(idx) {
+    const row = document.createElement('div');
+    row.className = 'd-flex align-items-center mb-2 custom-attribute-row';
+    row.dataset.idx = idx;
+
+    // Input for custom attribute name
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.name = `custom_attr_name_${idx}`;
+    nameInput.placeholder = 'Attribute Name';
+    nameInput.className = 'form-control me-2 w-50';
+    nameInput.required = false;
+    row.appendChild(nameInput);
+
+    // Input for custom attribute value
+    const valueInput = document.createElement('input');
+    valueInput.type = 'text';
+    valueInput.name = `custom_attr_value_${idx}`;
+    valueInput.placeholder = 'Value';
+    valueInput.className = 'form-control me-2 w-50';
+    valueInput.required = false;
+    row.appendChild(valueInput);
+
+    // Button to remove this custom attribute row
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-link text-danger  remove-attr-btn';
+    removeBtn.innerHTML = '<i class="fa fa-times"></i>';
+    removeBtn.onclick = function () {
+      row.remove();
+    };
+    row.appendChild(removeBtn);
+
+    return row;
   }
 
-  function refreshAttributeDropdowns() {
-    const allRows = document.querySelectorAll('.attribute-row');
-    const ids = getSelectedAttrIds();
-    allRows.forEach((row) => {
-      const select = row.querySelector('.attr-select');
-      const currentVal = select.value;
-      // Build options
-      select.innerHTML = '';
-      // Option: blank
-      const blank = document.createElement('option');
-      blank.value = "";
-      blank.textContent = "Select Attribute";
-      select.appendChild(blank);
-      allAttributes.forEach(attr => {
-        if (!ids.includes(attr.id) || attr.id === currentVal) {
-          const option = document.createElement('option');
-          option.value = attr.id;
-          option.textContent = attr.name;
-          select.appendChild(option);
-        }
-      });
-      select.value = currentVal;
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
+  // Run on page load to initialize existing attributes and attach event handlers
+  document.addEventListener('DOMContentLoaded', function () {
     const wrapper = document.getElementById('attributes-wrapper');
-    const addBtn = document.getElementById('add-attribute-btn');
+    const addAttrBtn = document.getElementById('add-attribute-btn');
+    const customAttrBtn = document.getElementById('custom-attribute-btn');
 
-    // Add initial rows for existing attributes
-    let initialRows = 0;
+    // Populate existing attributes into the form
     existingAttrValues.forEach(av => {
       const selectedIds = getSelectedAttrIds();
-      const row = createAttributeRow(attrIdx, selectedIds, av.id, av.value);
+      const row = createAttributeRow(attrIdx, selectedIds, av.id, av.value, av.attr_value_id);
       if (row) {
         wrapper.appendChild(row);
         attrIdx++;
-        initialRows++;
       }
     });
-    // If none exist, show zero rows (user can add)
-    // If you want at least one blank row, uncomment below
-    // if (initialRows === 0) addRow();
 
-    function addRow() {
+    // Add new attribute row on button click
+    addAttrBtn.onclick = function () {
       const selectedIds = getSelectedAttrIds();
       const row = createAttributeRow(attrIdx, selectedIds);
       if (row) {
@@ -492,15 +568,37 @@
         attrIdx++;
         refreshAttributeDropdowns();
       }
-    }
+    };
 
-    addBtn.onclick = addRow;
+    // Add new custom attribute row on button click
+    customAttrBtn.onclick = function () {
+      const row = createCustomAttributeRow(customAttrIdx);
+      wrapper.appendChild(row);
+      customAttrIdx++;
+    };
 
-    wrapper.addEventListener('change', function(e) {
+    // Refresh dropdown options whenever an attribute selection changes
+    wrapper.addEventListener('change', function (e) {
       if (e.target.classList.contains('attr-select')) {
         refreshAttributeDropdowns();
       }
     });
+
+    // Ensure hidden input to track removed attribute IDs exists
+    if (!document.getElementById('removed-attr-ids')) {
+      const removedInput = document.createElement('input');
+      removedInput.type = 'hidden';
+      removedInput.id = 'removed-attr-ids';
+      removedInput.name = 'removed_attr_ids';
+      removedInput.value = '';
+      wrapper.parentNode.appendChild(removedInput);
+    }
   });
 </script>
+
+
+
+
+
+
 {% endblock %}
