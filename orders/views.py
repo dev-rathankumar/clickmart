@@ -301,7 +301,7 @@ def order_complete(request):
             return render(request, 'orders/order_failed.html', {'error': str(e)})
 
 def generate(request):
-        order = Order.objects.get(order_number=202501100237187)
+        order = Order.objects.get(order_number=20250723204134386)
         ordered_food = OrderedFood.objects.filter(order=order)
         tax_data = json.loads(order.tax_data)
 

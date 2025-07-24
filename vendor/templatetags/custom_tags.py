@@ -39,3 +39,27 @@ def is_valid_field(value, info_type):
             return False
     # Add other field-specific validations here if needed
     return True  # Default case: valid
+
+
+
+@register.filter
+def display_variants(variant_string):
+    if not variant_string:
+        return ""
+    groups = [v.strip() for v in variant_string.split(';') if v.strip()]
+    attr_map = {}
+    for group in groups:
+        pairs = [p.strip() for p in group.split(',') if p.strip()]
+        for pair in pairs:
+            if ':' in pair:
+                key, value = pair.split(':', 1)
+                key = key.strip()
+                value = value.strip()
+                attr_map.setdefault(key, []).append(value)
+    output = []
+    for key, values in attr_map.items():
+        # JOIN VALUES WITH COMMA AND SPACE
+        clean_values = ', '.join(values)
+        output.append(f"{key}: {clean_values}")
+    # JOIN GROUPS WITH <br>
+    return "<br>".join(output)

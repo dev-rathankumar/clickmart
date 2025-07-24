@@ -196,7 +196,15 @@ input[name='want-generate-image']{
                                                         data-row-id="{{ row.orig_idx }}"
                                                         onclick="showImageModal(this)">
                                                 {% else %}
-                                                    {{ cell_value }}
+                                                    {% if key == 'variant' and cell_value %}
+                                                        <span style="width: 200px !important;display: block;">{{ cell_value|display_variants|safe }}</span>
+                                                    {% elif key == 'attribute' and cell_value %}
+                                                        <span style="width: 200px !important;display: block;">{{ cell_value|display_variants|safe }}</span>
+                                                    {% elif key == 'product_name' and cell_value %}
+                                                        <span style="width: 200px !important;display: block;">{{ cell_value }}</span>
+                                                    {% else %}
+                                                    {{ cell_value}}
+                                                    {% endif %}
                                                 {% endif %}
                                             </td>
                                             {% endwith %}

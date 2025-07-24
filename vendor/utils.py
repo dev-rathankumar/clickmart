@@ -65,6 +65,11 @@ def safe_decimal(val, default=Decimal(0), field_name=None):
     except Exception:
         return default
     
+# def safe_decimal(value, field_name=None, fallback=0):
+#     try:
+#         return Decimal(str(value))
+#     except (InvalidOperation, TypeError, ValueError):
+#         return Decimal(str(fallback))
 
 
 

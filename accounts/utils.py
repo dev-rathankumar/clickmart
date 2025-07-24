@@ -23,6 +23,15 @@ import io
 from django.conf import settings
 from django.contrib.staticfiles import finders
 import textwrap
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+import io
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.enums import TA_RIGHT
 # from orders.models import OrderedFood 
 def detectUser(user):
     if user.role == 1:
@@ -189,86 +198,89 @@ def send_notification(mail_subject, mail_template, context,pdf_file=None):
 #     buffer.seek(0)
 #     return buffer
 
+def truncate_text(text, max_length=20):
+    return (text[:max_length - 3] + "...") if len(text) > max_length else text
 
-
+def extract_variant(product_variant_info):
+    try:
+        if not product_variant_info:
+            return ""
+        attributes = product_variant_info.get("attributes", [])
+        # Extract attribute values and join with " / "
+        values = [attr.get("value", "") for attr in attributes]
+        if values:
+            return f"[{' / '.join(values)}] "
+        return ""
+    except Exception:
+        return ""
 def generate_receipt_pdf(order, ordered_food, tax_data):
+  
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=50, bottomMargin=30)
+    styles = getSampleStyleSheet()
+    normal = styles["Normal"]
+    bold = ParagraphStyle("Bold", parent=normal, fontName="Helvetica-Bold")
+    # New styles with larger font
+    large_bold = ParagraphStyle(name="LargeBold", fontSize=14, leading=16, spaceAfter=5, alignment=TA_LEFT)
+    larger_bold = ParagraphStyle(name="LargerBold", fontSize=12, leading=14, spaceAfter=5)
+    story = []
 
-    # Vendor Info
-    vendor = order.vendors.first()  # Fetch the first vendor
+    # Vendor Info (left) and Customer Info (right) as two columns
+    vendor = order.vendors.first()
+    vendor_info = [
+        Paragraph(f"<b>{vendor.vendor_name}</b>", large_bold),
+        Paragraph(f"Phone: {vendor.user.phone_number}", normal),
+        Paragraph(f"Order Date: {order.created_at.strftime('%b %d, %Y, %I:%M %p')}", normal),
+        Paragraph(f"Order No: {order.order_number}", normal),
+        Paragraph(f"Transaction ID: {order.payment.transaction_id}", normal),
+        Paragraph(f"GSTIN. {vendor.gst_number}", normal) if vendor and vendor.gst_number else "",
+        Paragraph(f"Email: {vendor.user.email}", normal),
+    ]
+    customer_info = [
+        Paragraph(f"<b>Billed To:</b>", larger_bold),
+        Paragraph(f"{order.name}", normal),
+        Paragraph(f"Address:{order.address}", normal),
+        Paragraph(f"{order.email}", normal),
+        Paragraph(f"Phone: {order.phone}", normal),
+    ]
 
-    # Absolute paths for static assets
-    unpaid_abs_path = finders.find('images/upaid.png')  # Replace with .png
+    # Remove empty lines
+    vendor_info = [v for v in vendor_info if v]
+    customer_info = [c for c in customer_info if c]
 
+    # Header Table (2 columns)
+    header_table = Table(
+        [[vendor_info, customer_info]],
+        colWidths=[400, 150]
+    )
+    header_table.setStyle(TableStyle([
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+        ("LEFTPADDING", (0,0), (-1,-1), 0),
+        ("RIGHTPADDING", (0,0), (-1,-1), 0),
+        # no grid
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 18))
 
-    # Header
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(40, height - 50, vendor.vendor_name)
-    c.setFont("Helvetica", 10)
-    c.drawString(40, height - 70, f"Email: {vendor.user.email}")
-    c.drawString(40, height - 85, f"Phone: {vendor.user.phone_number}")
-    c.drawString(40, height - 100, f"Order Date: {order.created_at.strftime('%b %d, %Y, %I:%M %p')}")
-    c.drawString(40, height - 115, f"Order No: {order.order_number}")
-    # c.drawString(40, height - 130, f"Payment Method: {order.payment_method}")
-    c.drawString(40, height - 130, f"Transaction ID: {order.payment.transaction_id}")
-    if vendor and vendor.gst_number: 
-        c.drawString(40, height - 145, f"GSTIN. {vendor.gst_number}")
-
-    # Customer Info
-    c.setFont("Helvetica", 11)
-    c.drawString(400, height - 50, f"Billed To: ")
-    c.setFont("Helvetica", 11)
-    c.drawString(400, height - 65, f"{order.name},")
-    c.setFont("Helvetica", 10)
-    x_pos = 400
-    y_pos = height - 80
-    # Function to wrap and draw text
-    def draw_wrapped_text(canvas, text, x, y, x_pluse,width, label):
-        if text:
-            wrapped_lines = textwrap.wrap(text, width=width)
-            canvas.drawString(x, y, f"{label}")  # Draw label
-            # y -= 15  # Move down for text
-            for line in wrapped_lines:
-                canvas.drawString(x + x_pluse, y, line)  # Indent text
-                y -= 15  # Adjust line spacing
-        return y  # Return the new Y position
-
-    # Draw Address
-    y_pos = draw_wrapped_text(c, order.address, x_pos, y_pos,40, 30, "Address:")
-
-    # Draw Email
-    y_pos = draw_wrapped_text(c, order.email, x_pos, y_pos,30, 30, "Email:")
-    c.drawString(x_pos, y_pos, f"Phone: {order.phone}")
-
-
-
-    # Product Table Header
-    data = [["#", "Product","HSN Number","Model Number", "Quantity", "Price", "Tax", "Total"]]
-    total_gst = 0  # Initialize total GST
+    # Product Table
+    data = [["#", "Product", "HSN Number", "Model Number", "Quantity", "Price", "Tax", "Total"]]
+    total_gst = 0
     item_total_price = 0
     item_total_qty = 0
     for idx, item in enumerate(ordered_food, start=1):
-        product_name = item.product.product_name
+        product_name = f"{extract_variant(item.variant_info)}{truncate_text(item.product.product_name)}"
         product_hsn_number = item.product.hsn_number
         product_model_number = item.product.model_number
         quantity = item.quantity
         price = item.product.sales_price or item.product.regular_price
         item_total = price * quantity
-        item_total_price+=price
-        item_total_qty+=quantity
-        # Wrap product name if it exceeds 20 characters
-        wrapped_product_name=''
-        wrapped_product_model_number=''
-        wrapped_product_hsn_number=''
-        if product_name:
-            wrapped_product_name = "\n".join(textwrap.wrap(product_name, width=20))
-        if  product_hsn_number: 
-             wrapped_product_hsn_number = "\n".join(textwrap.wrap(product_hsn_number, width=8))
-        if product_model_number:
-            wrapped_product_model_number = "\n".join(textwrap.wrap(product_model_number, width=10))
-        # Calculate GST from tax_data
+        item_total_price += price
+        item_total_qty += quantity
+
+        wrapped_product_name = Paragraph(product_name, normal) if product_name else ''
+        wrapped_product_hsn_number = Paragraph(product_hsn_number, normal) if product_hsn_number else ''
+        wrapped_product_model_number = Paragraph(product_model_number, normal) if product_model_number else ''
+
         gst_value = 0
         for single_tax_dict in tax_data:
             if item.product.id == single_tax_dict['product_id']:
@@ -277,54 +289,78 @@ def generate_receipt_pdf(order, ordered_food, tax_data):
                         gst_value += value
                         total_gst += value
 
-        data.append([str(idx), wrapped_product_name,wrapped_product_hsn_number,wrapped_product_model_number, str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"])
-    # Add totals
-    # data.append(["", "","","","", "", "Total GST", f"INR {total_gst:.2f}"])
-    data.append(["","", "","Total", f"{item_total_qty}",f"INR {item_total_price:.2f}", f"INR {total_gst:.2f}", f"INR {order.total:.2f}"])
+        data.append([
+            str(idx), wrapped_product_name, wrapped_product_hsn_number, wrapped_product_model_number,
+            str(quantity), f"INR {price:.2f}", f"INR {gst_value:.2f}", f"INR {item_total}"
+        ])
+    data.append(["", "", "", "Total", f"{item_total_qty}", f"INR {item_total_price:.2f}", f"INR {total_gst:.2f}", f"INR {order.total:.2f}"])
 
-    # Create and style the table
-    table = Table(data, colWidths=[30, 120, 70,70,50, 70, 65, 90])
+    # Table
+    table = Table(data, colWidths=[30, 120, 70, 70, 50, 70, 65, 90])
     style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.white),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
     ])
     table.setStyle(style)
+    story.append(table)
+    story.append(Spacer(1, 24))
 
-    # Draw Table
-    table.wrapOn(c, width, height)
+    # Totals and UNPAID image in a right-aligned "footer" table
+    unpaid_abs_path = finders.find('images/upaid.png')
+    unpaid_img = Image(unpaid_abs_path, width=200, height=110) if unpaid_abs_path else ''
+    right_aligned = ParagraphStyle(
+        name='RightAlign',
+        fontSize=10,
+        alignment=TA_RIGHT,
+        spaceAfter=0,
+        spaceBefore=0  # or just alignment=2
+    )
 
-    # Dynamically calculate the table height
-    table_width, table_height = table.wrap(width, height)  # Get the table's height
-    table.drawOn(c, 15, height -350)  # Draw the table at the specified position
+    bold_right_aligned = ParagraphStyle(
+        name='BoldRightAlign',
+        fontSize=10,
+        leading=11,
+        alignment=TA_RIGHT,
+        spaceAfter=0,
+        spaceBefore=0
+    )
+    totals = [
+        [unpaid_img,  # left cell (image)
+         Paragraph(f"Total Tax: INR {total_gst:.2f}", right_aligned)],
+        ["", Paragraph(f"Total (Tax included): INR {order.total:.2f}", right_aligned)],
+        ["", Paragraph(f"<b>Grand Total: {order.total:.2f}</b>", bold_right_aligned)],
+    ]
+    footer_table = Table(
+        totals,
+        colWidths=[300, 200],
+        hAlign='RIGHT'
+    )
+    # Set table style
+  
+    footer_table.setStyle(TableStyle([
+        # Add line above Grand Total
+        ("LINEABOVE", (1, 2), (1, 2), 1, colors.black),
 
-    # Dynamically calculate Y-position for the totals
-    y_position = height - 350 - table_height # Position below the table with a 55-point gap
+        # Vertical and horizontal alignment
+        ("VALIGN", (0, 0), (0, -1), "TOP"),        # image column
+        ("VALIGN", (0, 0), (1, -1), "BOTTOM"),     # right column (text)
 
-    # Section of the Total prices
-    c.setFont("Helvetica", 10)
-    c.drawString(380, y_position, f"Total Tax:                                 INR {total_gst:.2f}")
-    c.drawString(380, y_position - 15, f"Total (Tax included):                INR {order.total:.2f}")
+        # ✅ Right-align all cells in second column
+        ("ALIGN", (1, 0), (1, -1), "RIGHT"),
 
-    # Add a horizontal line (HR) below the totals
-    c.setLineWidth(1)  # Line thickness
-    c.line(570, y_position - 25, 280, y_position - 25)  # Draw the line across the page
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(380, y_position - 40, f"Grand Total:                               {order.total:.2f}")
+        # Optional: adjust paddings
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+    ]))
+    story.append(footer_table)
 
-
-    try:
-        if unpaid_abs_path:  # Ensure the path is not None
-            c.drawImage(unpaid_abs_path, 20, y_position - 65, width=200, height=110, mask='auto')
-        else:
-            print("Unpaid image not found.")
-    except Exception as e:
-        print(f"Error adding unpaid image: {e}")
-    
-    # Save PDF
-    c.save()
+    doc.build(story)
     buffer.seek(0)
     return buffer

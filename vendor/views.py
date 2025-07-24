@@ -1319,9 +1319,19 @@ def process_mapped_data(request):
                     # Only show "missing mandatory" error if neither present nor typo found
                     if not (found_mandatory & mandatory_quantity_variants) and not (found_close_typo & mandatory_quantity_variants):
                         field_errors.append(
-                            f"In row {idx}, you must include at least one of the following as a variant key: {', '.join(mandatory_quantity_variants)}."
+                            f"In row {idx}, you must include at least one of the following as a key: {', '.join(mandatory_quantity_variants)}."
                         )
                         error_fields_for_frontend.append({'row': idx, 'field': internal_field, 'missing_mandatory': list(mandatory_quantity_variants)})
+
+        if product.get('product_name', '').strip() and product.get('barcode', '').strip():
+            product_slug = slugify(product['product_name'].strip())
+            new_barcode = product.get('barcode', '').strip()
+            beforesave_ex_product_obj = Product.objects.filter(slug=product_slug,vendor=get_vendor(request)).first()
+            bacode_based_product = Product.objects.filter(barcode=new_barcode, vendor=get_vendor(request)).first()
+            if beforesave_ex_product_obj and bacode_based_product and beforesave_ex_product_obj.barcode != bacode_based_product.barcode:
+                field_errors.append(f"Barcode '{new_barcode}' already exists for {bacode_based_product.product_name}. Please use a unique barcode.")
+                error_fields_for_frontend.append({'row': idx, 'field': 'barcode', 'bad_text': new_barcode})
+
         # Gather errors
         if missing_fields or field_errors:
             error_rows.add(idx - 1)
@@ -1612,6 +1622,7 @@ def save_to_database(request):
         for row in products:
             try:
                 product_name = row.get('product_name', '').strip()
+                print(f"Processing product: {product_name} (Row {row_num})")
                 if not product_name:
                     errors.append(f"Row {row_num}: Product name is required.")
                     continue
@@ -1682,6 +1693,7 @@ def save_to_database(request):
                                 errors.append(f"Your given barcode is already used in {ex_bar_product.product_name} . Please use unique barcode for {product_name}")
                                 row_num += 1
                                 continue
+
                     # Update existing
                     product_obj.product_name = product_name
                     product_obj.product_desc = row.get('description', '').strip()
@@ -1766,6 +1778,206 @@ def save_to_database(request):
             messages.error(request, error)
 
     return redirect('import_your_data')
+
+
+
+# def save_to_database(request):
+#     if request.method != 'POST':
+#         return HttpResponse("Invalid request method.")
+
+#     products = request.session.get('products', [])
+#     mappings = request.session.get('mappings', {})
+
+#     if not products or not mappings:
+#         messages.error(request, "No data to save. Please upload a CSV file and map the headers first.")
+#         return redirect('upload_csv')
+
+#     vendor = get_vendor(request)
+#     errors = []
+#     success_count = 0
+
+#     for row_num, row in enumerate(products, start=1):
+#         try:
+#             product_name = row.get('product_name', '').strip()
+#             if not product_name:
+#                 errors.append(f"Row {row_num}: Product name is required.")
+#                 continue
+#             regular_price = safe_decimal(row.get('regular_price', 0), 'regular_price')
+#             category_name = row.get('category', '').strip()
+#             subcategory_name = row.get('subcategory', '').strip()
+#             image_url = row.get('image', '').strip()
+#             tax_category_name = row.get('tax_category', '').strip()
+#             try:
+#                 tax_percentage = int(row.get('tax_percentage', '').strip())
+#             except ValueError:
+#                 errors.append(f"Row {row_num}: Invalid tax percentage.")
+#                 continue
+
+#             # Category lookup/creation
+#             try:
+#                 category_obj = Category.objects.get(category_name__iexact=category_name, store_type=vendor.store_type)
+#             except Category.DoesNotExist:
+#                 errors.append(f"Row {row_num}: Category '{category_name}' not found for store type '{vendor.store_type}'.")
+#                 continue
+
+#             # Subcategory lookup/creation
+#             subcategory_obj = None
+#             if subcategory_name:
+#                 category_code = f"SUB-{slugify(subcategory_name)}-{category_obj.category_code}-{vendor.id}"
+#                 subcategory_obj, _ = Category.objects.get_or_create(
+#                     category_name=subcategory_name,
+#                     parent=category_obj,
+#                     vendor_subcategory_reference_id=vendor.id,
+#                     category_code=category_code,
+#                     defaults={'slug': slugify(f"{subcategory_name}{category_obj}{vendor.id}")}
+#                 )
+
+#             # Tax category lookup/creation
+#             tax_category_obj = Tax.objects.filter(
+#                 tax_category=tax_category_name,
+#                 tax_percentage=tax_percentage
+#             ).first()
+#             if not tax_category_obj:
+#                 tax_category_obj = Tax.objects.create(
+#                     tax_category=tax_category_name,
+#                     tax_percentage=tax_percentage,
+#                     tax_desc=''
+#                 )
+
+#             deposit_category_obj = DepositCategory.objects.filter(deposit_category__iexact='Clickmall').first()
+#             cost_price = safe_decimal(row.get('cost_price', 0), 'cost_price')
+#             qty = safe_decimal(row.get('qty',  0), 'qty')
+#             sales_price_val = row.get('sales_price', 0)
+#             sales_price = safe_decimal(sales_price_val, None, 'sales_price')
+
+#             slug_val = slugify(product_name)
+#             barcode_val = row.get('barcode', '').strip() or None
+
+#             # Upsert logic based on barcode and product name
+#             product_obj = None
+#             product_by_name = Product.objects.filter(vendor=vendor, slug=slug_val).first()
+#             product_by_barcode = Product.objects.filter(vendor=vendor, barcode=barcode_val).first() if barcode_val else None
+
+#             if not barcode_val:
+#                 # Barcode is empty
+#                 if product_by_name:
+#                     # Update existing by product name
+#                     product_obj = product_by_name
+#                 else:
+#                     # Create new
+#                     product_obj = Product(
+#                         vendor=vendor,
+#                         product_name=product_name,
+#                         slug=slug_val,
+#                         product_desc=row.get('description', '').strip(),
+#                         full_specification=row.get('full_specification', '').strip(),
+#                         hsn_number=row.get('hsn_number', '').strip(),
+#                         model_number=row.get('model_number', '').strip(),
+#                         cost_price=cost_price,
+#                         regular_price=regular_price,
+#                         sales_price=sales_price,
+#                         is_available=True,
+#                         category=category_obj,
+#                         subcategory=subcategory_obj,
+#                         is_popular=False,
+#                         is_top_collection=False,
+#                         is_active=True,
+#                         barcode=None,
+#                         qty=qty,
+#                         tax_category=tax_category_obj,
+#                         deposit_category=deposit_category_obj,
+#                         unit_type=row.get('unit_type', 'pcs').strip() or 'pcs',
+#                         company=row.get('company', '').strip() or None,
+#                         product_size=row.get('product_size', '').strip() or None,
+#                     )
+#             elif barcode_val:
+#                 # Barcode is present
+#                 if product_by_barcode:
+#                     if product_by_barcode.product_name.lower() == product_name.lower():
+#                         # Update existing by barcode & name
+#                         product_obj = product_by_barcode
+#                     else:
+#                         # Barcode used in another product, error!
+#                         errors.append(f"Row {row_num}: Barcode '{barcode_val}' already used for product '{product_by_barcode.product_name}'. Please use a unique barcode.")
+#                         continue
+#                 else:
+#                     # Barcode not used, create new
+#                     product_obj = Product(
+#                         vendor=vendor,
+#                         product_name=product_name,
+#                         slug=slug_val,
+#                         product_desc=row.get('description', '').strip(),
+#                         full_specification=row.get('full_specification', '').strip(),
+#                         hsn_number=row.get('hsn_number', '').strip(),
+#                         model_number=row.get('model_number', '').strip(),
+#                         cost_price=cost_price,
+#                         regular_price=regular_price,
+#                         sales_price=sales_price,
+#                         is_available=True,
+#                         category=category_obj,
+#                         subcategory=subcategory_obj,
+#                         is_popular=False,
+#                         is_top_collection=False,
+#                         is_active=True,
+#                         barcode=barcode_val,
+#                         qty=qty,
+#                         tax_category=tax_category_obj,
+#                         deposit_category=deposit_category_obj,
+#                         unit_type=row.get('unit_type', 'pcs').strip() or 'pcs',
+#                         company=row.get('company', '').strip() or None,
+#                         product_size=row.get('product_size', '').strip() or None,
+#                     )
+
+#             # Set all other fields for both create/update
+#             if product_obj.pk:  # update scenario
+#                 product_obj.product_desc = row.get('description', '').strip()
+#                 product_obj.full_specification = row.get('full_specification', '').strip()
+#                 product_obj.hsn_number = row.get('hsn_number', '').strip()
+#                 product_obj.model_number = row.get('model_number', '').strip()
+#                 product_obj.cost_price = cost_price
+#                 product_obj.regular_price = regular_price
+#                 product_obj.sales_price = sales_price
+#                 product_obj.is_available = True
+#                 product_obj.category = category_obj
+#                 product_obj.subcategory = subcategory_obj
+#                 product_obj.is_popular = False
+#                 product_obj.is_top_collection = False
+#                 product_obj.is_active = True
+#                 product_obj.barcode = barcode_val
+#                 product_obj.qty = qty
+#                 product_obj.tax_category = tax_category_obj
+#                 product_obj.deposit_category = deposit_category_obj
+#                 product_obj.unit_type = row.get('unit_type', 'pcs').strip() or 'pcs'
+#                 product_obj.company = row.get('company', '').strip() or None
+#                 product_obj.product_size = row.get('product_size', '').strip() or None
+
+#             # Save image and product
+#             try:
+#                 download_image_to_field(product_obj, image_url)
+#             except Exception as img_err:
+#                 errors.append(f"Row {row_num}: Failed to download image. {img_err}")
+
+#             with transaction.atomic():
+#                 product_obj.save()
+#                 # Save attributes and variants
+#                 attribute_str = row.get('attribute', '')
+#                 save_product_attributes(product_obj, attribute_str, vendor)
+#                 variant_str = row.get('variant', '')
+#                 save_product_variants(product_obj, variant_str)
+#                 success_count += 1
+
+#         except Exception as e:
+#             errors.append(f"Row {row_num}: {str(e)}")
+
+#     if success_count:
+#         messages.success(request, f"{success_count} products imported successfully.")
+
+#     if errors:
+#         for error in errors:
+#             print("error", error)
+#             messages.error(request, error)
+
+#     return redirect('import_your_data')
 
 
 
