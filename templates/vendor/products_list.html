@@ -48,8 +48,11 @@
                                 <a href="{% url 'import_products' %}" class="btn update_color float-right m-1 res-d-block"><i class="fa fa-cloud-download" aria-hidden="true"></i> Import Products</a>
 
                                 <hr>
-                              
-                            <h5 class="text-uppercase">My Products</h5>
+                            {% if total_products %}
+                            <h5 class="text-uppercase">My Products ({{ total_products }})</h5>
+                            {% else %}
+                             <h5 class="text-uppercase">My Products</h5>
+                            {% endif %}
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                     <div class="user-products-list">

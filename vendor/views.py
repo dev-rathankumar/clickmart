@@ -584,6 +584,7 @@ def delete_subcategory(request, pk=None):
 def product_list_view(request):
     vendor = get_vendor(request)
     products = Product.objects.filter(vendor=vendor).order_by('-id')
+    total_products =  products.count()
 
     paginator = Paginator(products, 15)
     page_number = request.GET.get('page')
@@ -591,6 +592,7 @@ def product_list_view(request):
     context = {
          'page_obj': page_obj,
          'products': page_obj.object_list,
+         'total_products': total_products,
     }
     return render(request, 'vendor/products_list.html', context)
 
@@ -737,30 +739,40 @@ def add_product(request):
 def edit_product(request, product_id):
     vendor = get_vendor(request)
     product = get_object_or_404(Product, id=product_id, vendor=vendor)
+
     ProductGalleryFormSet = modelformset_factory(
         ProductGallery,
         form=ProductGalleryForm,
         extra=1,
         can_delete=True
     )
-    attributes = ProductAttribute.objects.filter(Q(vendor=vendor) | Q(vendor__isnull=True),is_active=True).order_by('name')
-    existing_attrvalues = ProductAttributeValue.objects.filter(product=product).select_related('attribute')
-    # Used to pass to template: list of dicts with id, value, name
+
+    attributes = VariantAttribute.objects.filter(Q(is_active=True)).order_by('name')
+    existing_attrvalues = VariantAttributeValue.objects.filter(product=product).select_related('attribute')
+
     attrvalue_list = [
-        {"id": av.attribute.id, "name": av.attribute.name, "value": av.value}
+        {
+            "id": av.attribute.id,
+            "name": av.attribute.name,
+            "value": av.value,
+            "attr_value_id": av.id
+        }
         for av in existing_attrvalues
     ]
+
     try:
         if request.method == 'POST':
             form = EditProductForm(request.POST, request.FILES, instance=product, vendor_id=vendor.id)
             formset = ProductGalleryFormSet(
                 request.POST, request.FILES, queryset=ProductGallery.objects.filter(product=product)
             )
+
             if form.is_valid() and formset.is_valid():
                 product = form.save(commit=False)
                 product.slug = slugify(product.product_name)
                 product.save()
-                # Process gallery formset
+
+                # Save/delete galleries
                 for f in formset:
                     if f.cleaned_data.get('DELETE'):
                         instance = f.instance
@@ -770,54 +782,88 @@ def edit_product(request, product_id):
                         gallery = f.save(commit=False)
                         gallery.product = product
                         gallery.save()
-                # --- HANDLE PRODUCT ATTRIBUTES ---
-                # Remove or update old, add new as needed
-                original_attrs = set(existing_attrvalues.values_list('attribute_id', flat=True))
+
                 submitted_attrs = set()
 
-                # Find max index from POST keys
                 indexes = set()
                 for key in request.POST.keys():
                     if key.startswith('attribute_'):
                         try:
                             idx = int(key.split('_')[1])
                             indexes.add(idx)
-                        except:
+                        except ValueError:
                             continue
 
                 for idx in sorted(indexes):
                     attr_key = f'attribute_{idx}'
                     val_key = f'attr_value_{idx}'
+                    val_id_key = f'attr_value_id_{idx}'
+
                     attr_id = request.POST.get(attr_key)
-                    val = request.POST.get(val_key)
+                    val = request.POST.get(val_key, '').strip()
+                    val_id = request.POST.get(val_id_key)
 
                     if attr_id and val:
                         attr_id_int = int(attr_id)
                         submitted_attrs.add(attr_id_int)
-                        pav, created = ProductAttributeValue.objects.get_or_create(
-                            product=product,
-                            attribute_id=attr_id_int,
-                            defaults={'value': val}
-                        )
-                        if not created and pav.value != val:
-                            pav.value = val
-                            pav.save()
 
-                # Only delete attributes that were originally there but not submitted anymore
-                to_delete = original_attrs - submitted_attrs
-                if to_delete:
-                    ProductAttributeValue.objects.filter(
+                        if val_id and val_id.isdigit():
+                            # Update existing VariantAttributeValue
+                            vav = VariantAttributeValue.objects.filter(id=int(val_id), product=product).first()
+                            if vav:
+                                vav.attribute_id = attr_id_int
+                                vav.value = val
+                                vav.save()
+                            else:
+                                # If not found, create new
+                                VariantAttributeValue.objects.create(
+                                    product=product,
+                                    attribute_id=attr_id_int,
+                                    value=val
+                                )
+                        else:
+                            # Create new attribute value
+                            VariantAttributeValue.objects.create(
+                                product=product,
+                                attribute_id=attr_id_int,
+                                value=val
+                            )
+
+                # Delete attributes removed by user (via hidden input removed_attr_ids)
+                removed_ids = request.POST.get('removed_attr_ids', '')
+                if removed_ids:
+                    to_delete_ids = [int(i) for i in removed_ids.split(',') if i.isdigit()]
+                    VariantAttributeValue.objects.filter(
                         product=product,
-                        attribute_id__in=to_delete
+                        id__in=to_delete_ids
                     ).delete()
+
+                # Handle custom attributes (name + value)
+                for key in request.POST:
+                    if key.startswith('custom_attr_name_'):
+                        idx = key.split('_')[-1]
+                        name = request.POST.get(f'custom_attr_name_{idx}', '').strip()
+                        value = request.POST.get(f'custom_attr_value_{idx}', '').strip()
+                        if name and value:
+                            attr_obj, _ = VariantAttribute.objects.get_or_create(
+                                name__iexact=name,
+                                defaults={'name': name}
+                            )
+                            VariantAttributeValue.objects.get_or_create(
+                                product=product,
+                                attribute=attr_obj,
+                                value=value
+                            )
 
                 messages.success(request, 'Product updated successfully!')
                 if request.POST.get("submit_type") == "next":
                     return redirect('product_variant', product_id=product.id)
                 else:
                     return redirect('vendor_products_list')
+
             else:
-                print(formset.errors)
+                print(form.errors, formset.errors)
+
         else:
             form = EditProductForm(instance=product, vendor_id=vendor.id)
             formset = ProductGalleryFormSet(queryset=ProductGallery.objects.filter(product=product))
@@ -832,9 +878,12 @@ def edit_product(request, product_id):
             'attrvalue_list': attrvalue_list,
         }
         return render(request, 'vendor/edit_product.html', context)
+
     except Exception as e:
         messages.error(request, f"An error occurred: {e}")
         return redirect('vendor_products_list')
+
+
     
     
 @login_required(login_url='login')
