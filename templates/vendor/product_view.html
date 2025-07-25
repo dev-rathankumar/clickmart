@@ -779,12 +779,15 @@ window.attributeGroups = {{ product_variant_map_json|safe }};
     // Mobile view elements
     const mobileQtyLabel = document.getElementById(`mb-qty-${productId}`);
     const mobileAddBtn = document.getElementById(`mb-add_to_cart_btn-${productId}`);
+    const mobileQtyBoxView = document.getElementById(`qty-mb-${productId}`);
     const mobileQtyBox = document.getElementById(`quantity-btn-box-${productId}`);
+
     
     if (hasItems) {
       // Update quantity display
       if (desktopQtyLabel) desktopQtyLabel.textContent = quantity;
       if (mobileQtyLabel) mobileQtyLabel.textContent = quantity;
+      if (mobileQtyBoxView) mobileQtyBoxView.textContent = quantity;
       
       // Show quantity controls, hide add button
       if (desktopAddBtn) desktopAddBtn.style.display = 'none';
