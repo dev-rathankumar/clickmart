@@ -403,6 +403,8 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters',
 )
 
-
 GOOGLE_CX_ID= config('GOOGLE_CX_ID', default='')  # Google Custom Search Engine ID 
 GOOGLE_API_KEYS= config('GOOGLE_API_KEYS', default='')  # Comma-separated list of Google API keys
+
+
+LOGIN_URL = '/login/'

@@ -274,7 +274,7 @@ input[name='want-generate-image']{
                             <form action="{% url 'save_to_database' %}" method="post" id="save-db-form" class="mb-0">
                                 {% csrf_token %}
                                 <div id="save-db-section" class="text-end">
-                                    <button type="submit" class="btn update_color" id="save-db-btn">
+                                    <button type="submit" class="btn update_color" id="save-db-btn" {% if errors %}disabled{% endif %}>
                                         Save to Database
                                         <span class="spinner-border spinner-border-sm spinner-button" id="save-db-spinner" style="display:none;" role="status" aria-hidden="true"></span>
                                     </button>
