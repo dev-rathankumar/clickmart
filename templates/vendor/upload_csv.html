@@ -71,6 +71,7 @@
                             Please upload your product stock CSV file exported from your ERP system.<br>
                             Don’t worry if the column names don’t match — you’ll map them in the next step.
                         </p>
+                        
                         <br>
                         
                             <div class="card-body">
@@ -82,7 +83,7 @@
                                         {{ form.file }}
                                     </div> {% endcomment %}
 
-                                    <div class="mb-4">
+                                    <div class="mb-2">
                                         {{ form.file }}
                                         <label for="id_file" class="custom-upload-btn">
                                         <i class="fas fa-upload"></i>
@@ -90,6 +91,11 @@
                                         </label>
 
                                         <span id="csv-filename" style="margin-left: 10px; font-size: 14px; color: #555;"></span>
+                                    </div>
+                                    <div class="mb-4 " >
+                                    <a href="{% url 'how_to_import' %}" target="_blank" rel="noopener noreferrer" class="btn update_color mt-2 mb-3" style="width:195px !important ">
+                                        Learn How to Import
+                                      </a>
                                     </div>
 
                                     <div class="d-flex justify-content-between">
