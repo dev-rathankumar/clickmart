@@ -740,6 +740,29 @@ def edit_product(request, product_id):
     vendor = get_vendor(request)
     product = get_object_or_404(Product, id=product_id, vendor=vendor)
 
+    # Create category if not exists (adjust the logic based on product.category)
+    if not product.category:
+        # Example: create a default category for vendor's store_type
+        category_name = f"Default Category for {vendor.name}"
+        category, created = Category.objects.get_or_create(
+            name=category_name,
+            store_type=vendor.store_type,
+            parent=None
+        )
+        product.category = category
+        product.save()
+
+    # Create vendor-specific ProductAttributes for this category if missing
+    default_attributes = ['Brand', 'Material', 'Color']  # customize as needed
+    for attr_name in default_attributes:
+        ProductAttribute.objects.get_or_create(
+            name=attr_name,
+            category=product.category,
+            vendor=vendor,
+            defaults={'is_active': True}
+        )
+
+    # Rest of your original code ...
     ProductGalleryFormSet = modelformset_factory(
         ProductGallery,
         form=ProductGalleryForm,
@@ -747,8 +770,19 @@ def edit_product(request, product_id):
         can_delete=True
     )
 
-    attributes = VariantAttribute.objects.filter(Q(is_active=True)).order_by('name')
-    existing_attrvalues = VariantAttributeValue.objects.filter(product=product).select_related('attribute')
+    if vendor:
+        attributes = ProductAttribute.objects.filter(
+            Q(is_active=True),
+            Q(vendor__isnull=True) | Q(vendor=vendor)
+        ).order_by('name')
+    else:
+        attributes = ProductAttribute.objects.filter(
+            Q(is_active=True),
+            vendor__isnull=True
+        ).order_by('name')
+
+    existing_attrvalues = ProductAttributeValue.objects.filter(product=product).select_related('attribute')
+
 
     attrvalue_list = [
         {
@@ -770,7 +804,27 @@ def edit_product(request, product_id):
             if form.is_valid() and formset.is_valid():
                 product = form.save(commit=False)
                 product.slug = slugify(product.product_name)
+
+                # Ensure category again after save if changed via form
+                if not product.category:
+                    category_name = f"Default Category for {vendor.name}"
+                    category, created = Category.objects.get_or_create(
+                        name=category_name,
+                        store_type=vendor.store_type,
+                        parent=None
+                    )
+                    product.category = category
+
                 product.save()
+
+                # Create vendor-specific attributes again after save if needed
+                for attr_name in default_attributes:
+                    ProductAttribute.objects.get_or_create(
+                        name=attr_name,
+                        category=product.category,
+                        vendor=vendor,
+                        defaults={'is_active': True}
+                    )
 
                 # Save/delete galleries
                 for f in formset:
@@ -808,32 +862,29 @@ def edit_product(request, product_id):
                         submitted_attrs.add(attr_id_int)
 
                         if val_id and val_id.isdigit():
-                            # Update existing VariantAttributeValue
-                            vav = VariantAttributeValue.objects.filter(id=int(val_id), product=product).first()
+                            vav = ProductAttributeValue.objects.filter(id=int(val_id), product=product).first()
                             if vav:
                                 vav.attribute_id = attr_id_int
                                 vav.value = val
                                 vav.save()
                             else:
-                                # If not found, create new
-                                VariantAttributeValue.objects.create(
+                                ProductAttributeValue.objects.create(
                                     product=product,
                                     attribute_id=attr_id_int,
                                     value=val
                                 )
                         else:
-                            # Create new attribute value
-                            VariantAttributeValue.objects.create(
+                            ProductAttributeValue.objects.create(
                                 product=product,
                                 attribute_id=attr_id_int,
                                 value=val
                             )
 
-                # Delete attributes removed by user (via hidden input removed_attr_ids)
+                # Delete removed attributes
                 removed_ids = request.POST.get('removed_attr_ids', '')
                 if removed_ids:
                     to_delete_ids = [int(i) for i in removed_ids.split(',') if i.isdigit()]
-                    VariantAttributeValue.objects.filter(
+                    ProductAttributeValue.objects.filter(
                         product=product,
                         id__in=to_delete_ids
                     ).delete()
@@ -845,11 +896,11 @@ def edit_product(request, product_id):
                         name = request.POST.get(f'custom_attr_name_{idx}', '').strip()
                         value = request.POST.get(f'custom_attr_value_{idx}', '').strip()
                         if name and value:
-                            attr_obj, _ = VariantAttribute.objects.get_or_create(
+                            attr_obj, _ = ProductAttribute.objects.get_or_create(
                                 name__iexact=name,
-                                defaults={'name': name}
+                                defaults={'name': name, 'category': product.category, 'vendor': vendor}
                             )
-                            VariantAttributeValue.objects.get_or_create(
+                            ProductAttributeValue.objects.get_or_create(
                                 product=product,
                                 attribute=attr_obj,
                                 value=value
@@ -882,6 +933,7 @@ def edit_product(request, product_id):
     except Exception as e:
         messages.error(request, f"An error occurred: {e}")
         return redirect('vendor_products_list')
+
 
 
     
@@ -2290,3 +2342,7 @@ def delete_variant_group(request, pk):
     group = get_object_or_404(ProductVariantGroup, id=pk)
     group.delete()
     return JsonResponse({'status': 'success', 'message': 'Variant group deleted!'})
+
+
+def how_to_import_product(request):
+    return render(request, 'vendor/how_to_import.html')

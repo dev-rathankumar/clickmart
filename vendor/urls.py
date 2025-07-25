@@ -70,5 +70,7 @@ urlpatterns = [
     path('product-by-category-autocomplete/',ProductByCategoryAutocomplete.as_view(),name='product-by-category-autocomplete'),
     path('subcategory-by-category-autocomplete/',SubCategoryByCategoryAutocomplete.as_view(),name='subcategory-by-category-autocomplete'),
 
+    path('how-to-import/', views.how_to_import_product, name='how_to_import'),
+
 
 ]
