@@ -1274,7 +1274,8 @@ def process_mapped_data(request):
     errors = []
     error_rows = set()
     error_fields_for_frontend = []
-
+    barcode_to_row_info = {}
+    duplicates_in_csv = set()
     for idx, row in enumerate(reader, start=1):
         product = {}
         missing_fields = []
@@ -1372,7 +1373,9 @@ def process_mapped_data(request):
                         )
                         error_fields_for_frontend.append({'row': idx, 'field': internal_field, 'missing_mandatory': list(mandatory_quantity_variants)})
 
+
         if product.get('product_name', '').strip() and product.get('barcode', '').strip():
+            fix_bar_product_name = product['product_name'].strip()
             product_slug = slugify(product['product_name'].strip())
             new_barcode = product.get('barcode', '').strip()
             beforesave_ex_product_obj = Product.objects.filter(slug=product_slug,vendor=get_vendor(request)).first()
@@ -1380,6 +1383,25 @@ def process_mapped_data(request):
             if beforesave_ex_product_obj and bacode_based_product and beforesave_ex_product_obj.barcode != bacode_based_product.barcode:
                 field_errors.append(f"Barcode '{new_barcode}' already exists for {bacode_based_product.product_name}. Please use a unique barcode.")
                 error_fields_for_frontend.append({'row': idx, 'field': 'barcode', 'bad_text': new_barcode})
+            elif beforesave_ex_product_obj is None and bacode_based_product:
+                # If no existing product with same slug, but barcode exists
+                field_errors.append(f"Barcode '{new_barcode}' already exists for {bacode_based_product.product_name}. Please use a unique barcode.")
+                error_fields_for_frontend.append({'row': idx, 'field': 'barcode', 'bad_text': new_barcode})
+            else:
+                if new_barcode:
+                    if new_barcode in barcode_to_row_info:
+                        prev_row_idx, prev_product_name = barcode_to_row_info[new_barcode]
+                        # If names differ, mark as error for both rows
+                        if new_barcode and prev_product_name and fix_bar_product_name != prev_product_name:
+                            # Mark both rows as having duplicate barcode with different name
+                            field_errors.append(
+                                f"The barcode '{new_barcode}' is already used for '{prev_product_name}' in row {prev_row_idx + 1}. Please make sure each product has its own unique barcode."
+                            )
+                            error_fields_for_frontend.append({'row': idx, 'field': 'barcode', 'bad_text': new_barcode})
+                            duplicates_in_csv.add(idx - 1)
+                            duplicates_in_csv.add(prev_row_idx)
+                    else:
+                        barcode_to_row_info[new_barcode] = (idx - 1, fix_bar_product_name)
 
         # Gather errors
         if missing_fields or field_errors:

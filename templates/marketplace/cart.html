@@ -162,7 +162,7 @@
                                                                 {{ item.product_variant_group|extract_variant }}
                                                                 {{item.product | truncatechars:20}}
                                                                 {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
-                                                                    {{ item.product|truncatechars:40 }}
+                                                                    {{ item.product|truncatechars:20 }}
                                                               {% endif %}
                                                            {% endfor %}
                                                        </div>

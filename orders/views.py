@@ -40,11 +40,7 @@ def place_order(request):
     total_data = []
     k = {}
     items_count= 0
-    for i in cart_items:
-        print("i product cart items", i.product.variants)
-        for v in i.product.variants.all():
-            if v == i.product_variant_group:
-                print("variant found", v)
+    for i in cart_items:           
         product_total = 0
         product = Product.objects.get(pk=i.product.id, vendor_id__in=vendors_ids)
         v_id = product.vendor.id

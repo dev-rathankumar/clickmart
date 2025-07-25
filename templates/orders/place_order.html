@@ -65,7 +65,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Image</th>
-                                                <th></th>
+                                                <th>Variant</th>
                                                 <th>Product</th>
                                                 <th>Quantity</th>
                                                 <th>Price</th>
@@ -88,8 +88,10 @@
                                                         
                                                     </div>
                                                 </td>
-                                                <td><div class="small mt-1">{{ item.product_variant_group|extract_variant }}</div></td>
-
+                                                <td>
+                                                    {% if item.product_variant_group %}
+                                                        <div class="small mt-1">{{ item.product_variant_group|extract_variant }}</div></td>
+                                                    {% endif %}
                                                 <td><b>{{ item.product }}</b></td>
                                                 <td>
                                                     <div class="d-md-none d-block d-flex justify-content-center gap-1">
@@ -141,7 +143,7 @@
                                         <span class="d-md-block d-none">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -
                                             {{ item.product_variant_group|extract_variant }}
-                                            {{ item.product|truncatechars:40 }}
+                                            {{ item.product|truncatechars:10 }}
                                         </span>
                                         <span class="d-block d-md-none">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -
@@ -151,7 +153,7 @@
                                     {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
                                         <span class="d-md-block d-non">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -                                          
-                                            {{ item.product|truncatechars:40 }}
+                                            {{ item.product|truncatechars:10 }}
                                         </span>
                                         <span class="d-block d-md-none">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -                                          

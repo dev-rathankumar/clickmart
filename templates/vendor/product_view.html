@@ -812,6 +812,7 @@ window.attributeGroups = {{ product_variant_map_json|safe }};
   function getCartCount(productId, selectedValueIds = []) {
     fetch("{% url 'get_cart_count' %}", {
       method: "POST",
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": getCookie('csrftoken'),
@@ -873,7 +874,7 @@ function initializeVariantButtons() {
   }
 
   const attributeGroups = window.attributeGroups || [];
-
+ 
   const firstCombo = getFirstColumnOrderCombination(variantCombinations, attributeGroups);
 
   let selectedIds = firstCombo && firstCombo.length ? firstCombo : (variantCombinations.find(c => c.in_stock) || {}).attributes || [];
@@ -887,9 +888,31 @@ function initializeVariantButtons() {
   });
 
   updateVariantSelection();
+  disabledZeroStockButtons();
 }
 
+function disabledZeroStockButtons() {
+   // Update buttons based on current selection
+  document.querySelectorAll('.variant-attribute-group').forEach((group, groupIndex) => {
+    const attr = group.querySelector('.variant-btn').getAttribute('data-attribute');
 
+    group.querySelectorAll('.variant-btn').forEach(button => {
+      const valueId = button.getAttribute('data-value-id');
+    
+      const isValid = variantCombinations.some(combo => {
+        console.log('Testing combo:', combo);
+        return combo.in_stock && combo.attributes.includes(valueId) &&
+               combo.attributes.length >= (groupIndex + 1); // supports partial selection
+      });
+      if (groupIndex === 0) {
+      button.disabled = !isValid;
+      console.log("button", button.disabled)
+      button.setAttribute('aria-disabled', !isValid);
+      button.classList.toggle('disabled-btn', !isValid);
+       }
+    });
+  });
+}
   // Update product details when variant changes
   function updateProductDetails(variantData) {
     // Update price
@@ -1028,6 +1051,7 @@ function selectVariantValue(btn) {
   }
 
   updateVariantSelection();
+  disabledZeroStockButtons()
 }
   // Initialize everything on page load
   document.addEventListener('DOMContentLoaded', function() {
@@ -1042,6 +1066,7 @@ function selectVariantValue(btn) {
     
     // Initial cart count check
     const selectedValueIds = getDefaultSelectedVariantIds();
+    console.log('Default selected value IDs:', selectedValueIds);
     getCartCount(productId, selectedValueIds.length > 0 ? selectedValueIds : null);
   });
 
