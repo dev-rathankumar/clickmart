@@ -92,7 +92,11 @@
                                         <img src="{% static 'images/placeholder.jpg' %}" alt="No image"
                                             style="width: 50px; height: 50px; object-fit: cover;">
                                     {% endif %}
+                                    
+                                    {% if item.product_variant_group %}
                                     <div class="small d-none d-sm-block">{{ item.product_variant_group|extract_variant }}</div>
+                                    {% endif %}
+                                        
                                 </div>
                                 <div class="w-100 d-block d-md-none w-sm-auto text-center text-sm-start">
                                     {% if item.product_variant_group and item.product_variant_group.image %}
@@ -105,7 +109,11 @@
                                         <img src="{% static 'images/placeholder.jpg' %}" alt="No image"
                                             style="width: 50px; height: 50px; object-fit: cover;">
                                     {% endif %}
-                                    <div class="small d-none d-sm-block">{{ item.product_variant_group|extract_variant }}</div>
+                                    
+                                    {% if item.product_variant_group %}
+                                        <div class="small d-none d-sm-block">{{ item.product_variant_group|extract_variant }}</div>  
+                                    {% endif %}
+                                        
                                 </div>
 
 
@@ -114,7 +122,11 @@
                                     <p class="mb-1 text-heading" style="font-size: 14px;">{{ item.product }}</p>
 
                                     <!-- Show variant under product on small screens -->
+                                    
+                                    {% if item.product_variant_group %}
                                     <span class="small d-inline d-sm-none">{{ item.product_variant_group|extract_variant }}</span>
+                                    {% endif %}
+                                        
 
                                     <!-- Quantity and Price for small screen -->
                                     <div class="d-block d-sm-none mt-1 small text-muted">
@@ -180,7 +192,7 @@
                                         <span class="d-md-block d-none">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -
                                             {{ item.product_variant_group|extract_variant }}
-                                            {{ item.product|truncatechars:30 }}
+                                            {{ item.product|truncatechars:20 }}
                                         </span>
                                         <span class="d-block d-md-none small">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -
@@ -190,7 +202,7 @@
                                     {% elif item.product.id == single_tax_dict.product_id and not single_tax_dict.product_variant_id %}
                                         <span class="d-md-block d-none">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -
-                                            {{ item.product|truncatechars:40 }}
+                                            {{ item.product|truncatechars:20 }}
                                         </span>
                                         <span class="d-block d-md-none small">
                                             {{ single_tax_dict.tax_category }} ({{ key }}%) -

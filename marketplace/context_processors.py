@@ -77,6 +77,7 @@ def get_cart_amounts(request, session_cart=None):
         for cart_key, qty in cart.items():
             try:
                 # Check if this is a variant product (has hyphen in key)
+                variant= None
                 if '-' in cart_key:
                     product_id, variant_id = cart_key.split('-')
                     try:
@@ -107,6 +108,7 @@ def get_cart_amounts(request, session_cart=None):
                         'tax_category': tax_instance.tax_category,
                         'tax_info': {str(tax_instance.tax_percentage): tax_amount},
                         'product_id': product.id,
+                        'product_variant_id': variant.id if variant else None
                     }
                     tax_dict.append(tax_entry)
             except (Product.DoesNotExist, ValueError):

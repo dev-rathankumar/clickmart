@@ -254,7 +254,9 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
 
     }
     return render(request, 'marketplace/vendor_detail.html', context)
+from django.views.decorators.csrf import ensure_csrf_cookie
 
+@ensure_csrf_cookie
 def view_Product(request, vendor_slug, product_slug):
     # Get the main product and vendor
     product = get_object_or_404(Product, vendor__vendor_slug=vendor_slug, slug=product_slug)
@@ -422,7 +424,6 @@ def get_cart_count(request):
     if request.method == "POST":
         data = json.loads(request.body)
         product_id = data.get('product_id')
-        print("Product ID:", product_id)
         selected_value_ids = data.get('attributes', [])
         
         try:
@@ -435,14 +436,13 @@ def get_cart_count(request):
                 for value_id in selected_value_ids:
                     qset = qset.filter(attribute__id=value_id)
                 variant = qset.distinct().first()
-            print("Variant:", variant)
-            print("Variant ID:", variant.id)
             if request.user.is_authenticated:
                 # Handle logged-in users (existing logic)
                 cart_items = Cart.objects.filter(user=request.user, product=product)
                 if variant:
                     cart_items = cart_items.filter(product_variant_group=variant)
-                
+                else:
+                    cart_items = cart_items.filter(product_variant_group__isnull=True)
                 total_quantity = sum(item.quantity for item in cart_items)
                 return JsonResponse({
                     'success': True,
@@ -478,6 +478,7 @@ def get_cart_count(request):
                 })
                 
         except Exception as e:
+            print(e)
             return JsonResponse({
                 'success': False,
                 'message': str(e)
@@ -756,7 +757,6 @@ def cart(request):
                             'price': variant.price,
                         })
 
-
     context = {
         'cart_items': cart_items,
     }
@@ -860,7 +860,7 @@ def search(request):
 
 
 
-
+@login_required
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
     cart_count = cart_items.count()
