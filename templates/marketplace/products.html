@@ -133,6 +133,95 @@
 }
 
 </style>
+
+<style>
+.sidebar-dropdown {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    border: 1px solid #eee;
+    margin-bottom: 18px;
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-dropdown .dropdown-header {
+    padding: 15px 20px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    width: 100%;
+    font-size: 16px;
+    transition: background 0.15s;
+}
+
+.sidebar-dropdown .dropdown-header:hover {
+    background: #f7f7f7;
+}
+
+.sidebar-dropdown .dropdown-content-list {
+    padding: 16px 20px 12px 20px;
+    border-top: 1px solid #eee;
+    display: none; /* Hidden by default */
+}
+
+.sidebar-dropdown.open .dropdown-content-list {
+    display: block; /* Show on open */
+}
+
+/* Chevron rotate */
+.sidebar-dropdown .dropdown-header .chevron {
+    transition: transform 0.25s;
+}
+
+.sidebar-dropdown.open .dropdown-header .chevron {
+    transform: rotate(-180deg);
+}
+
+/* Radio button styles */
+.filter-radio-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.filter-radio-list li {
+    margin-bottom: 12px;
+}
+
+.filter-radio-list label {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+}
+
+.filter-radio-list input[type="radio"] {
+    margin-right: 12px;
+    accent-color: #181970;
+}
+.hidden {
+    display: none;
+}
+.filter-toggle-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 14px;
+    padding: 0;
+}
+</style>
+
+
 {% include 'includes/alerts.html' %}
 
 <div class="container my-4">
@@ -248,35 +337,39 @@
                         </div>
                         <div class="d-lg-none d-block">
                              <div class="col-lg-4 primary-sidebar sticky-sidebar " id="category-ul">
-                                    
-                                    <div class="sidebar-widget widget-category-2 mb-30">
-                                    <h5 class="section-title style-1 mb-30">Category</h5>
+                            <!-- Categories -->
+                            <div class="sidebar-dropdown" id="dropdown-categories-m">
+                                <button class="dropdown-header" type="button">
+                                    Categories
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
                                     <ul class="list-unstyled">
                                         {% for cat in categories %}
                                         <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
                                             {% if cat.subcategories.all %}
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <!-- Main category name links to its page -->
-                                                <a class="text-dark fw-bold text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}">
-                                                    {{ cat.category_name }} 
+                                                <a class="text-dark fw-bold text-decoration-none"
+                                                href="{% url 'filter_by_category' category_id=cat.id %}" style="font-size: 16px !important; margin-bottom: 8px !important; padding: 9px 5px !important;">
+                                                    {{ cat.category_name }}
                                                 </a>
-
-                                                <!-- Arrow icon toggles collapse only -->
-                                                 <button class="toggle-btn" data-target="subcats-{{ cat.id }}" style="border: none; background: none;">
+                                                <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
                                                     <i class="fa fa-chevron-down"></i>
                                                 </button>
                                             </div>
-                                            <ul class="subcategory-list mt-2 ps-3" id="subcats-{{ cat.id }}" style="display: none;">
+                                            <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none;">
                                                 {% for sub in cat.subcategories.all %}
                                                 <li class="small">
-                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
+                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}" style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 16px !important;">
+                                                        --{{ sub.category_name }}
+                                                    </a>
                                                 </li>
                                                 {% endfor %}
                                             </ul>
                                             {% else %}
-                                            <!-- No subcategories -->
-                                            <div>
-                                                <a class="fw-bold text-dark text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <a class="fw-bold text-dark text-decoration-none"
+                                                href="{% url 'filter_by_category' category_id=cat.id %}" style="font-size: 16px !important; margin-bottom: 8px !important; padding: 9px 5px !important;">
                                                     {{ cat.category_name }}
                                                 </a>
                                             </div>
@@ -285,8 +378,165 @@
                                         {% endfor %}
                                     </ul>
                                 </div>
-                                
-                                
+                            </div>
+
+                            <!-- Price Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-price-m">
+                                <button class="dropdown-header" type="button">
+                                    Price
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="price-filter-form-m">
+                                        <ul class="filter-radio-list">
+                                            {% for val, label in PRICE_CHOICES %}
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="price" value="{{ val }}"
+                                                        {% if request.GET.price == val %}checked{% endif %}
+                                                        onchange="updateFilters('price-filter-form-m')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ label }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Discount Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-discount-m">
+                                <button class="dropdown-header" type="button">
+                                    Discount
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="discount-filter-form-m">
+                                        <ul class="filter-radio-list">
+                                            {% for val, label in DISCOUNT_CHOICES %}
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="discount" value="{{ val }}"
+                                                     {% if request.GET.discount == val %}checked{% endif %}
+                                                        onchange="updateFilters('discount-filter-form-m')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ label }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Gender Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-gender-m">
+                                <button class="dropdown-header" type="button">
+                                    Gender
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="gender-filter-form-m">
+                                        <ul class="filter-radio-list">
+                                            {% for val, label in GENDER_CHOICES %}
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="gender" value="{{ val }}"
+                                                        {% if request.GET.gender == val %}checked{% endif %}
+                                                        onchange="updateFilters('gender-filter-form-m')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ label }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </form>
+                                </div>
+                            </div>
+                           <!-- Brand Filter -->
+                                <div class="sidebar-dropdown" id="dropdown-brand-m">
+                                    <button class="dropdown-header" type="button">
+                                        Brand
+                                        <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                    </button>
+                                    <div class="dropdown-content-list">
+                                        <form id="brand-filter-form-m">
+                                            <ul class="filter-radio-list" id="brand-filter-list-m">
+                                                {% for val in brand_values %}
+                                                <li class="brand-item-m {% if forloop.counter > 10 %}hidden{% endif %}">
+                                                    <label>
+                                                        <input type="radio" name="brand" value="{{ val }}"
+                                                            {% if request.GET.brand == val %}checked{% endif %}
+                                                            onchange="updateFilters('brand-filter-form-m')"
+                                                            style="width: 13px; height: 13px;">
+                                                        {{ val }}
+                                                    </label>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% if brand_values|length > 10 %}
+                                            <button type="button" id="toggle-brand-btn-m" class="filter-toggle-btn">Show more</button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </div>
+
+                                                    <!-- Size Filter -->
+                                <div class="sidebar-dropdown" id="dropdown-size-m">
+                                    <button class="dropdown-header" type="button">
+                                        Sizes
+                                        <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                    </button>
+                                    <div class="dropdown-content-list">
+                                        <form id="size-filter-form-m">
+                                            <ul class="filter-radio-list" id="size-filter-list-m">
+                                                {% for val in size_values %}
+                                                <li class="size-item-m {% if forloop.counter > 10 %}hidden{% endif %}">
+                                                    <label>
+                                                        <input type="radio" name="size" value="{{ val }}"
+                                                            {% if request.GET.size == val %}checked{% endif %}
+                                                            onchange="updateFilters('size-filter-form-m')"
+                                                            style="width: 13px; height: 13px;">
+                                                        {{ val }}
+                                                    </label>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% if size_values|length > 10 %}
+                                            <button type="button" id="toggle-size-btn-m" class="filter-toggle-btn">Show more</button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </div>
+
+                                                        <!-- Color Filter -->
+                                <div class="sidebar-dropdown" id="dropdown-color-m">
+                                    <button class="dropdown-header" type="button">
+                                        Colors
+                                        <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                    </button>
+                                    <div class="dropdown-content-list">
+                                        <form id="color-filter-form-m">
+                                            <ul class="filter-radio-list" id="color-filter-list-m">
+                                                {% for val in color_values %}
+                                                <li class="color-item-m {% if forloop.counter > 10 %}hidden{% endif %}">
+                                                    <label>
+                                                        <input type="radio" name="color" value="{{ val }}"
+                                                            {% if request.GET.color == val %}checked{% endif %}
+                                                            onchange="updateFilters('color-filter-form-m')"
+                                                            style="width: 13px; height: 13px;">
+                                                        {{ val }}
+                                                    </label>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% if color_values|length > 10 %}
+                                            <button type="button" id="toggle-color-btn-m" class="filter-toggle-btn">Show more</button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -550,48 +800,207 @@
                         {% endif %}
                         
                     </div>
-                 <div class="col-lg-4 primary-sidebar sticky-sidebar d-none d-lg-block" id="category-ul">
-                        
-                         <div class="sidebar-widget widget-category-2 mb-30">
-                        <h5 class="section-title style-1 mb-30">Category</h5>
-                        <ul class="list-unstyled">
-                            {% for cat in categories %}
-                            <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
-                                {% if cat.subcategories.all %}
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <!-- Main category name links to its page -->
-                                    <a class="text-dark fw-bold text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}">
-                                        {{ cat.category_name }} 
-                                    </a>
+                        <div class="col-lg-4 primary-sidebar d-none d-lg-block" id="category-ul">
+                            <!-- Categories -->
+                            <div class="sidebar-dropdown" id="dropdown-categories">
+                                <button class="dropdown-header" type="button">
+                                    Categories
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <ul class="list-unstyled">
+                                        {% for cat in categories %}
+                                        <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
+                                            {% if cat.subcategories.all %}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <a class="text-dark fw-bold text-decoration-none"
+                                                href="{% url 'filter_by_category' category_id=cat.id %}">
+                                                    {{ cat.category_name }}
+                                                </a>
+                                                <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
+                                                    <i class="fa fa-chevron-down"></i>
+                                                </button>
+                                            </div>
+                                            <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none;">
+                                                {% for sub in cat.subcategories.all %}
+                                                <li class="small">
+                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">
+                                                        --{{ sub.category_name }}
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% else %}
+                                            <div>
+                                                <a class="fw-bold text-dark text-decoration-none"
+                                                href="{% url 'filter_by_category' category_id=cat.id %}">
+                                                    {{ cat.category_name }}
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
 
-                                    <!-- Arrow icon toggles collapse only -->
+                            <!-- Price Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-price">
+                                <button class="dropdown-header" type="button">
+                                    Price
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="price-filter-form">
+                                        <ul class="filter-radio-list">
+                                            {% for val, label in PRICE_CHOICES %}
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="price" value="{{ val }}"
+                                                        {% if request.GET.price == val %}checked{% endif %}
+                                                        onchange="updateFilters('price-filter-form')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ label }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </form>
+                                </div>
+                            </div>
 
-                                    <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
-                                        <i class="fa fa-chevron-down"></i>
+                            <!-- Discount Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-discount">
+                                <button class="dropdown-header" type="button">
+                                    Discount
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="discount-filter-form">
+                                        <ul class="filter-radio-list">
+                                            {% for val, label in DISCOUNT_CHOICES %}
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="discount" value="{{ val }}"
+                                                        {% if request.GET.discount == val %}checked{% endif %}
+                                                        onchange="updateFilters('discount-filter-form')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ label }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Gender Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-gender">
+                                <button class="dropdown-header" type="button">
+                                    Gender
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="gender-filter-form">
+                                        <ul class="filter-radio-list">
+                                            {% for val, label in GENDER_CHOICES %}
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="gender" value="{{ val }}"
+                                                        {% if request.GET.gender == val %}checked{% endif %}
+                                                        onchange="updateFilters('gender-filter-form')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ label }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </form>
+                                </div>
+                            </div>
+                                <!-- Brand Filter --><!-- Brand Filter -->
+                                <div class="sidebar-dropdown" id="dropdown-brand">
+                                    <button class="dropdown-header" type="button">
+                                        Brand
+                                        <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                     </button>
+                                    <div class="dropdown-content-list">
+                                        <form id="brand-filter-form">
+                                            <ul class="filter-radio-list" id="brand-filter-list">
+                                                {% for val in brand_values %}
+                                                <li class="brand-item {% if forloop.counter > 10 %}hidden{% endif %}">
+                                                    <label>
+                                                        <input type="radio" name="brand" value="{{ val }}"
+                                                            {% if request.GET.brand == val %}checked{% endif %}
+                                                            onchange="updateFilters('brand-filter-form')"
+                                                            style="width: 13px; height: 13px;">
+                                                        {{ val }}
+                                                    </label>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% if brand_values|length > 10 %}
+                                            <button type="button" id="toggle-brand-btn" class="filter-toggle-btn">Show more</button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </div>
+                             <!-- Size Filter -->
+                            <!-- Size Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-size">
+                                <button class="dropdown-header" type="button">
+                                    Sizes
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="size-filter-form">
+                                        <ul class="filter-radio-list" id="size-filter-list">
+                                            {% for val in size_values %}
+                                            <li class="size-item {% if forloop.counter > 10 %}hidden{% endif %}">
+                                                <label>
+                                                    <input type="radio" name="size" value="{{ val }}"
+                                                        {% if request.GET.size == val %}checked{% endif %}
+                                                        onchange="updateFilters('size-filter-form')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ val }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% if size_values|length > 10 %}
+                                        <button type="button" id="toggle-size-btn" class="filter-toggle-btn">Show more</button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                            </div>
 
+                            <!-- Color Filter -->
+                            <div class="sidebar-dropdown" id="dropdown-color">
+                                <button class="dropdown-header" type="button">
+                                    Colors
+                                    <span class="chevron"><i class="fa fa-chevron-down"></i></span>
+                                </button>
+                                <div class="dropdown-content-list">
+                                    <form id="color-filter-form">
+                                        <ul class="filter-radio-list" id="color-filter-list">
+                                            {% for val in color_values %}
+                                            <li class="color-item {% if forloop.counter > 10 %}hidden{% endif %}">
+                                                <label>
+                                                    <input type="radio" name="color" value="{{ val }}"
+                                                        {% if request.GET.color == val %}checked{% endif %}
+                                                        onchange="updateFilters('color-filter-form')"
+                                                        style="width: 13px; height: 13px;">
+                                                    {{ val }}
+                                                </label>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% if color_values|length > 10 %}
+                                        <button type="button" id="toggle-color-btn" class="filter-toggle-btn">Show more</button>
+                                        {% endif %}
+                                    </form>
                                 </div>
-                                <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none; ">
-                                    {% for sub in cat.subcategories.all %}
-                                    <li class="small">
-                                        <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <!-- No subcategories -->
-                                <div>
-                                    <a class="fw-bold text-dark text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}">
-                                        {{ cat.category_name }}
-                                    </a>
-                                </div>
-                                {% endif %}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    
-                    
+                            </div>
+                        </div>             
                 </div>
             </div>
         </div>
@@ -775,5 +1184,76 @@
     window.addEventListener("resize", updateCategoryIcon);
 
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdowns = document.querySelectorAll('.sidebar-dropdown');
 
+    dropdowns.forEach(function (dropdown) {
+        const header = dropdown.querySelector('.dropdown-header');
+        header.addEventListener('click', function () {
+            dropdown.classList.toggle('open');
+        });
+    });
+});
+
+
+// Preserve existing filters (query parameters) when selecting a new one
+function updateFilters(formId) {
+    const form = document.getElementById(formId);
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    // Update parameters from current form
+    const formData = new FormData(form);
+    for (const [key, value] of formData.entries()) {
+        params.set(key, value);
+    }
+
+    // Redirect with combined filters
+    window.location.search = params.toString();
+}
+</script>
+
+
+
+<script>
+function setupToggle(buttonId, itemClass) {
+    const toggleBtn = document.getElementById(buttonId);
+    const items = document.querySelectorAll('.' + itemClass);
+    let visibleCount = 10;
+
+    if (!toggleBtn) return;
+
+    toggleBtn.addEventListener('click', () => {
+        const hiddenItems = Array.from(items).filter(item => item.classList.contains('hidden'));
+
+        if (hiddenItems.length > 0) {
+            // Show 5 more
+            hiddenItems.slice(0, 5).forEach(item => item.classList.remove('hidden'));
+            visibleCount += 5;
+
+            // If no more items to show, change button text
+            if (visibleCount >= items.length) {
+                toggleBtn.textContent = 'Show less';
+            }
+        } else {
+            // Show less (back to 10)
+            items.forEach((item, index) => {
+                if (index >= 10) item.classList.add('hidden');
+            });
+            visibleCount = 10;
+            toggleBtn.textContent = 'Show more';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    setupToggle('toggle-size-btn', 'size-item');
+    setupToggle('toggle-color-btn', 'color-item');
+    setupToggle('toggle-brand-btn', 'brand-item'); 
+    setupToggle('toggle-brand-btn-m', 'brand-item-m');
+    setupToggle('toggle-size-btn-m', 'size-item-m');
+    setupToggle('toggle-color-btn-m', 'color-item-m');
+});
+</script>
 {% endblock %}

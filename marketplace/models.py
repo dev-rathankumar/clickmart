@@ -27,3 +27,15 @@ class Tax(models.Model):
 
     def __str__(self):
         return self.tax_type
+    
+
+# Filter Seciton Choice fields 
+
+# Price 
+PRICE_CHOICES = [
+    ('0-499', '0 - 499'),
+    ('500-999', '500 - 999'),
+    ('1000-4999', '1000 - 4999'),
+    ('5000-9999', '5000 - 9999'),
+    ('10000+', 'Above 10000'),
+]
