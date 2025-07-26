@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import UserProfile, DeliveryAddress
 from .context_processors import get_cart_counter, get_cart_amounts
-from unified.models import Category, CategoryBrowsePage, ProductGallery,VariantAttributeValue, ProductVariantGroup
+from unified.models import Category, CategoryBrowsePage, ProductGallery,VariantAttributeValue, ProductVariantGroup,ProductAttribute,ProductAttributeValue
 
 from unified.models import Product
 
@@ -39,6 +39,10 @@ from collections import defaultdict
 from django.forms.models import model_to_dict
 from .utils import get_matching_variant_group,get_variant_combinations
 from django.core.serializers.json import DjangoJSONEncoder
+from .filters import PRICE_CHOICES, GENDER_CHOICES, DISCOUNT_CHOICES,GENDER_ALIAS_MAP
+from django.db.models.functions import Lower
+from django.db.models import F, ExpressionWrapper, FloatField
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 def marketplace(request):
     if get_or_set_current_location(request) is not None:
@@ -83,6 +87,12 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
     # Handle search query
     search_query = request.GET.get('search', None)
     sort_type = request.GET.get('sort', None)
+    price = request.GET.get('price', None)
+    gender = request.GET.get('gender', None)
+    discount = request.GET.get('discount', None)
+    brand = request.GET.get('brand', None)
+    size = request.GET.get('size', None)
+    color = request.GET.get('color', None)
 
     # Annotate product count for each category
     for cat in categories:
@@ -126,9 +136,79 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         products =  products.order_by('-sales_price')
     if sort_type == "asec":
         products =  products.order_by('sales_price')
+    if discount:
+        # Annotate discount percentage in the queryset
+        products = products.annotate(
+            discount_percentage=ExpressionWrapper(
+                (F('regular_price') - F('sales_price')) / F('regular_price') * 100,
+                output_field=FloatField()
+            )
+        )
 
+        # Convert choice to a numeric range
+        discount = discount.strip()
+        if discount == '60+':
+            products = products.filter(discount_percentage__gte=60)
+        elif '-' in discount:
+            min_discount, max_discount = map(int, discount.split('-'))
+            products = products.filter(discount_percentage__gte=min_discount, discount_percentage__lt=max_discount)
 
+    if brand:
+        brand_ids = ProductAttributeValue.objects.annotate(
+            attr_name_lower=Lower('attribute__name'),
+            attr_value_lower=Lower('value')
+        ).filter(
+            attr_name_lower='brand',
+            attr_value_lower=brand.lower()
+        ).values_list("product_id", flat=True)
+        products = products.filter(id__in=brand_ids)
 
+    if gender:
+        matched_aliases = None
+        for key, aliases in GENDER_ALIAS_MAP.items():
+            if gender.lower() in [a.lower() for a in aliases] or gender.lower() == key.lower():
+                matched_aliases = [a.lower() for a in aliases]
+                break
+
+        if matched_aliases:
+            gender_product_ids = ProductAttributeValue.objects.annotate(
+                value_lower=Lower("value")
+            ).filter(
+                attribute__name__iexact="gender",
+                value_lower__in=matched_aliases
+            ).values_list("product_id", flat=True)
+
+            products = products.filter(id__in=gender_product_ids)
+    # Filter by size (variant attribute)
+    if size:
+        size_ids = VariantAttributeValue.objects.annotate(
+            attr_name_lower=Lower('attribute__name'),
+            attr_value_lower=Lower('value'),
+        ).filter(
+            attr_name_lower='size',
+            attr_value_lower=size.lower(),
+        ).values_list("product_id", flat=True)
+        products = products.filter(id__in=size_ids)
+
+    # Filter by color (variant attribute)
+    if color:
+        color_ids = VariantAttributeValue.objects.annotate(
+            attr_name_lower=Lower('attribute__name'),
+            attr_value_lower=Lower('value')
+        ).filter(
+            attr_name_lower='color',
+            attr_value_lower=color.lower()
+        ).values_list("product_id", flat=True)
+        products = products.filter(id__in=color_ids)
+    # --- (OPTIONAL: Filtering by price range) ---
+    if price:
+        # price choice is like '0-499' or '10000+'
+        if '-' in price:
+            min_price, max_price = price.split('-')
+            products = products.filter(sales_price__gte=float(min_price), sales_price__lte=float(max_price))
+        elif price.endswith('+'):
+            min_price = int(price[:-1])
+            products = products.filter(sales_price__gte=min_price)
 
     opening_hours = OpeningHour.objects.filter(vendor=vendor).order_by('day', 'from_hour')
     today_date = date.today()
@@ -239,6 +319,37 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
             cart_product_ids.add(item['product'].id)
         elif hasattr(item, 'product') and item.product:  # For model instances
             cart_product_ids.add(item.product.id)
+
+    most_used_brands = (
+        ProductAttributeValue.objects
+        .filter(attribute__name__iexact="brand",product__vendor=vendor)
+        .annotate(normalized_brand=Lower("value"))
+        .values("normalized_brand")
+        .annotate(count=Count("id"))
+        .order_by("-count")  # Most used first
+    )
+    brand_values = [item["normalized_brand"] for item in most_used_brands]
+    print("most_used_brands ===> ", most_used_brands.count())
+    most_used_colors = (
+        VariantAttributeValue.objects
+        .filter(attribute__name__iexact="color",product__vendor=vendor)
+        .annotate(normalized_color=Lower("value"))
+        .values("normalized_color")
+        .annotate(count=Count("id"))
+        .order_by("-count")  # Most used first
+    )
+    color_values = [item["normalized_color"] for item in most_used_colors]
+    most_used_sizes = (
+        VariantAttributeValue.objects
+        .filter(attribute__name__iexact="size",product__vendor=vendor)
+        .annotate(normalized_size=Lower("value"))
+        .values("normalized_size")
+        .annotate(count=Count("id"))
+        .order_by("-count")  # Most used first
+    )
+    size_values = [item["normalized_size"] for item in most_used_sizes]
+
+
     context = {
         'vendor': vendor,
         'categories': categories,
@@ -251,10 +362,15 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         'cart_product_ids': cart_product_ids,
         'cart_items': cart_items,
         'total_vendor_products': products,
+        'PRICE_CHOICES': PRICE_CHOICES,
+        'DISCOUNT_CHOICES': DISCOUNT_CHOICES, 
+        'GENDER_CHOICES': GENDER_CHOICES,
+        'brand_values': brand_values,
+        'color_values': color_values,
+        'size_values': size_values,
 
     }
     return render(request, 'marketplace/vendor_detail.html', context)
-from django.views.decorators.csrf import ensure_csrf_cookie
 
 @ensure_csrf_cookie
 def view_Product(request, vendor_slug, product_slug):
@@ -934,6 +1050,7 @@ def checkout(request):
 def All_products(request, category_id=None, subcategory_id=None):
     # Get only base categories (top-level)
     categories = Category.objects.filter(is_active=True, parent=None)
+    
 
     # Annotate product count for each top-level category
     for cat in categories:
@@ -952,6 +1069,12 @@ def All_products(request, category_id=None, subcategory_id=None):
     search_query = request.GET.get('search', None)
     store_type = request.GET.get('store_type', None)
     sort_type = request.GET.get('sort', None)
+    price = request.GET.get('price', None)
+    gender = request.GET.get('gender', None)
+    discount = request.GET.get('discount', None)
+    brand = request.GET.get('brand', None)
+    size = request.GET.get('size', None)
+    color = request.GET.get('color', None)
     search_type = request.GET.get('type', 'products')
 
     # Initialize context with default values
@@ -1039,6 +1162,80 @@ def All_products(request, category_id=None, subcategory_id=None):
         else:
             # Default ordering to avoid pagination warning
             products = products.order_by('id')
+
+        if discount:
+            # Annotate discount percentage in the queryset
+            products = products.annotate(
+                discount_percentage=ExpressionWrapper(
+                    (F('regular_price') - F('sales_price')) / F('regular_price') * 100,
+                    output_field=FloatField()
+                )
+            )
+
+            # Convert choice to a numeric range
+            discount = discount.strip()
+            if discount == '60+':
+                products = products.filter(discount_percentage__gte=60)
+            elif '-' in discount:
+                min_discount, max_discount = map(int, discount.split('-'))
+                products = products.filter(discount_percentage__gte=min_discount, discount_percentage__lt=max_discount)
+
+        if brand:
+            brand_ids = ProductAttributeValue.objects.annotate(
+                attr_name_lower=Lower('attribute__name'),
+                attr_value_lower=Lower('value')
+            ).filter(
+                attr_name_lower='brand',
+                attr_value_lower=brand.lower()
+            ).values_list("product_id", flat=True)
+            products = products.filter(id__in=brand_ids)
+
+        if gender:
+            matched_aliases = None
+            for key, aliases in GENDER_ALIAS_MAP.items():
+                if gender.lower() in [a.lower() for a in aliases] or gender.lower() == key.lower():
+                    matched_aliases = [a.lower() for a in aliases]
+                    break
+
+            if matched_aliases:
+                gender_product_ids = ProductAttributeValue.objects.annotate(
+                    value_lower=Lower("value")
+                ).filter(
+                    attribute__name__iexact="gender",
+                    value_lower__in=matched_aliases
+                ).values_list("product_id", flat=True)
+
+                products = products.filter(id__in=gender_product_ids)
+        # Filter by size (variant attribute)
+        if size:
+            size_ids = VariantAttributeValue.objects.annotate(
+                attr_name_lower=Lower('attribute__name'),
+                attr_value_lower=Lower('value')
+            ).filter(
+                attr_name_lower='size',
+                attr_value_lower=size.lower()
+            ).values_list("product_id", flat=True)
+            products = products.filter(id__in=size_ids)
+
+        # Filter by color (variant attribute)
+        if color:
+            color_ids = VariantAttributeValue.objects.annotate(
+                attr_name_lower=Lower('attribute__name'),
+                attr_value_lower=Lower('value')
+            ).filter(
+                attr_name_lower='color',
+                attr_value_lower=color.lower()
+            ).values_list("product_id", flat=True)
+            products = products.filter(id__in=color_ids)
+        # --- (OPTIONAL: Filtering by price range) ---
+        if price:
+            # price choice is like '0-499' or '10000+'
+            if '-' in price:
+                min_price, max_price = price.split('-')
+                products = products.filter(sales_price__gte=float(min_price), sales_price__lte=float(max_price))
+            elif price.endswith('+'):
+                min_price = int(price[:-1])
+                products = products.filter(sales_price__gte=min_price)
 
         # Handle cart items for both authenticated and guest users
         cart_items = []
@@ -1135,6 +1332,35 @@ def All_products(request, category_id=None, subcategory_id=None):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
+
+        most_used_brands = (
+            ProductAttributeValue.objects
+            .filter(attribute__name__iexact="brand")
+            .annotate(normalized_brand=Lower("value"))
+            .values("normalized_brand")
+            .annotate(count=Count("id"))
+            .order_by("-count")  # Most used first
+        )
+        brand_values = [item["normalized_brand"] for item in most_used_brands]
+        most_used_colors = (
+            VariantAttributeValue.objects
+            .filter(attribute__name__iexact="color")
+            .annotate(normalized_color=Lower("value"))
+            .values("normalized_color")
+            .annotate(count=Count("id"))
+            .order_by("-count")  # Most used first
+        )
+        color_values = [item["normalized_color"] for item in most_used_colors]
+        most_used_sizes = (
+            VariantAttributeValue.objects
+            .filter(attribute__name__iexact="size")
+            .annotate(normalized_size=Lower("value"))
+            .values("normalized_size")
+            .annotate(count=Count("id"))
+            .order_by("-count")  # Most used first
+        )
+        size_values = [item["normalized_size"] for item in most_used_sizes]
+
         context.update({
             'products': page_obj,
             'show_pagination': paginator.num_pages > 1,
@@ -1142,6 +1368,12 @@ def All_products(request, category_id=None, subcategory_id=None):
             'cart_items': cart_items,
             'current_category_id': category_id,
             'total_vendor_products': products,
+            'PRICE_CHOICES': PRICE_CHOICES,
+            'DISCOUNT_CHOICES': DISCOUNT_CHOICES, 
+            'GENDER_CHOICES': GENDER_CHOICES,
+            'brand_values': brand_values,
+            'color_values': color_values,
+            'size_values': size_values,
         })
 
     return render(request, 'marketplace/products.html', context)
