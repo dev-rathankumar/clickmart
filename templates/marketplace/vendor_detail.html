@@ -594,7 +594,7 @@
                                                             {% if request.GET.brand == val %}checked{% endif %}
                                                             onchange="updateFilters('brand-filter-form-m')"
                                                             style="width: 13px; height: 13px;">
-                                                        {{ val }}
+                                                        {{ val|capfirst }}
                                                     </label>
                                                 </li>
                                                 {% endfor %}
@@ -624,7 +624,7 @@
                                                             {% if request.GET.size == val %}checked{% endif %}
                                                             onchange="updateFilters('size-filter-form-m')"
                                                             style="width: 13px; height: 13px;">
-                                                        {{ val }}
+                                                        {{ val|capfirst }}
                                                     </label>
                                                 </li>
                                                 {% endfor %}
@@ -655,7 +655,7 @@
                                                             {% if request.GET.color == val %}checked{% endif %}
                                                             onchange="updateFilters('color-filter-form-m')"
                                                             style="width: 13px; height: 13px;">
-                                                        {{ val }}
+                                                        {{ val|capfirst }}
                                                     </label>
                                                 </li>
                                                 {% endfor %}
@@ -1024,7 +1024,7 @@
                                                             {% if request.GET.brand == val %}checked{% endif %}
                                                             onchange="updateFilters('brand-filter-form')"
                                                             style="width: 13px; height: 13px;">
-                                                        {{ val }}
+                                                        {{ val|capfirst }}
                                                     </label>
                                                 </li>
                                                 {% endfor %}
@@ -1054,7 +1054,7 @@
                                                         {% if request.GET.size == val %}checked{% endif %}
                                                         onchange="updateFilters('size-filter-form')"
                                                         style="width: 13px; height: 13px;">
-                                                    {{ val }}
+                                                    {{ val|capfirst }}
                                                 </label>
                                             </li>
                                             {% endfor %}
@@ -1087,7 +1087,7 @@
                                                         {% if request.GET.color == val %}checked{% endif %}
                                                         onchange="updateFilters('color-filter-form')"
                                                         style="width: 13px; height: 13px;">
-                                                    {{ val }}
+                                                    {{ val|capfirst }}
                                                 </label>
                                             </li>
                                             {% endfor %}
