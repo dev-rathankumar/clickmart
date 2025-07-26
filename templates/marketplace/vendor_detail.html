@@ -904,7 +904,7 @@
                                 {% if cat.subcategories.all %}
                                 <div class="d-flex justify-content-between align-items-center">
                                     <!-- Main category name links to its page -->
-                                    <a class="text-dark fw-bold text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}">
+                                    <a class="text-dark fw-bold text-decoration-none" href="{% url 'vendor_detail_filter_by_category' vendor_slug=vendor.vendor_slug category_id=cat.id %}" >
                                         {{ cat.category_name }} 
                                     </a>
 
@@ -915,8 +915,8 @@
                                 </div>
                                 <ul id="subcat-large-{{ cat.id }}" class="subcategory-list" style="display: none; ">
                                     {% for sub in cat.subcategories.all %}
-                                    <li class="small">
-                                        <a class="text-decoration-none" href="{% url 'vendor_detail_filter_by_subcategory' vendor_slug=vendor.vendor_slug subcategory_id=sub.id %}">--{{ sub.category_name }}</a>
+                                    <li class="small" style="padding: 5px 10px !important; font-size: 14px !important;">
+                                        <a class="text-decoration-none" href="{% url 'vendor_detail_filter_by_subcategory' vendor_slug=vendor.vendor_slug subcategory_id=sub.id %}"style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 14px !important;">--{{ sub.category_name }}</a>
                                     </li>
                                     {% endfor %}
                                 </ul>

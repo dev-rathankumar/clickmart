@@ -344,32 +344,32 @@
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
-                                    <ul class="list-unstyled">
+                                <ul class="list-unstyled">
                                         {% for cat in categories %}
                                         <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
                                             {% if cat.subcategories.all %}
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <a class="text-dark fw-bold text-decoration-none"
-                                                href="{% url 'filter_by_category' category_id=cat.id %}" style="font-size: 16px !important; margin-bottom: 8px !important; padding: 9px 5px !important;">
-                                                    {{ cat.category_name }}
+                                                <!-- Main category name links to its page -->
+                                                <a class="text-dark fw-bold text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}"style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 16px !important;">
+                                                    {{ cat.category_name }} 
                                                 </a>
-                                                <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
+
+                                                <!-- Arrow icon toggles collapse only -->
+                                                 <button class="toggle-btn" data-target="subcats-{{ cat.id }}" style="border: none; background: none;">
                                                     <i class="fa fa-chevron-down"></i>
                                                 </button>
                                             </div>
-                                            <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none;">
+                                            <ul class="subcategory-list mt-2 ps-3" id="subcats-{{ cat.id }}" style="display: none;">
                                                 {% for sub in cat.subcategories.all %}
-                                                <li class="small">
-                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}" style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 16px !important;">
-                                                        --{{ sub.category_name }}
-                                                    </a>
+                                                <li class="small" style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 16px !important;">
+                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}" style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 16px !important;">--{{ sub.category_name }}</a>
                                                 </li>
                                                 {% endfor %}
                                             </ul>
                                             {% else %}
+                                            <!-- No subcategories -->
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <a class="fw-bold text-dark text-decoration-none"
-                                                href="{% url 'filter_by_category' category_id=cat.id %}" style="font-size: 16px !important; margin-bottom: 8px !important; padding: 9px 5px !important;">
+                                                <a class="fw-bold text-dark text-decoration-none" href="{% url 'filter_by_category'  category_id=cat.id %}" style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 16px !important;">
                                                     {{ cat.category_name }}
                                                 </a>
                                             </div>
@@ -814,7 +814,7 @@
                                             {% if cat.subcategories.all %}
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <a class="text-dark fw-bold text-decoration-none"
-                                                href="{% url 'filter_by_category' category_id=cat.id %}">
+                                                href="{% url 'filter_by_category' category_id=cat.id %}" style="font-size: 15px !important; margin-bottom: 0px !important; padding: 5px 5px !important;">
                                                     {{ cat.category_name }}
                                                 </a>
                                                 <button class="toggle-btn" data-target="subcat-{{ cat.id }}" style="border: none; background: none; cursor: pointer;">
@@ -823,17 +823,17 @@
                                             </div>
                                             <ul id="subcat-{{ cat.id }}" class="subcategory-list" style="display: none;">
                                                 {% for sub in cat.subcategories.all %}
-                                                <li class="small">
-                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}">
+                                                <li class="small" style="padding: 5px 10px !important; font-size: 14px !important;">
+                                                    <a class="text-decoration-none" href="{% url 'filter_by_subcategory' subcategory_id=sub.id %}" style="padding: 9px 10px !important;margin-bottom:15px !important; font-size: 14px !important;">
                                                         --{{ sub.category_name }}
                                                     </a>
                                                 </li>
                                                 {% endfor %}
                                             </ul>
                                             {% else %}
-                                            <div>
+                                            <div class="d-flex justify-content-between align-items-center">
                                                 <a class="fw-bold text-dark text-decoration-none"
-                                                href="{% url 'filter_by_category' category_id=cat.id %}">
+                                                href="{% url 'filter_by_category' category_id=cat.id %}" style="font-size: 15px !important; margin-bottom: 0px !important; padding: 5px 5px !important;">
                                                     {{ cat.category_name }}
                                                 </a>
                                             </div>
