@@ -1265,6 +1265,10 @@ def upload_csv(request):
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             file = form.cleaned_data['file']
+            # Validate file type
+            if not file.name.endswith('.csv'):
+                messages.error(request, "Please upload a valid CSV file.")
+                return redirect('upload_csv')
             decoded_file = file.read().decode('utf-8')
             io_string = io.StringIO(decoded_file)
             reader = csv.reader(io_string)
