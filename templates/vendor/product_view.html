@@ -201,7 +201,7 @@
   <main class="main">
     <div class="page-header breadcrumb-wrap">
         <div class="container-fluid">
-            <div class="breadcrumb">
+            <div class="breadcrumb" style="margin-bottom:0 !important">
                 <a href="/" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
                 <span></span> <a href="{% url 'filter_by_category' category_id=product.category.id %}">{{ product.category }}</a> <span></span> {{ product.product_name }}
             </div>
@@ -399,14 +399,18 @@
                                     <!-- Detail Info -->
                                 </div>
                             </div>
+                          {% if product.product_desc or product.full_specification or product.attributes.all %}
                             <div class="product-info" id="product-spec-section">
                                 <div class="tab-style3">
+                                  {% if product.product_desc or product.full_specification %}
                                     <ul class="nav nav-tabs text-uppercase">
                                         <li class="nav-item">
                                             <a class="mb-1" data-bs-toggle="tab">About Product</a>
                                         </li>
                                     </ul>
+                                    {% endif %}
                                     <div class="tab-content shop_info_tab entry-main-content">
+                                      {% if product.product_desc or product.full_specification %}
                                         <div class="tab-pane fade show active">
                                             <div class="">
                                                {{ product.product_desc }}
@@ -415,32 +419,36 @@
                                             <div class="">
                                               {{ product.full_specification }}
                                            </div>
+                                           {% endif %}
                                         </div>
-                                    <ul class="nav nav-tabs text-uppercase mt-5 mb-3">
-                                        <li class="nav-item">
-                                            <a class="mb-1" data-bs-toggle="tab">Product Details</a>
-                                        </li>
-                                    </ul>
-                                        <!-- Full Attributes Table Styled -->
-                                  <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
-                                    <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
-                                        <tbody>
-                                           {% for attr in product.attributes.all %}
-                                            <tr style="background-color: {% cycle '#ffffff' '#f2f2f2' %};">
-                                                <td style="width: 30%; font-weight: 600; padding: 12px 16px; vertical-align: top; color: #333;">
-                                                    {{ attr.attribute.name }}
-                                                </td>
-                                                <td style="padding: 12px 16px; vertical-align: top; color: #444;">
-                                                    {{ attr.value }}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                                    </div>
+                                      {% if product.attributes.all %} 
+                                            <ul class="nav nav-tabs text-uppercase mt-5 mb-3">
+                                                <li class="nav-item">
+                                                    <a class="mb-1" data-bs-toggle="tab">Product Details</a>
+                                                </li>
+                                            </ul>
+                                                <!-- Full Attributes Table Styled -->
+                                          <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                                            <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+                                                <tbody>
+                                                  {% for attr in product.attributes.all %}
+                                                    <tr style="background-color: {% cycle '#ffffff' '#f2f2f2' %};">
+                                                        <td style="width: 30%; font-weight: 600; padding: 12px 16px; vertical-align: top; color: #333;">
+                                                            {{ attr.attribute.name }}
+                                                        </td>
+                                                        <td style="padding: 12px 16px; vertical-align: top; color: #444;">
+                                                            {{ attr.value }}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                      {% endif %}
+                                     </div>
                                 </div>
                             </div>
+                          {% endif %}
                             <div class="row mt-60">
                                 <div class="col-12">
                                     <h2 class="section-title style-1 mb-30">Related products</h2>
