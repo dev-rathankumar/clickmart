@@ -84,7 +84,8 @@
                                     </div> {% endcomment %}
 
                                     <div class="mb-2">
-                                        {{ form.file }}
+                                        <input type="file" name="file" id="id_file" accept=".csv,.xls,.xlsx,.xlsm,.xlt,.xltx,.xltm,.ods,.tsv" class="form-control d-none" required>
+
                                         <label for="id_file" class="custom-upload-btn">
                                         <i class="fas fa-upload"></i>
                                         <span id="upload-btn-text">Upload CSV File</span>
