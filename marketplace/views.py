@@ -368,6 +368,8 @@ def vendor_detail(request, vendor_slug, category_id=None, subcategory_id=None):
         'brand_values': brand_values,
         'color_values': color_values,
         'size_values': size_values,
+        "is_filter_active": bool(request.GET) or category_id or subcategory_id,
+        "selected_category": category_id or subcategory_id,
 
     }
     return render(request, 'marketplace/vendor_detail.html', context)
@@ -1374,6 +1376,8 @@ def All_products(request, category_id=None, subcategory_id=None):
             'brand_values': brand_values,
             'color_values': color_values,
             'size_values': size_values,
+            "is_filter_active": bool(request.GET) or category_id or subcategory_id,
+            "selected_category": category_id or subcategory_id,
         })
 
     return render(request, 'marketplace/products.html', context)

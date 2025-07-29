@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load query_filters %}
 {% block content %}
 <style>
 	.product-extra-link2 .button.button-add-to-cart {
@@ -273,7 +274,7 @@
                             {% endif %}
                             
                         </div>
-                        <div class="sort-by-product-area">
+                        <div class="sort-by-product-area mb-10">
                             {% comment %} <div class="sort-by-cover mr-10">
                                 <div class="sort-by-product-wrap">
                                     <div class="sort-by">
@@ -337,13 +338,24 @@
                         </div>
                         <div class="d-lg-none d-block">
                              <div class="col-lg-4 primary-sidebar sticky-sidebar " id="category-ul">
+                            {% if is_filter_active %}
+                                <div class="d-flex justify-content-between align-items-center mb-3 px-2 mt-3">
+                                    <h5><strong>Filters</strong></h5>
+                                    <a href="{% url 'all_products' %}" class="text-danger text-decoration-none">Clear All</a>
+                                </div>
+                            {% endif %}
                             <!-- Categories -->
-                            <div class="sidebar-dropdown" id="dropdown-categories-m">
+                            <div class="sidebar-dropdown {% if selected_category %}open{% endif %}" id="dropdown-categories-m">
                                 <button class="dropdown-header" type="button">
                                     Categories
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                     {% if selected_category %}
+                                                <div class="text-end mb-2">
+                                                    <a href="{% url 'all_products' %}" class="text-danger text-decoration-none">Clear</a>
+                                                </div>
+                                        {% endif %}
                                 <ul class="list-unstyled">
                                         {% for cat in categories %}
                                         <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
@@ -381,12 +393,17 @@
                             </div>
 
                             <!-- Price Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-price-m">
+                            <div class="sidebar-dropdown  {% if request.GET.price %}open{% endif %}" id="dropdown-price-m">
                                 <button class="dropdown-header" type="button">
                                     Price
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if request.GET.price %}
+                                        <div class="text-end">
+                                        <a href="{{ request|remove_query_param:'price' }}" class="text-danger text-decoration-none">Clear</a>
+                                        </div>
+                                    {% endif %}
                                     <form id="price-filter-form-m">
                                         <ul class="filter-radio-list">
                                             {% for val, label in PRICE_CHOICES %}
@@ -406,12 +423,17 @@
                             </div>
 
                             <!-- Discount Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-discount-m">
+                            <div class="sidebar-dropdown {% if request.GET.discount %}open{% endif %}" id="dropdown-discount-m">
                                 <button class="dropdown-header" type="button">
                                     Discount
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if request.GET.discount %}
+                                        <div class="text-end">
+                                        <a href="{{ request|remove_query_param:'discount' }}" class="text-danger text-decoration-none">Clear</a>
+                                        </div>
+                                    {% endif %}
                                     <form id="discount-filter-form-m">
                                         <ul class="filter-radio-list">
                                             {% for val, label in DISCOUNT_CHOICES %}
@@ -430,12 +452,17 @@
                                 </div>
                             </div>
                             <!-- Gender Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-gender-m">
+                            <div class="sidebar-dropdown {% if request.GET.gender %}open{% endif %}" id="dropdown-gender-m">
                                 <button class="dropdown-header" type="button">
                                     Gender
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if request.GET.gender %}
+                                        <div class="text-end">
+                                        <a href="{{ request|remove_query_param:'gender' }}" class="text-danger text-decoration-none">Clear</a>
+                                        </div>
+                                    {% endif %}
                                     <form id="gender-filter-form-m">
                                         <ul class="filter-radio-list">
                                             {% for val, label in GENDER_CHOICES %}
@@ -454,12 +481,17 @@
                                 </div>
                             </div>
                            <!-- Brand Filter -->
-                                <div class="sidebar-dropdown" id="dropdown-brand-m">
+                                <div class="sidebar-dropdown {% if request.GET.brand %}open{% endif %}" id="dropdown-brand-m">
                                     <button class="dropdown-header" type="button">
                                         Brand
                                         <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                     </button>
                                     <div class="dropdown-content-list">
+                                        {% if request.GET.brand %}
+                                            <div class="text-end">
+                                            <a href="{{ request|remove_query_param:'brand' }}" class="text-danger text-decoration-none">Clear</a>
+                                            </div>
+                                        {% endif %}
                                         <form id="brand-filter-form-m">
                                             <ul class="filter-radio-list" id="brand-filter-list-m">
                                                 {% for val in brand_values %}
@@ -481,13 +513,18 @@
                                     </div>
                                 </div>
 
-                                                    <!-- Size Filter -->
-                                <div class="sidebar-dropdown" id="dropdown-size-m">
+                                <!-- Size Filter -->
+                                <div class="sidebar-dropdown {% if request.GET.size %}open{% endif %}" id="dropdown-size-m">
                                     <button class="dropdown-header" type="button">
                                         Sizes
                                         <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                     </button>
                                     <div class="dropdown-content-list">
+                                         {% if request.GET.size %}
+                                            <div class="text-end">
+                                            <a href="{{ request|remove_query_param:'size' }}" class="text-danger text-decoration-none">Clear</a>
+                                            </div>
+                                        {% endif %}
                                         <form id="size-filter-form-m">
                                             <ul class="filter-radio-list" id="size-filter-list-m">
                                                 {% for val in size_values %}
@@ -510,12 +547,17 @@
                                 </div>
 
                                                         <!-- Color Filter -->
-                                <div class="sidebar-dropdown" id="dropdown-color-m">
+                                <div class="sidebar-dropdown {% if request.GET.color %}open{% endif %}" id="dropdown-color-m">
                                     <button class="dropdown-header" type="button">
                                         Colors
                                         <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                     </button>
                                     <div class="dropdown-content-list">
+                                        {% if request.GET.color %}
+                                            <div class="text-end">
+                                            <a href="{{ request|remove_query_param:'color' }}" class="text-danger text-decoration-none">Clear</a>
+                                            </div>
+                                        {% endif %}
                                         <form id="color-filter-form-m">
                                             <ul class="filter-radio-list" id="color-filter-list-m">
                                                 {% for val in color_values %}
@@ -801,13 +843,25 @@
                         
                     </div>
                         <div class="col-lg-4 primary-sidebar d-none d-lg-block" id="category-ul">
+                            {% if is_filter_active %}
+                                <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                                    <h5><strong>Filters</strong></h5>
+                                    <a href="{% url 'all_products' %}" class="text-danger text-decoration-none">Clear All</a>
+                                </div>
+                            {% endif %}
                             <!-- Categories -->
-                            <div class="sidebar-dropdown" id="dropdown-categories">
+                            <div class="sidebar-dropdown {% if selected_category %}open{% endif %}" id="dropdown-categories">
                                 <button class="dropdown-header" type="button">
                                     Categories
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if selected_category %}
+                                                <div class="text-end mb-2">
+                                                    <a href="{% url 'all_products' %}" class="text-danger text-decoration-none">Clear</a>
+                                                </div>
+                                        {% endif %}
+        
                                     <ul class="list-unstyled">
                                         {% for cat in categories %}
                                         <li class="mb-2" style="display: block !important; line-height: 20px; text-align: left;">
@@ -845,12 +899,18 @@
                             </div>
 
                             <!-- Price Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-price">
+                            <div class="sidebar-dropdown  {% if request.GET.price %}open{% endif %}" id="dropdown-price">
                                 <button class="dropdown-header" type="button">
                                     Price
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
-                                <div class="dropdown-content-list">
+                               <div class="dropdown-content-list">
+
+                                    {% if request.GET.price %}
+                                        <div class="text-end">
+                                        <a href="{{ request|remove_query_param:'price' }}" class="text-danger text-decoration-none">Clear</a>
+                                        </div>
+                                    {% endif %}
                                     <form id="price-filter-form">
                                         <ul class="filter-radio-list">
                                             {% for val, label in PRICE_CHOICES %}
@@ -870,12 +930,17 @@
                             </div>
 
                             <!-- Discount Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-discount">
+                            <div class="sidebar-dropdown {% if request.GET.discount %}open{% endif %}" id="dropdown-discount">
                                 <button class="dropdown-header" type="button">
                                     Discount
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                     {% if request.GET.discount %}
+                                        <div class="text-end">
+                                        <a href="{{ request|remove_query_param:'discount' }}" class="text-danger text-decoration-none">Clear</a>
+                                        </div>
+                                    {% endif %}
                                     <form id="discount-filter-form">
                                         <ul class="filter-radio-list">
                                             {% for val, label in DISCOUNT_CHOICES %}
@@ -894,12 +959,17 @@
                                 </div>
                             </div>
                             <!-- Gender Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-gender">
+                            <div class="sidebar-dropdown {% if request.GET.gender %}open{% endif %}" id="dropdown-gender">
                                 <button class="dropdown-header" type="button">
                                     Gender
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if request.GET.gender %}
+                                        <div class="text-end">
+                                        <a href="{{ request|remove_query_param:'gender' }}" class="text-danger text-decoration-none">Clear</a>
+                                        </div>
+                                    {% endif %}
                                     <form id="gender-filter-form">
                                         <ul class="filter-radio-list">
                                             {% for val, label in GENDER_CHOICES %}
@@ -917,13 +987,18 @@
                                     </form>
                                 </div>
                             </div>
-                                <!-- Brand Filter --><!-- Brand Filter -->
-                                <div class="sidebar-dropdown" id="dropdown-brand">
+                                <!-- Brand Filter -->
+                                <div class="sidebar-dropdown {% if request.GET.brand %}open{% endif %}" id="dropdown-brand">
                                     <button class="dropdown-header" type="button">
                                         Brand
                                         <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                     </button>
                                     <div class="dropdown-content-list">
+                                        {% if request.GET.brand %}
+                                            <div class="text-end">
+                                            <a href="{{ request|remove_query_param:'brand' }}" class="text-danger text-decoration-none">Clear</a>
+                                            </div>
+                                        {% endif %}
                                         <form id="brand-filter-form">
                                             <ul class="filter-radio-list" id="brand-filter-list">
                                                 {% for val in brand_values %}
@@ -945,13 +1020,17 @@
                                     </div>
                                 </div>
                              <!-- Size Filter -->
-                            <!-- Size Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-size">
+                            <div class="sidebar-dropdown {% if request.GET.size %}open{% endif %}" id="dropdown-size">
                                 <button class="dropdown-header" type="button">
                                     Sizes
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if request.GET.size %}
+                                            <div class="text-end">
+                                            <a href="{{ request|remove_query_param:'size' }}" class="text-danger text-decoration-none">Clear</a>
+                                            </div>
+                                        {% endif %}
                                     <form id="size-filter-form">
                                         <ul class="filter-radio-list" id="size-filter-list">
                                             {% for val in size_values %}
@@ -974,12 +1053,17 @@
                             </div>
 
                             <!-- Color Filter -->
-                            <div class="sidebar-dropdown" id="dropdown-color">
+                            <div class="sidebar-dropdown {% if request.GET.color %}open{% endif %}" id="dropdown-color">
                                 <button class="dropdown-header" type="button">
                                     Colors
                                     <span class="chevron"><i class="fa fa-chevron-down"></i></span>
                                 </button>
                                 <div class="dropdown-content-list">
+                                    {% if request.GET.color %}
+                                            <div class="text-end">
+                                            <a href="{{ request|remove_query_param:'color' }}" class="text-danger text-decoration-none">Clear</a>
+                                            </div>
+                                        {% endif %}
                                     <form id="color-filter-form">
                                         <ul class="filter-radio-list" id="color-filter-list">
                                             {% for val in color_values %}
