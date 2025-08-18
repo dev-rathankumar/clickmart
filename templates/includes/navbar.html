@@ -785,12 +785,11 @@
                 <div
                   class="mobile-header-category-icon d-flex justify-content-center align-items-center mb-2"
                 >
-                  <img
-                    src="{{ cat.category_image.url }}"
-                    class="img-fluid"
-                    alt="{{ cat.category_name }}"
-                    style="width: 2rem; height: 2rem"
-                  />
+              {% if cat.category_image and cat.category_image.url %}                
+                <img src="{{ cat.category_image.url }}"class="img-fluid"alt="{{ cat.category_name }}"style="width: 2rem; height: 2rem"/>
+              {% else %}
+                <img src=""class="img-fluid"alt="{{ cat.category_name }}"style="width: 2rem; height: 2rem"/>
+              {% endif %}
                 </div>
                 <span
                   class="d-block text-dark mobile-header-category-title lh-1 fw-semibold text-dark ms-fs-12 text-truncate"

@@ -1,0 +1,37 @@
+GST Return Module – Proposed Features  
+1. Sales GST Tracking:
+Record GST on all sales invoices (B2B, B2C, Exports)
+Proper breakup of CGST, SGST, IGST
+2.  GSTR Report Generation
+Generate GSTR-1 (Outward Supplies)
+Generate GSTR-3B (Summary Return)
+GSTR-9 (Annual Return)
+3.  JSON/Excel Export
+Export returns in formats accepted by the GST Portal (for filing)
+Export monthly Excel summary reports
+4.  Credit & Debit Notes
+  Handle adjustments and reflect them in GST reports
+5.  HSN Summary Report 
+Generate item-wise summary based on HSN codes 
+6.  GSTIN & HSN Validation
+Automatic validation of GSTIN formats and HSN codes
+7.  Multi-Store Summary (if applicable) 
+Consolidate GST reports from all vendor stores (if multiple store setups) 
+8.  API Integration with GST Filing Platforms 
+Auto filing via GSPs like ClearTax, GSTHero, etc.
+
+
+
+
+
+
+Inward Module – Proposed Features
+1. Inward Purchase Entry
+Add and manage all purchase bills from suppliers
+Capture supplier GSTIN, invoice date, item details, and GST breakup
+2. Input Tax Credit (ITC) Calculation
+Track how much GST you can claim back based on purchases.
+3. Purchase Register
+Monthly report of all inward transactions with filters
+4.  GSTR-2A Reconciliation Support
+Compare purchase data with auto-fetched data from GST portal

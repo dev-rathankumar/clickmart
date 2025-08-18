@@ -56,6 +56,18 @@ class UserForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("Password does not match!")
         return cleaned_data
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        return email
+    def validate_unique(self):
+        exclude = self._get_validation_exclusions()
+        try:
+            self.instance.validate_unique(exclude=exclude)
+        except forms.ValidationError as e:
+            if 'email' in e.error_dict:
+                e.error_dict.pop('email')  # remove email unique check
+            if e.error_dict:
+                raise forms.ValidationError(e.error_dict)
 
 class UserProfileForm(forms.ModelForm):
     address = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Start typing...', 'required': 'required'}))

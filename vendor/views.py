@@ -285,6 +285,7 @@ def import_products(request):
                             category_name=subcategory_name,
                             category_code=f"SUB-{subcategory_name.capitalize()}-{category.category_code}-{vendor.id}",
                             slug=slug,
+                            store_type=vendor.store_type,
                             parent=category,  # Setting the main category as parent
                             vendor_subcategory_reference_id=vendor.id,
                             description="",
@@ -478,6 +479,7 @@ def add_sub_category(request, category_id=None):
                     subcategory = form.save(commit=False)
                     subcategory.vendor_subcategory_reference_id = vendor.id
                     subcategory.parent = main_category
+                    subcategory.store_type=main_category.store_type
                     subcategory.category_code = f"SUB-{slugify(subcategory.category_name)}-{main_category.category_code}-{vendor.id}"
                     subcategory.slug = slugify(f"{subcategory.category_name}{main_category}{vendor.id}")
                     subcategory.save()
@@ -522,7 +524,7 @@ def edit_subcategory(request, category_id=None, pk=None):
         if not subcategory.parent:
             messages.error(request, "This is a main category, not a subcategory.")
             return redirect('category_builder')
-
+        print("subcategroy ===>", main_category.store_type)
         if request.method == 'POST':
             form = SubCategoryForm(request.POST, request.FILES,instance=subcategory)
             
@@ -535,8 +537,8 @@ def edit_subcategory(request, category_id=None, pk=None):
                     category_name = form.cleaned_data['category_name']
                     subcategory = form.save(commit=False)
                     subcategory.vendor_subcategory_reference_id = vendor.id
+                    subcategory.store_type=main_category.store_type
                     subcategory.category_code = f"SUB-{slugify(subcategory.category_name)}-{main_category.category_code}-{vendor.id}"
-                    subcategory.store_type = StoreType.objects.get(name=vendor.store_type)
                     subcategory.slug = slugify(f"{subcategory.category_name}{main_category or subcategory.parent}{vendor.id}")
                     subcategory.parent = main_category or subcategory.parent  # Fallback if main_category is None
                     subcategory.save()
@@ -544,6 +546,7 @@ def edit_subcategory(request, category_id=None, pk=None):
                     messages.success(request, 'Subcategory updated successfully!')
                     return redirect('category_builder')
                 except Exception as e:
+                    print(e)
                     messages.error(request, "An error occurred while updating the subcategory. Please ensure you're not creating a duplicate, and try again.")
                     # Optionally log the error: logger.error(str(e))
             else:
@@ -1773,6 +1776,7 @@ def save_to_database(request):
                     try:
                         subcategory_obj = Category.objects.get(
                             category_name=subcategory_name,
+                            store_type=vendor.store_type,
                             parent=category_obj,
                             vendor_subcategory_reference_id=vendor.id,
                             category_code=category_code,
@@ -1781,6 +1785,7 @@ def save_to_database(request):
                         subcategory_obj = Category.objects.create(
                             category_name=subcategory_name.strip(),
                             parent=category_obj,
+                            store_type=vendor.store_type,
                             vendor_subcategory_reference_id=vendor.id,
                             category_code=category_code,
                             slug=slugify(f"{subcategory_name}{category_obj}{vendor.id}")
@@ -2372,3 +2377,13 @@ def delete_variant_group(request, pk):
 
 def how_to_import_product(request):
     return render(request, 'vendor/how_to_import.html')
+
+
+def set_category_null_to_val(request):
+    default_store_type = StoreType.objects.first()
+    if not default_store_type:
+        return JsonResponse({"error": "No StoreType exists. Please create at least one first."}, status=400)
+
+    updated_count = Category.objects.filter(store_type__isnull=True).update(store_type=default_store_type)
+
+    return JsonResponse({"message": f"{updated_count} categories updated with default store type."})

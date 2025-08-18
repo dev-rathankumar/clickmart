@@ -5,6 +5,9 @@ from .models import FoodItem
 from unified.models import Category, Product, ProductGallery
 from django.forms import modelformset_factory
 from vendor.models import Vendor
+from django.core.exceptions import ValidationError
+from PIL import Image
+from accounts.validators import allow_only_images_validator
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -21,7 +24,6 @@ class SubCategoryForm(forms.ModelForm):
 
     def __init__(self, *args, vendor=None, **kwargs):
         super().__init__(*args, **kwargs)
-        print("vendor line 22", vendor)
         # Filter the parent field to show only main categories for this vendor
         if vendor:
             self.fields['parent'].queryset = Category.objects.filter(store_type=vendor.store_type, parent=None)
@@ -34,10 +36,6 @@ class SubCategoryForm(forms.ModelForm):
         if 'parent' in self.initial:
             self.fields['parent'].widget = forms.HiddenInput()
 
-
-from django.core.exceptions import ValidationError
-from PIL import Image
-from accounts.validators import allow_only_images_validator
 
 class ProductForm(forms.ModelForm):
     image = forms.FileField(widget=forms.FileInput(attrs={'class': 'btn btn-sm vendor-image-up-btn'}), validators=[allow_only_images_validator])

@@ -11,7 +11,7 @@ class Category(models.Model):
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories'
     )
-    store_type = models.ForeignKey(StoreType, on_delete=models.CASCADE, null=True, blank=True)
+    store_type = models.ForeignKey(StoreType, on_delete=models.CASCADE)
     category_name = models.CharField(max_length=300)
     category_code = models.CharField(max_length=350, unique=True, help_text=("Enter category code(e.g. 'GROC', 'BEV')"))  # e.g. 'GROC', 'BEV'
     vendor_subcategory_reference_id  = models.IntegerField(null=True, blank=True, help_text="This field is for a subcategory specific to a vendor. Leave it empty when adding a main category.") # This field only for subcategory use to track the vendor's subcategory we will store his id here (This is a indirect connection withn venodr) 

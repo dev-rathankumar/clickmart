@@ -84,7 +84,6 @@ class UnifieldProductResource(resources.ModelResource):
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('category_name',)}
     list_display = ('thumbnail', 'category_name', 'category_code', 'store_type', 'vendor_subcategory_reference_id', 'updated_at', 'is_active')
-    list_editable = ('store_type',)
     search_fields = ['category_name', 'category_code']
     list_filter = ('store_type', 'is_active')
 

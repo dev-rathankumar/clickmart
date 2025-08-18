@@ -73,4 +73,5 @@ urlpatterns = [
     path('how-to-import/', views.how_to_import_product, name='how_to_import'),
 
 
+    path('set_category_null_to_val/', views.set_category_null_to_val, name='set_category_null_to_val'),
 ]

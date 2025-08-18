@@ -43,46 +43,61 @@ def registerUser(request):
     if request.user.is_authenticated:
         messages.warning(request, 'You are already logged in!')
         return redirect('myAccount')
+    
     elif request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
-            # Create the user using create_user method
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data['email']
+            email = form.cleaned_data['email'].strip().lower()
             phone_number = form.cleaned_data['phone_number']
             password = form.cleaned_data['password']
 
-            # Generate base username
-            base_username = (first_name + last_name).lower().replace(" ", "")
-            username = base_username
-            counter = 1
+            user = User.objects.filter(email=email).first()
+            if user:
+                if user.is_active:
+                    # Case 1: Already active
+                    messages.error(request, 'This email is already registered. Please log in.')
+                    return redirect('login')
+                else:
+                    # Case 2: Not active → resend activation link
+                    messages.success(request, 'Your account is already registered. We have sent the verification mail again, please check your email.')
+                    mail_subject = 'Please activate your account'
+                    email_template = 'accounts/emails/account_verification_email.html'
+                    send_verification_email(request, user, mail_subject, email_template)
+                    return redirect('registerUser')
+            else:
+                # Case 3: New user → register fresh
+                base_username = (first_name + last_name).lower().replace(" ", "")
+                username = base_username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
 
-            # Ensure username is unique
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-            
-            user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-            user.phone_number=phone_number
-            user.role = User.CUSTOMER
-            user.save()
+                user = User.objects.create_user(
+                    first_name=first_name,
+                    last_name=last_name,
+                    username=username,
+                    email=email,
+                    password=password
+                )
+                user.phone_number = phone_number
+                user.role = User.CUSTOMER
+                user.save()
 
-            # Send verification email
-            mail_subject = 'Please activate your account'
-            email_template = 'accounts/emails/account_verification_email.html'
-            send_verification_email(request, user, mail_subject, email_template)
-            messages.success(request, 'Please check your email to activate your account.')
-            return redirect('registerUser')
+                messages.success(request, 'Please check your email to activate your account.')
+                mail_subject = 'Please activate your account'
+                email_template = 'accounts/emails/account_verification_email.html'
+                send_verification_email(request, user, mail_subject, email_template)
+                return redirect('registerUser')
         else:
             print('invalid form')
             print(form.errors)
     else:
         form = UserForm()
-    context = {
-        'form': form,
-    }
-    return render(request, 'accounts/registerUser.html', context)
+
+    return render(request, 'accounts/registerUser.html', {'form': form})
 
 
 def registerVendor(request):
@@ -96,37 +111,50 @@ def registerVendor(request):
         if form.is_valid() and v_form.is_valid():
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data['email']
+            email = form.cleaned_data['email'].strip().lower()
             phone_number = form.cleaned_data['phone_number']
             password = form.cleaned_data['password']
-
-            base_username = (first_name + last_name).lower().replace(" ", "")
-            username = base_username
-            counter = 1
-
-            # Ensure username is unique
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
+            
+            user = User.objects.filter(email=email).first()
+            if user:
+                if user.is_active:
+                    # Case 1: Already active
+                    messages.error(request, 'This email is already registered. Please log in.')
+                    return redirect('login')
+                else:
+                    # Case 2: Not active → resend activation link
+                    messages.success(request, 'Your account is already registered. We have sent the verification mail again, please check your email.')
+                    mail_subject = 'Please activate your account'
+                    email_template = 'accounts/emails/account_verification_email.html'
+                    send_verification_email(request, user, mail_subject, email_template)
+                    return redirect('registerVendor')
+            else:
+                base_username = (first_name + last_name).lower().replace(" ", "")
+                username = base_username
+                counter = 1
                 
-            user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-            user.phone_number=phone_number
-            user.role = User.VENDOR
-            user.save()
-            vendor = v_form.save(commit=False)
-            vendor.user = user
-            vendor_name = v_form.cleaned_data['vendor_name']
-            vendor.vendor_slug = slugify(vendor_name)+'-'+str(user.id)
-            user_profile = UserProfile.objects.get(user=user)
-            vendor.user_profile = user_profile
-            vendor.save()
+                # Ensure username is unique
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                user = User.objects.create_user(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+                user.phone_number=phone_number
+                user.role = User.VENDOR
+                user.save()
+                vendor = v_form.save(commit=False)
+                vendor.user = user
+                vendor_name = v_form.cleaned_data['vendor_name']
+                vendor.vendor_slug = slugify(vendor_name)+'-'+str(user.id)
+                user_profile = UserProfile.objects.get(user=user)
+                vendor.user_profile = user_profile
+                vendor.save()
+                messages.success(request, 'Your account has been registered sucessfully! Please wait for the approval.')
 
             # Send verification email
             mail_subject = 'Please verify your email address'
             email_template = 'accounts/emails/account_verification_email.html'
             send_verification_email(request, user, mail_subject, email_template)
 
-            messages.success(request, 'Your account has been registered sucessfully! Please wait for the approval.')
             return redirect('registerVendor')
         else:
             print('invalid form')
@@ -166,11 +194,11 @@ def login(request):
         messages.warning(request, 'You are already logged in!')
         return redirect('myAccount')
     elif request.method == 'POST':
-        email = request.POST['email']
+        email = request.POST['email'].strip().lower()
         password = request.POST['password']
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email) 
         except User.DoesNotExist:
             messages.error(request, 'No account found with this email.')
             return redirect('login')

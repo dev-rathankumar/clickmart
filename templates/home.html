@@ -148,7 +148,13 @@
 					<div class="category-circle bg-7">
 
 						<a href="{% url 'browse' category_slug=cat.slug %}">
+              
+              {% if cat.category_image and cat.category_image.url %}
 							<img src="{{ cat.category_image.url }}" alt="{{cat.category_name}}" />
+              {% else %}
+							<img src="#" alt="Category image" />
+              {% endif %}
+                
 						</a>
 					</div>
 					<h6 class="category-name">
