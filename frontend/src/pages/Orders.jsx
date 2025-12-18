@@ -142,9 +142,7 @@ const Orders = () => {
                         <button className="btn btn-primary rounded-pill px-3 py-2 d-flex align-items-center gap-2 shadow-sm">
                           <Eye size={16} /> Details
                         </button>
-                        <button className="btn btn-light border rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-                          <FileText size={16} />
-                        </button>
+                       
                       </div>
                     </div>
                   </div>

@@ -48,7 +48,7 @@ const Header = () => {
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <i className="bi bi-bag-heart-fill text-primary me-2"></i>
-          TechStore
+          ClickMart
         </Link>
         <button
           className="navbar-toggler"
