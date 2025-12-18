@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: freshperience_lms_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sifath2002
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend-django
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend-django/.env
+    depends_on:
+      - db
+    volumes:
+      - ./backend-django/static:/app/static
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build: ./frontend-react
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend-react/.env
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
