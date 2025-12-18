@@ -1,57 +1,59 @@
-import { Home, Package, ShoppingCart, User } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { LayoutDashboard, LogOut, Package } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = () => {
   const location = useLocation();
-
+  const navigate = useNavigate();
+  const { auth, setAuth } = useAuth();
   const menuItems = [
-    { path: "/dashboard", icon: Home, label: "Dashboard" },
-    { path: "orders", icon: Package, label: "My Orders" },
-    { path: "profile", icon: User, label: "Profile" },
+    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/dashboard/orders", icon: Package, label: "My Orders" },
+    // { path: "/dashboard/profile", icon: User, label: "Profile Info" },
+    // { path: "/dashboard/addresses", icon: MapPin, label: "Addresses" },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+
+    setAuth({});
+
+    navigate("/");
+  };
+
   return (
-    <>
-      {isOpen && (
-        <div
-          className="d-md-none"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            zIndex: 999,
-          }}
-          onClick={onClose}
-        ></div>
-      )}
+    <aside className="col-lg-3 mb-4">
+      <div className="card border-0 shadow-sm p-3">
+        <nav className="nav flex-column gap-2">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === "/dashboard"}
+              className={({ isActive }) =>
+                `nav-link rounded d-flex align-items-center ${
+                  isActive ? "bg-primary text-white shadow-sm" : "text-dark"
+                }`
+              }
+              style={{ cursor: "pointer", transition: "0.2s" }}
+            >
+              <item.icon size={18} className="me-2" /> {item.label}
+            </NavLink>
+          ))}
 
-      <div className={`sidebar ${isOpen ? "show" : ""}`}>
-        <div className="p-4">
-          <h5 className="text-white mb-4">Menu</h5>
-          <nav className="nav flex-column">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+          <hr />
 
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`nav-link ${isActive ? "active" : ""}`}
-                  onClick={onClose}
-                >
-                  <Icon size={18} className="me-3" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+          <button
+            className="nav-link text-danger border-0 bg-transparent d-flex align-items-center"
+            style={{ cursor: "pointer" }}
+            onClick={() => handleLogout()}
+          >
+            <LogOut size={18} className="me-2" /> Logout
+          </button>
+        </nav>
       </div>
-    </>
+    </aside>
   );
 };
 

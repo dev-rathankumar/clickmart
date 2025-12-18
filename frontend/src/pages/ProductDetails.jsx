@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
-import Header from "../components/Navbar";
+import { api } from "../api";
 import QuantitySelector from "../components/QuantitySelector";
 import { useCart } from "../context/CartContext";
+import useAuth from "../hooks/useAuth";
 import { useAxios } from "../hooks/useAxios";
 
 const ProductDetail = () => {
@@ -12,11 +12,12 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const [quantity, setQuantity] = useState(1);
-  const { api } = useAxios();
+  const { api: axiosapi } = useAxios();
   const { state, dispatch } = useCart();
 
-  console.log(state);
+  const { auth } = useAuth();
+  const accessToken = auth?.accessToken;
+
   const cartItem = state.items.find((item) => item.product === product?.id);
   const isInCart = !!cartItem;
 
@@ -47,9 +48,7 @@ const ProductDetail = () => {
   const fetchCartData = async () => {
     dispatch({ type: "START_LOADING" });
     try {
-      const response = await api.get("/cart/");
-      // Note: If response.data is the array directly, use response.data
-      // If it's an object with an items key, use response.data.items
+      const response = await axiosapi.get("/cart/");
       const items =
         response.data.items ||
         (Array.isArray(response.data) ? response.data : []);
@@ -58,7 +57,8 @@ const ProductDetail = () => {
         type: "SET_CART",
         payload: {
           items: items,
-          total: response.data.total_price || 0,
+          subtotal: response.data.subtotal || 0,
+          total: response.data.grand_total || 0,
           itemCount: items.length,
         },
       });
@@ -71,22 +71,21 @@ const ProductDetail = () => {
     fetchCartData();
   }, []);
 
-
   const handleUpdateQuantity = async (itemId, change) => {
     try {
-      await api.patch(`/cart/items/${itemId}/`, { change });
+      await axiosapi.patch(`/cart/items/${itemId}/`, { change });
       fetchCartData();
     } catch (err) {
       console.error("Update failed", err);
-      toast.error("Failed to update quantity");
     }
   };
 
   const handleAddToCart = async () => {
+    if (!accessToken) return navigate("/login");
     try {
-      const response = await api.post("/cart/add/", {
+      const response = await axiosapi.post("/cart/add/", {
         product_id: product.id,
-        quantity: 1, // Defaulting to 1 as per your requirement
+        quantity: 1,
       });
       console.log("dfdfdfdfd", response.data);
 
@@ -94,24 +93,21 @@ const ProductDetail = () => {
         type: "SET_CART",
         payload: {
           items: response.data.items,
-          total: response.data.total_price,
+          subtotal: response.data.subtotal || 0,
+          total: response.data.grand_total || 0,
           itemCount: response.data.items.length,
         },
       });
-
-      toast.success(`${product.name} added to cart!`);
     } catch (err) {
       console.error("Failed to add to cart:", err);
       const errorMessage =
         err.response?.data?.error || "Failed to add to cart.";
-      toast.error(errorMessage);
     }
   };
 
   if (loading) {
     return (
       <>
-        <Header />
         <div
           className="container py-5 text-center"
           style={{ minHeight: "50vh" }}
@@ -127,7 +123,6 @@ const ProductDetail = () => {
   if (error || !product) {
     return (
       <>
-        <Header />
         <div className="container py-5">
           <div className="alert alert-danger text-center">
             <h4 className="alert-heading">{error || "Product Not Found"}</h4>
@@ -146,7 +141,6 @@ const ProductDetail = () => {
 
   return (
     <>
-      <Header />
       <div className="py-5 vh-100">
         <div className="container">
           <nav aria-label="breadcrumb" className="mb-4">
@@ -167,31 +161,31 @@ const ProductDetail = () => {
                   Products
                 </button>
               </li>
-              <li className="breadcrumb-item active">{product.name}</li>
+              <li className="breadcrumb-item active">{product?.name}</li>
             </ol>
           </nav>
 
           <div className="row mb-5">
             <div className="col-lg-6 mb-4">
               <img
-                src={product.image}
-                alt={product.name}
+                src={product?.image}
+                alt={product?.name}
                 className="img-fluid w-100 rounded shadow-sm"
               />
             </div>
 
             <div className="col-lg-6">
-              <h1 className="display-6 fw-bold mb-3">{product.name}</h1>
+              <h1 className="display-6 fw-bold mb-3">{product?.name}</h1>
 
               <div className="mb-3">
                 <span className="h2 text-primary fw-bold">
-                  ${product.price}
+                  ${product?.price}
                 </span>
                 <span className="ms-3 text-muted">
-                  {product.stock > 0 ? (
+                  {product?.stock > 0 ? (
                     <>
                       <i className="bi bi-check-circle-fill text-success me-1"></i>
-                      {product.stock} in stock
+                      {product?.stock} in stock
                     </>
                   ) : (
                     <>
@@ -202,7 +196,7 @@ const ProductDetail = () => {
                 </span>
               </div>
 
-              <p className="lead mb-4">{product.description}</p>
+              <p className="lead mb-4">{product?.description}</p>
 
               {/* Conditional Quantity Section */}
               <div className="mb-4">
@@ -210,12 +204,12 @@ const ProductDetail = () => {
                   <>
                     <h6 className="mb-3">Quantity in Cart:</h6>
                     <QuantitySelector
-                      quantity={cartItem.quantity}
+                      quantity={cartItem?.quantity}
                       onQuantityChange={(newQty) => {
-                        const diff = newQty - cartItem.quantity;
-                        handleUpdateQuantity(cartItem.id, diff);
+                        const diff = newQty - cartItem?.quantity;
+                        handleUpdateQuantity(cartItem?.id, diff);
                       }}
-                      max={product.stock}
+                      max={product?.stock}
                     />
                   </>
                 ) : (
@@ -237,7 +231,7 @@ const ProductDetail = () => {
                   <button
                     className="btn btn-primary btn-lg flex-fill"
                     onClick={handleAddToCart}
-                    disabled={product.stock === 0}
+                    disabled={product?.stock === 0}
                   >
                     <i className="bi bi-cart-plus me-2"></i>
                     Add to Cart

@@ -28,4 +28,4 @@ export default function Footer() {
     </footer>
   );
 }
-{/* lesson 22 full*/}
+

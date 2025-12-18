@@ -10,7 +10,7 @@ let isRefreshing = false;
 let refreshPromise = null;
 
 export const useAxios = () => {
-  const { auth, setAuth } = useAuth();
+  const { setAuth } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const useAxios = () => {
       (config) => {
         const authToken = localStorage.getItem("accessToken");
 
-        if (authToken ) {
+        if (authToken) {
           config.headers.Authorization = `Bearer ${authToken}`;
         }
         return config;
@@ -32,7 +32,7 @@ export const useAxios = () => {
       (response) => response, // Pass through successful responses
       async (error) => {
         const orginalRequest = error.config; // Original request causing error
-        const refreshToken = auth?.refreshToken;
+        const refreshToken = localStorage.getItem("refreshToken");
         if (
           error.response?.status === 401 &&
           !orginalRequest._retry &&
@@ -43,13 +43,17 @@ export const useAxios = () => {
           // Ensure only one refresh request at a time
           if (!isRefreshing) {
             isRefreshing = true;
-            refreshPromise = refreshAccessToken(auth, setAuth, navigate);
+            refreshPromise = refreshAccessToken(
+              setAuth,
+              refreshToken,
+              navigate
+            );
           }
 
           try {
-            const accessToken = await refreshPromise; // Wait for token refresh
+            const newAccessToken = await refreshPromise; // Wait for token refresh
 
-            orginalRequest.headers.Authorization = `Bearer ${accessToken}`; // Retry request with new token
+            orginalRequest.headers.Authorization = `Bearer ${newAccessToken}`; // Retry request with new token
 
             return api(orginalRequest); // Retry the original request
           } catch (error) {
@@ -67,25 +71,29 @@ export const useAxios = () => {
       api.interceptors.request.eject(requestIntercept);
       api.interceptors.response.eject(responseIntercept);
     };
-  }, [auth, setAuth, navigate]);
+  }, [setAuth, navigate]);
 
   return { api };
 };
 
 // Function to refresh access token
-const refreshAccessToken = async (auth, setAuth, navigate) => {
+const refreshAccessToken = async (setAuth, refreshToken, navigate) => {
   try {
     const response = await axios.post(
       `${import.meta.env.VITE_SERVER_BASE_URL}/token/refresh/`,
-      { refresh: auth?.refreshToken }
+      { refresh: refreshToken }
     );
 
     const { access, refresh } = response.data;
 
-    // Update auth state and cookies
-    setAuth({ ...auth, accessToken: access, refreshToken: refresh });
     localStorage.setItem("accessToken", access);
-    localStorage.setItem("refreshToken", refresh);
+    if (refresh) localStorage.setItem("refreshToken", refresh);
+
+    setAuth((prev) => ({
+      ...prev,
+      accessToken: access,
+      refreshToken: refresh || prev.refreshToken,
+    }));
 
     return access;
   } catch (error) {

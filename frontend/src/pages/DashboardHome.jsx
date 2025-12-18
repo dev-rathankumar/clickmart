@@ -1,129 +1,166 @@
-import { Package, ShoppingCart, TrendingUp, User } from "lucide-react";
-
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
+import { useAxios } from "../hooks/useAxios";
 
 const DashboardHome = () => {
-  const stats = [
-    { label: "Total Orders", value: "12", icon: Package, color: "primary" },
-    { label: "Cart Items", value: "3", icon: ShoppingCart, color: "success" },
-  ];
+  const [profile, setProfile] = useState(null);
+  const [ordeers, setOrdeers] = useState([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  const recentOrders = [
-    {
-      id: "#ORD-001",
-      date: "2024-01-15",
-      total: "$129.99",
-      status: "Delivered",
-    },
-    { id: "#ORD-002", date: "2024-01-12", total: "$89.50", status: "Shipped" },
-    {
-      id: "#ORD-003",
-      date: "2024-01-08",
-      total: "$199.99",
-      status: "Processing",
-    },
-  ];
+  const { auth } = useAuth();
+  const accessToken = auth?.accessToken;
+  const { api } = useAxios();
 
-  const getStatusBadge = (status) => {
-    const statusClasses = {
-      Delivered: "bg-success",
-      Shipped: "bg-info",
-      Processing: "bg-warning",
-      Pending: "bg-secondary",
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsInitialLoading(true);
+
+        const [profileRes, ordersRes] = await Promise.all([
+          api.get("/profile/"),
+          api.get("/orders/"),
+        ]);
+
+        setProfile(profileRes.data);
+        setOrdeers(ordersRes.data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setIsInitialLoading(false);
+      }
     };
-    return statusClasses[status] || "bg-secondary";
+
+    if (accessToken) {
+      fetchDashboardData();
+    } else {
+      setIsInitialLoading(false);
+    }
+  }, [accessToken, api]);
+
+  const getStatusSettings = (status) => {
+    switch (status) {
+      case "PENDING":
+        return { color: "warning", textClass: "text-dark" };
+      case "CONFIRMED":
+        return { color: "info", textClass: "text-dark" };
+      case "DELIVERED":
+        return { color: "success", textClass: "text-success" };
+      default:
+        return { color: "secondary", textClass: "text-secondary" };
+    }
   };
+
+  if (isInitialLoading) {
+    return (
+      <div
+        className="col-lg-9 d-flex justify-content-center align-items-center"
+        style={{ minHeight: "400px" }}
+      >
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-2" role="status"></div>
+          <p className="text-muted small">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="container-fluid ">
-        {/* Welcome Card */}
-        <div className="row mb-4">
-          <div className="col-12">
-            <div className="card dashboard-card">
-              <div className="card-body">
-                <h2 className="card-title mb-2">Welcome back, user name! 👋</h2>
-                <p className="card-text mb-0 opacity-75">
-                  Here's what's happening with your account today.
-                </p>
+      <main className="col-lg-9">
+        <header className="mb-4">
+          <h2 className="fw-bold">
+            Welcome back, {profile?.username || "User"}!
+          </h2>
+          <p className="text-muted">
+            Manage your account and track your recent orders.
+          </p>
+        </header>
+
+        {/* Profile Detail Card */}
+        <section className="card border-0 shadow-sm mb-4">
+          <div className="card-header bg-white py-3 border-bottom-0">
+            <h5 className="mb-0 fw-bold">Profile Details</h5>
+          </div>
+          <div className="card-body">
+            <div className="row g-3">
+              <div className="col-sm-6">
+                <label className="text-muted small d-block">Username</label>
+                <span className="fw-semibold">{profile?.username}</span>
+              </div>
+              <div className="col-sm-6">
+                <label className="text-muted small d-block">
+                  Email Address
+                </label>
+                <span className="fw-semibold">{profile?.email}</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Stats Cards */}
-        <div className="row mb-4">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={index} className="col-md-6 mb-3">
-                <div className="card">
-                  <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div>
-                        <h3 className="card-title h2 mb-1">{stat.value}</h3>
-                        <p className="card-text text-muted mb-0">
-                          {stat.label}
-                        </p>
-                      </div>
-                      <div className={`text-${stat.color}`}>
-                        <Icon size={32} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="row">
-          {/* Recent Orders */}
-          <div className="col-lg-12 mb-4">
-            <div className="card">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h5 className="card-title mb-0">Recent Orders</h5>
-                <Link to="/orders" className="btn btn-outline-primary btn-sm">
-                  View All
-                </Link>
-              </div>
-              <div className="card-body">
-                <div className="table-responsive">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Order ID</th>
-                        <th>Date</th>
-                        <th>Total</th>
-                        <th>Status</th>
+        {/* Recent Orders Table */}
+        <section className="card border-0 shadow-sm">
+          <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+            <h5 className="mb-0 fw-bold">Recent Orders</h5>
+            <button className="btn btn-link text-decoration-none btn-sm">
+              View All
+            </button>
+          </div>
+          <div className="table-responsive">
+            <table className="table align-middle mb-0 text-nowrap">
+              <thead className="table-light">
+                <tr>
+                  <th className="ps-4">Order ID</th>
+                  <th>Date</th>
+                  <th>Subtotal</th>
+                  <th>Total (Inc. Tax)</th>
+                  <th>Status</th>
+                  <th className="text-end pe-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ordeers.length > 0 ? (
+                  ordeers.slice(0, 4).map((order) => {
+                    const { color, textClass } = getStatusSettings(
+                      order.status
+                    );
+                    return (
+                      <tr key={order.id}>
+                        <td className="ps-4 text-primary fw-medium">
+                          #ORD-{order.id}
+                        </td>
+                        <td>
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </td>
+                        <td>${order.subtotal}</td>
+                        <td className="fw-bold">${order.grand_total}</td>
+                        <td>
+                          <span
+                            className={`badge bg-${color}-subtle ${textClass} border border-${color}-subtle px-3 py-2 rounded-pill`}
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="text-end pe-4">
+                          <button className="btn btn-sm btn-light border">
+                            Details
+                          </button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {recentOrders.map((order) => (
-                        <tr key={order.id}>
-                          <td className="fw-semibold">{order.id}</td>
-                          <td>{order.date}</td>
-                          <td className="fw-semibold">{order.total}</td>
-                          <td>
-                            <span
-                              className={`badge order-status-badge ${getStatusBadge(
-                                order.status
-                              )}`}
-                            >
-                              {order.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-4 text-muted">
+                      No orders found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-
-        </div>
-      </div>
+        </section>
+      </main>
     </>
   );
 };

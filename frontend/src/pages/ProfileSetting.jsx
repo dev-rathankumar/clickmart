@@ -35,7 +35,7 @@ const ProfileSettings = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="col-lg-9 mt-4">
       <div className="row justify-content-center">
         <div className="col-lg-8">
           {/* Header */}

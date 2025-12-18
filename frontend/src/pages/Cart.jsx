@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Footer from "../components/Footer";
-import Header from "../components/Navbar";
 import QuantitySelector from "../components/QuantitySelector";
 import { useCart } from "../context/CartContext";
 import { useAxios } from "../hooks/useAxios";
@@ -20,7 +19,8 @@ const Cart = () => {
         type: "SET_CART",
         payload: {
           items: response.data.items,
-          total: parseFloat(response.data.total_price) || 0,
+          subtotal: response.data.subtotal || 0,
+          total: parseFloat(response.data.grand_total) || 0,
           itemCount: response.data.items.length || 0,
         },
       });
@@ -41,14 +41,10 @@ const Cart = () => {
     try {
       await api.patch(`/cart/items/${itemId}/`, { change });
 
-      if (newQty === 0) {
-        toast.info("Item removed");
-      }
 
       fetchCartData();
     } catch (err) {
       console.error("Update failed", err);
-      toast.error("Failed to update quantity");
     }
   };
 
@@ -57,20 +53,16 @@ const Cart = () => {
       try {
         await api.delete(`/cart/items/${itemId}/`);
         fetchCartData();
-        toast.info(`${itemName} removed`);
       } catch (err) {
         console.error("Delete failed", err);
-        toast.error("Failed to remove item");
       }
     }
   };
-
 
   // Empty State UI
   if (!state.loading && state.items.length === 0) {
     return (
       <>
-        <Header />
         <div className="container py-5" style={{ minHeight: "80vh" }}>
           <div className="row justify-content-center">
             <div className="col-lg-8 text-center">
@@ -95,7 +87,6 @@ const Cart = () => {
 
   return (
     <>
-      <Header />
       <div className="container py-5" style={{ minHeight: "80vh" }}>
         <h1 className="display-6 fw-bold mb-4">Shopping Cart</h1>
 
@@ -104,8 +95,7 @@ const Cart = () => {
           <div className="col-lg-8">
             <div className="card border-0 shadow-sm overflow-hidden">
               <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Items ({state.itemCount})</h5>
-                
+                <h5 className="mb-0">Items ({state?.itemCount})</h5>
               </div>
               <div className="table-responsive">
                 <table className="table align-middle mb-0">
@@ -119,14 +109,14 @@ const Cart = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {state.items.map((item) => (
-                      <tr key={item.id}>
+                    {state?.items?.map((item) => (
+                      <tr key={item?.id}>
                         <td className="ps-4 py-3">
                           <div className="fw-bold text-dark">
-                            {item.product_name}
+                            {item?.product_name}
                           </div>
                         </td>
-                        <td>${parseFloat(item.price)?.toFixed(2)}</td>
+                        <td>${parseFloat(item?.price)}</td>
                         <td>
                           <QuantitySelector
                             quantity={item.quantity}
@@ -138,18 +128,18 @@ const Cart = () => {
                               )
                             }
                             min={0}
-                            max={item.stock || 99}
+                            max={item?.stock || 99}
                             size="sm"
                           />
                         </td>
                         <td className="fw-bold">
-                          ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                          ${parseFloat(item?.price) * item?.quantity}
                         </td>
                         <td className="text-end pe-4">
                           <button
                             className="btn btn-link text-danger p-0"
                             onClick={() =>
-                              handleRemoveItem(item.id, item.product_name)
+                              handleRemoveItem(item?.id, item?.product_name)
                             }
                           >
                             <i className="bi bi-trash3 fs-5"></i>
@@ -177,21 +167,23 @@ const Cart = () => {
 
               <div className="d-flex justify-content-between mb-2">
                 <span className="text-muted">Subtotal</span>
-                <span>${state.total?.toFixed(2)}</span>
+                <span>${state?.subtotal}</span>
               </div>
 
               <div className="d-flex justify-content-between mb-2">
                 <span className="text-muted">Shipping</span>
                 <span className="text-success fw-bold">Free</span>
               </div>
+              <div className="d-flex justify-content-between mb-2">
+                <span className="text-muted">Tax</span>
+                <span>${state?.total - state?.subtotal}</span>
+              </div>
 
               <hr className="my-3" />
 
               <div className="d-flex justify-content-between mb-4">
                 <span className="h5 fw-bold">Total</span>
-                <span className="h5 fw-bold text-primary">
-                  ${state.total?.toFixed(2)}
-                </span>
+                <span className="h5 fw-bold text-primary">${state?.total}</span>
               </div>
 
               <button
@@ -211,7 +203,6 @@ const Cart = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

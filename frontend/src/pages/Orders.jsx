@@ -1,275 +1,163 @@
-import React, { useState, useEffect } from 'react';
-import { Package, Eye, Download, Filter } from 'lucide-react';
-
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Eye,
+  FileText,
+  Package,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
+import { useAxios } from "../hooks/useAxios";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+
+  const { api } = useAxios();
+  const { auth } = useAuth();
 
   useEffect(() => {
-    // Simulate API call
     const fetchOrders = async () => {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockOrders = [
-        {
-          id: 'ORD-001',
-          date: '2024-01-15',
-          total: '$129.99',
-          status: 'Delivered',
-          items: 2,
-          trackingNumber: 'TRK123456789'
-        },
-        {
-          id: 'ORD-002',
-          date: '2024-01-12',
-          total: '$89.50',
-          status: 'Shipped',
-          items: 1,
-          trackingNumber: 'TRK123456790'
-        },
-        {
-          id: 'ORD-003',
-          date: '2024-01-08',
-          total: '$199.99',
-          status: 'Paid',
-          items: 3
-        },
-        {
-          id: 'ORD-004',
-          date: '2024-01-05',
-          total: '$59.99',
-          status: 'Pending',
-          items: 1
-        },
-        {
-          id: 'ORD-005',
-          date: '2024-01-01',
-          total: '$299.99',
-          status: 'Delivered',
-          items: 4,
-          trackingNumber: 'TRK123456791'
-        }
-      ];
-      
-      setOrders(mockOrders);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const response = await api.get("/orders/");
+        setOrders(response.data.reverse());
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+    if (auth.accessToken) fetchOrders();
+  }, [api, auth.accessToken]);
 
-    fetchOrders();
-  }, []);
-
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      'Pending': { class: 'bg-warning text-dark' },
-      'Paid': { class: 'bg-info' },
-      'Shipped': { class: 'bg-primary' },
-      'Delivered': { class: 'bg-success' },
-      'Cancelled': { class: 'bg-danger'}
-    };
-    
-    const config = statusConfig[status] || statusConfig['Pending'];
-    
-    return (
-      <span className={`badge order-status-badge ${config.class}`}>
-        {status}
-      </span>
-    );
+  const getStatusConfig = (status) => {
+    switch (status) {
+      case "PENDING":
+        return {
+          bg: "#FFF9DB",
+          text: "#8C6D05",
+          border: "#FFEC99",
+          icon: <Clock size={14} />,
+          accent: "#FAB005",
+        };
+      case "CONFIRMED":
+        return {
+          bg: "#E7F5FF",
+          text: "#1864AB",
+          border: "#A5D8FF",
+          icon: <CheckCircle size={14} />,
+          accent: "#228BE6",
+        };
+      case "DELIVERED":
+        return {
+          bg: "#EBFBEE",
+          text: "#2B8A3E",
+          border: "#B2F2BB",
+          icon: <Package size={14} />,
+          accent: "#40C057",
+        };
+      default:
+        return {
+          bg: "#F8F9FA",
+          text: "#495057",
+          border: "#DEE2E6",
+          icon: <AlertCircle size={14} />,
+          accent: "#ADB5BD",
+        };
+    }
   };
 
-  const filteredOrders = filter === 'all' 
-    ? orders 
-    : orders.filter(order => order.status.toLowerCase() === filter);
-
-  if (loading) {
-    return (
-      <div className="container mt-4">
-        <div>Loadin..</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mt-4">
-      <div className="row">
-        <div className="col-12">
-          {/* Header */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2 className="mb-1">My Orders</h2>
-              <p className="text-muted mb-0">Track and manage your orders</p>
-            </div>
-            <div className="d-flex gap-2">
-              <div className="dropdown">
-                <button 
-                  className="btn btn-outline-secondary dropdown-toggle"
-                  data-bs-toggle="dropdown"
-                >
-                  <Filter size={18} className="me-2" />
-                  Filter
-                </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <button 
-                      className="dropdown-item" 
-                      onClick={() => setFilter('all')}
-                    >
-                      All Orders
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="dropdown-item" 
-                      onClick={() => setFilter('pending')}
-                    >
-                      Pending
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="dropdown-item" 
-                      onClick={() => setFilter('shipped')}
-                    >
-                      Shipped
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="dropdown-item" 
-                      onClick={() => setFilter('delivered')}
-                    >
-                      Delivered
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+    <div className="col-lg-9 py-4 px-md-4">
+      <div className="mb-4">
+        <h2 className="fw-bold mb-1 text-dark">Purchase History</h2>
+        <p className="text-muted">
+          A detailed list of all your previous orders.
+        </p>
+      </div>
 
-          {/* Orders Summary Cards */}
-          <div className="row mb-4">
-            <div className="col-md-3 mb-3">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h4 className="text-primary">{orders.length}</h4>
-                  <p className="mb-0 text-muted">Total Orders</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-3">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h4 className="text-success">
-                    {orders.filter(o => o.status === 'Delivered').length}
-                  </h4>
-                  <p className="mb-0 text-muted">Delivered</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-3">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h4 className="text-info">
-                    {orders.filter(o => o.status === 'Shipped').length}
-                  </h4>
-                  <p className="mb-0 text-muted">In Transit</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-3">
-              <div className="card text-center">
-                <div className="card-body">
-                  <h4 className="text-warning">
-                    {orders.filter(o => o.status === 'Pending').length}
-                  </h4>
-                  <p className="mb-0 text-muted">Pending</p>
-                </div>
-              </div>
-            </div>
+      <div className="d-grid gap-3">
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status"></div>
           </div>
+        ) : orders.length > 0 ? (
+          orders.map((order) => {
+            const config = getStatusConfig(order.status);
+            return (
+              <div
+                key={order.id}
+                className="card border-0 shadow-sm transition-hover"
+                style={{
+                  borderLeft: `6px solid ${config.accent}`,
+                  borderRadius: "12px",
+                }}
+              >
+                <div className="card-body p-4">
+                  <div className="row align-items-center">
+                    <div className="col-md-3">
+                      <h6 className="text-primary fw-bold mb-1">
+                        #ORD-{order.id}
+                      </h6>
+                      <span className="text-muted small">
+                        {new Date(order.created_at).toLocaleDateString("en-GB")}
+                      </span>
+                    </div>
 
-          {/* Orders Table */}
-          <div className="card">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <Package size={20} className="me-2" />
-                Order History
-              </h5>
-            </div>
-            <div className="card-body">
-              {filteredOrders.length === 0 ? (
-                <div className="text-center py-5">
-                  <Package size={48} className="text-muted mb-3" />
-                  <h5>No orders found</h5>
-                  <p className="text-muted">
-                    {filter === 'all' 
-                      ? "You haven't placed any orders yet."
-                      : `No ${filter} orders found.`
-                    }
-                  </p>
+                    <div className="col-md-4 py-3 py-md-0">
+                      <div className="d-flex align-items-center gap-4">
+                        <div>
+                          <small className="text-muted d-block">
+                            Total Amount
+                          </small>
+                          <span className="fw-bold fs-5">
+                            ${order.grand_total}
+                          </span>
+                        </div>
+                        <div className="text-muted small">
+                          <small className="d-block">Tax</small>
+                          <span>${order.tax_amount}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-2 mb-3 mb-md-0">
+                      <span
+                        className="badge d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                        style={{
+                          backgroundColor: config.bg,
+                          color: config.text,
+                          border: `1px solid ${config.border}`,
+                          fontWeight: "600",
+                        }}
+                      >
+                        {config.icon} {order.status}
+                      </span>
+                    </div>
+
+                    <div className="col-md-3">
+                      <div className="d-flex gap-2 justify-content-md-end">
+                        <button className="btn btn-primary rounded-pill px-3 py-2 d-flex align-items-center gap-2 shadow-sm">
+                          <Eye size={16} /> Details
+                        </button>
+                        <button className="btn btn-light border rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+                          <FileText size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Order ID</th>
-                        <th>Date</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Tracking</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredOrders.map((order) => (
-                        <tr key={order.id}>
-                          <td>
-                            <span className="fw-semibold">{order.id}</span>
-                          </td>
-                          <td>{order.date}</td>
-                          <td>{order.items} items</td>
-                          <td>
-                            <span className="fw-semibold">{order.total}</span>
-                          </td>
-                          <td>{getStatusBadge(order.status)}</td>
-                          <td>
-                            {order.trackingNumber ? (
-                              <small className="text-muted font-monospace">
-                                {order.trackingNumber}
-                              </small>
-                            ) : (
-                              <span className="text-muted">-</span>
-                            )}
-                          </td>
-                          <td>
-                            <div className="btn-group btn-group-sm">
-                              <button 
-                                className="btn btn-outline-primary"
-                                title="View Details"
-                              >
-                                <Eye size={14} />
-                              </button>
-                              <button 
-                                className="btn btn-outline-secondary"
-                                title="Download Invoice"
-                              >
-                                <Download size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center py-5 border rounded-4 bg-white">
+            <Package size={40} className="text-muted mb-2 opacity-25" />
+            <p className="text-muted mb-0">No orders found in your account.</p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

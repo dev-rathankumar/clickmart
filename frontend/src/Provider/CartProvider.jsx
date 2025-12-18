@@ -9,6 +9,7 @@ const cartReducer = (state, action) => {
       return {
         ...state,
         items: action.payload.items,
+        subtotal: action.payload.subtotal,
         total: action.payload.total,
         itemCount: action.payload.itemCount,
         loading: false,

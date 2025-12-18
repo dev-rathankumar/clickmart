@@ -11,7 +11,6 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Using the endpoint based on your Django path: path('products/', ...)
         const response = await api.get("/products/");
         setProducts(response.data);
         setError(null);

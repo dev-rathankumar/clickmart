@@ -5,17 +5,13 @@ import { useCart } from "../context/CartContext";
 import useAuth from "../hooks/useAuth";
 import { useAxios } from "../hooks/useAxios";
 
-{
-  /* lesson 22 only link */
-}
-
 const Header = () => {
   const [profile, setProfile] = useState(null);
   const { state } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const { auth, setAuth } = useAuth();
-  const { accessToken } = auth;
+  const accessToken = auth?.accessToken;
   const { api } = useAxios();
 
   const isActive = (path) => location.pathname === path;
@@ -49,7 +45,6 @@ const Header = () => {
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-      {/* lesson 22 Start*/}
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <i className="bi bi-bag-heart-fill text-primary me-2"></i>
@@ -66,7 +61,6 @@ const Header = () => {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-        {/* lesson 22 End*/}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto align-items-center">
             <li className="nav-item">
@@ -120,11 +114,11 @@ const Header = () => {
                       Dashboard
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link className="dropdown-item" to="/profile">
                       Profile Settings
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <hr className="dropdown-divider" />
                   </li>

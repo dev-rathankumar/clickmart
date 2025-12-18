@@ -1,11 +1,10 @@
 const QuantitySelector = ({
   quantity,
   onQuantityChange,
-  min = 0, // Change default min to 0
+  min = 0, 
   max = 99,
 }) => {
   const handleDecrement = () => {
-    // Allow decrementing if current quantity is greater than 0
     if (quantity > 0) {
       onQuantityChange(quantity - 1);
     }
@@ -19,7 +18,7 @@ const QuantitySelector = ({
 
   const handleInputChange = (e) => {
     let value = parseInt(e.target.value);
-    if (isNaN(value)) value = 0; 
+    if (isNaN(value)) value = 0;
     const clampedValue = Math.max(0, Math.min(max, value));
     onQuantityChange(clampedValue);
   };
