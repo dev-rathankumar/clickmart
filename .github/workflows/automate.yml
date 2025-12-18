@@ -1,4 +1,4 @@
-automate.name: Publish Docker Images
+name: Publish Docker Images
 
 on:
   push:
