@@ -11,11 +11,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend-django
+    build: ./backend-drf
     ports:
       - "8000:8000"
     env_file:
-      - ./backend-django/.env
+      - ./backend-drf/.env
     depends_on:
       - db
     volumes:
@@ -26,11 +26,11 @@ services:
              python manage.py runserver 0.0.0.0:8000"
 
   frontend:
-    build: ./frontend-react
+    build: ./frontend
     ports:
       - "5173:5173"
     env_file:
-      - ./frontend-react/.env
+      - ./frontend/.env
     depends_on:
       - backend
 
