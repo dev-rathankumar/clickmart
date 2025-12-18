@@ -367,16 +367,6 @@ const Checkout = () => {
                       className="d-flex justify-content-between align-items-center mb-2"
                     >
                       <div className="d-flex align-items-center">
-                        <img
-                          src={item?.image}
-                          alt={item?.name}
-                          style={{
-                            width: "40px",
-                            height: "40px",
-                            objectFit: "cover",
-                          }}
-                          className="rounded me-2"
-                        />
                         <div>
                           <small className="fw-semibold">
                             {item?.product_name}
