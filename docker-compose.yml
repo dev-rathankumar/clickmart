@@ -6,14 +6,9 @@ services:
     environment:
       POSTGRES_DB: clickmart_db
       POSTGRES_USER: clickmart_user
-      POSTGRES_PASSWORD: clickmart_db_pass
+      POSTGRES_PASSWORD: sifath2002
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U clickmart_user"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   backend:
     build: ./backend-drf
@@ -22,10 +17,13 @@ services:
     env_file:
       - ./backend-drf/.env
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
       - ./backend-django/static:/app/static
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     build: ./frontend
