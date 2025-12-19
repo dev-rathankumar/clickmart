@@ -57,9 +57,9 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
+        username: root
         key: ${{ secrets.LINODE_SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
+        port: 22
         script: |
             echo "Updating .env file on Linode for Backend..."
             cat <<EOF > /opt/linode-app/backend/.env
