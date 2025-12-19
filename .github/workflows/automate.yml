@@ -76,4 +76,4 @@ jobs:
             EOF
             echo "✅ .env file updated!"
             echo "🚀 Pulling new Docker image and restarting containers..."
-            bash /opt/linode-app/update.sh   
+            bash /opt/linode-app/update2.sh   
