@@ -16,6 +16,8 @@ class PlaceOrderView(APIView):
 
     def post(self, request):
         # check if the cart is empty
+        shipping_data = request.data.get('shippingAddress', {})
+
         cart = Cart.objects.get(user=request.user)
         if not cart or cart.items.count() == 0:
             return Response({'error': 'Cart is empty'})
@@ -23,6 +25,11 @@ class PlaceOrderView(APIView):
         # create the order
         order = Order.objects.create(
             user = request.user,
+            phone=shipping_data.get('phone'),
+            address=shipping_data.get('address'),
+            city=shipping_data.get('city'),
+            state=shipping_data.get('state'),
+            zip_code=shipping_data.get('zipCode'),
             subtotal = cart.subtotal,
             tax_amount = cart.tax_amount,
             grand_total = cart.grand_total,
