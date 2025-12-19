@@ -19,7 +19,7 @@ export const Home = () => {
           items: response.data.items,
           subtotal: response.data.subtotal || 0,
           total: parseFloat(response.data.grand_total) || 0,
-          itemCount: response.data.items.length || 0,
+          itemCount: response?.data?.items?.length || 0,
         },
       });
     } catch (err) {

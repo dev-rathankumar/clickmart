@@ -59,7 +59,7 @@ const ProductDetail = () => {
           items: items,
           subtotal: response.data.subtotal || 0,
           total: response.data.grand_total || 0,
-          itemCount: items.length,
+          itemCount: items?.length,
         },
       });
     } catch (err) {
@@ -95,7 +95,7 @@ const ProductDetail = () => {
           items: response.data.items,
           subtotal: response.data.subtotal || 0,
           total: response.data.grand_total || 0,
-          itemCount: response.data.items.length,
+          itemCount: response?.data?.items?.length,
         },
       });
     } catch (err) {
