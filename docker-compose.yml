@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: freshperience_lms_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: sifath2002
+      POSTGRES_DB: clickmart_db
+      POSTGRES_USER: clickmart_user
+      POSTGRES_PASSWORD: clickmart_db_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
