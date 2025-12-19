@@ -27,10 +27,10 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["http://localhost:5173","http://45.79.123.180:5000","http://45.79.123.180","45.79.123.180:5000","45.79.123.180"]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173","http://45.79.123.180:5000","http://45.79.123.180"
+    "http://localhost:5173","http://45.79.123.180:5000","http://45.79.123.180,"
 ]
 # Application definition
 
