@@ -174,3 +174,4 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+ 
