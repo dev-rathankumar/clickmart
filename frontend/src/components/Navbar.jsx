@@ -13,6 +13,7 @@ const Header = () => {
   const { auth, setAuth } = useAuth();
   const accessToken = auth?.accessToken;
   const { api } = useAxios();
+  const { dispatch } = useCart();
 
   const isActive = (path) => location.pathname === path;
 
@@ -39,6 +40,15 @@ const Header = () => {
 
     setAuth({});
     setProfile(null);
+    dispatch({
+      type: "SET_CART",
+      payload: {
+        items: [],
+        subtotal: 0,
+        total: 0,
+        itemCount: 0,
+      },
+    });
 
     navigate("/");
   };
