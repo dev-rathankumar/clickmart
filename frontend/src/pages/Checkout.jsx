@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import useAuth from "../hooks/useAuth";
 import { useAxios } from "../hooks/useAxios";
 
 const Checkout = () => {
@@ -10,21 +11,36 @@ const Checkout = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [shippingAddress, setShippingAddress] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
     phone: "",
     address: "",
     city: "",
     state: "",
     zipCode: "",
-    country: "United States",
   });
 
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
 
-  console.log(cartState);
+  const [profile, setProfile] = useState(null);
+  const { auth } = useAuth();
+  const accessToken = auth?.accessToken;
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get("/profile/");
+        setProfile(response.data);
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+
+    if (accessToken) {
+      fetchProfile();
+    } else {
+      setProfile(null);
+    }
+  }, [accessToken, api]);
 
   // Redirect if cart is empty
   if (cartState.items.length === 0) {
@@ -43,13 +59,7 @@ const Checkout = () => {
 
   const validateShippingForm = () => {
     const newErrors = {};
-    if (!shippingAddress.firstName.trim())
-      newErrors.firstName = "First name is required";
-    if (!shippingAddress.lastName.trim())
-      newErrors.lastName = "Last name is required";
-    if (!shippingAddress.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(shippingAddress.email))
-      newErrors.email = "Email is invalid";
+
     if (!shippingAddress.phone.trim()) newErrors.phone = "Phone is required";
     if (!shippingAddress.address.trim())
       newErrors.address = "Address is required";
@@ -72,7 +82,9 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      const response = await api.post("/orders/place/");
+      const response = await api.post("/orders/place/", {
+        shippingAddress: shippingAddress,
+      });
 
       if (response.status === 201 || response.status === 200) {
         navigate(`/order/success/${response.data.id || ""}`);
@@ -147,59 +159,12 @@ const Checkout = () => {
                   <form onSubmit={handleShippingSubmit}>
                     <div className="row">
                       <div className="col-md-6 mb-3">
-                        <label className="form-label">First Name *</label>
-                        <input
-                          type="text"
-                          className={`form-control ${
-                            errors.firstName ? "is-invalid" : ""
-                          }`}
-                          value={shippingAddress.firstName}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              firstName: e.target.value,
-                            })
-                          }
-                        />
-                        <div className="invalid-feedback">
-                          {errors.firstName}
-                        </div>
-                      </div>
-                      <div className="col-md-6 mb-3">
-                        <label className="form-label">Last Name *</label>
-                        <input
-                          type="text"
-                          className={`form-control ${
-                            errors.lastName ? "is-invalid" : ""
-                          }`}
-                          value={shippingAddress.lastName}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              lastName: e.target.value,
-                            })
-                          }
-                        />
-                        <div className="invalid-feedback">
-                          {errors.lastName}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-md-6 mb-3">
                         <label className="form-label">Email *</label>
                         <input
                           type="email"
-                          className={`form-control ${
-                            errors.email ? "is-invalid" : ""
-                          }`}
-                          value={shippingAddress.email}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              email: e.target.value,
-                            })
-                          }
+                          className="form-control"
+                          value={profile?.email}
+                          disabled
                         />
                         <div className="invalid-feedback">{errors.email}</div>
                       </div>

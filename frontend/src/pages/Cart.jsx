@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import Footer from "../components/Footer";
 import QuantitySelector from "../components/QuantitySelector";
 import { useCart } from "../context/CartContext";
 import { useAxios } from "../hooks/useAxios";
@@ -41,7 +39,6 @@ const Cart = () => {
     try {
       await api.patch(`/cart/items/${itemId}/`, { change });
 
-
       fetchCartData();
     } catch (err) {
       console.error("Update failed", err);
@@ -80,7 +77,6 @@ const Cart = () => {
             </div>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
