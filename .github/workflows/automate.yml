@@ -63,6 +63,7 @@ jobs:
         script: |
             echo "Updating .env file on Linode for Backend..."
             cat <<EOF > /opt/linode-app/backend/.env
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
             DEBUG=${{ secrets.DEBUG }}
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
