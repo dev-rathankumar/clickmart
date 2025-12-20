@@ -12,7 +12,7 @@ const Hero = () => {
         <div className="row align-items-center">
           <div className="col-lg-6 fade-in">
             <h1 className="display-4 fw-bold mb-4">
-              Discover Amazing Tech Products
+              Discover Amazing Tech Products FIX TEST
             </h1>
             <p className="lead mb-4">
               Find the latest gadgets and accessories at unbeatable prices.
