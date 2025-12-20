@@ -69,10 +69,10 @@ const Products = () => {
 
         {/* Products Grid */}
         <div className="d-flex flex-wrap justify-content-start gap-4">
-          {products.length > 0 ? (
-            products.map((product) => (
+          {products?.length > 0 ? (
+            products?.map((product) => (
               <div
-                key={product.id}
+                key={product?.id}
                 className="product-card bg-white shadow-sm mb-4"
                 // Added inline style for consistent width if not handled in CSS
                 style={{ width: "18rem" }}
@@ -80,8 +80,8 @@ const Products = () => {
                 {/* Image */}
                 <div className="product-image-wrapper overflow-hidden">
                   <img
-                    src={product.image}
-                    alt={product.name}
+                    src={product?.image}
+                    alt={product?.name}
                     className="product-image w-100"
                     style={{ height: "200px", objectFit: "cover" }}
                   />
@@ -91,40 +91,40 @@ const Products = () => {
                 <div className="p-3 d-flex flex-column flex-grow-1">
                   <h5
                     className="fw-bold mb-2 text-truncate"
-                    title={product.name}
+                    title={product?.name}
                   >
-                    {product.name}
+                    {product?.name}
                   </h5>
                   <p className="text-muted flex-grow-1 mb-3">
                     {/* Safe check for description length */}
-                    {product.description
-                      ? `${product.description.substring(0, 80)}...`
+                    {product?.description
+                      ? `${product?.description.substring(0, 80)}...`
                       : "No description available"}
                   </p>
 
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <span className="h5 text-primary fw-bold">
-                      ${product.price}
+                      ${product?.price}
                     </span>
                     <small
                       className={`fw-semibold ${
-                        product.stock > 0 ? "text-success" : "text-danger"
+                        product?.stock > 0 ? "text-success" : "text-danger"
                       }`}
                     >
-                      {product.stock > 0
-                        ? `${product.stock} in stock`
+                      {product?.stock > 0
+                        ? `${product?.stock} in stock`
                         : "Out of stock"}
                     </small>
                   </div>
 
                   <Link
-                    to={`/product/${product.id}`}
+                    to={`/product/${product?.id}`}
                     className={`btn btn-primary rounded-pill w-100 ${
-                      product.stock === 0 ? "disabled" : ""
+                      product?.stock === 0 ? "disabled" : ""
                     }`}
                     // Use aria-disabled for accessibility on disabled links
-                    aria-disabled={product.stock === 0}
-                    tabIndex={product.stock === 0 ? -1 : undefined}
+                    aria-disabled={product?.stock === 0}
+                    tabIndex={product?.stock === 0 ? -1 : undefined}
                   >
                     View Details
                   </Link>
