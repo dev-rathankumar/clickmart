@@ -21,7 +21,7 @@ const Header = () => {
     const fetchProfile = async () => {
       try {
         const response = await api.get("/profile/");
-        setProfile(response.data);
+        setProfile(response?.data);
       } catch (error) {
         console.error("Failed to fetch profile:", error);
       }
@@ -91,9 +91,9 @@ const Header = () => {
                 to="/cart"
               >
                 <i className="bi bi-cart3"></i> Cart
-                {state.itemCount > 0 && (
+                {state?.itemCount > 0 && (
                   <span className="badge bg-danger position-absolute top-0 start-100 translate-middle">
-                    {state.itemCount}
+                    {state?.itemCount}
                   </span>
                 )}
               </Link>

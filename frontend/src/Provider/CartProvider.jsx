@@ -2,16 +2,16 @@ import { useReducer } from "react";
 import CartContext from "../context/CartContext";
 
 const cartReducer = (state, action) => {
-  switch (action.type) {
+  switch (action?.type) {
     case "START_LOADING":
       return { ...state, loading: true };
     case "SET_CART":
       return {
         ...state,
-        items: action.payload.items,
-        subtotal: action.payload.subtotal,
-        total: action.payload.total,
-        itemCount: action.payload.itemCount,
+        items: action?.payload?.items,
+        subtotal: action?.payload?.subtotal,
+        total: action?.payload?.total,
+        itemCount: action?.payload?.itemCount,
         loading: false,
       };
     case "STOP_LOADING":
