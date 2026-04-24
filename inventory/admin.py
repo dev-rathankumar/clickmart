@@ -52,7 +52,7 @@ class TaxAdmin(ImportExportModelAdmin):
 
 # Test
 
-# @admin.register(deposit)
+@admin.register(deposit)
 class DepositAdmin(ImportExportModelAdmin):
     list_display= ('deposit_category','deposit_value','deposit_desc')
     

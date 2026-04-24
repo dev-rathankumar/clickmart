@@ -43,6 +43,25 @@ from .filters import PRICE_CHOICES, GENDER_CHOICES, DISCOUNT_CHOICES,GENDER_ALIA
 from django.db.models.functions import Lower
 from django.db.models import F, ExpressionWrapper, FloatField
 from django.views.decorators.csrf import ensure_csrf_cookie
+# utils/location.py
+from django.contrib.gis.geos import Point
+
+def set_location(request):
+    """Save lat/lng from frontend localStorage into the Django session."""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            lat = data.get("lat")
+            lng = data.get("lng")
+            if lat and lng:
+                request.session["lat"] = str(lat)
+                request.session["lng"] = str(lng)
+                request.session.modified = True
+                return JsonResponse({"status": "ok"})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+    return JsonResponse({"status": "error", "message": "POST required"}, status=405)
+
 
 def marketplace(request):
     if get_or_set_current_location(request) is not None:
@@ -1401,29 +1420,36 @@ def product_search_for_vendor(request):
 
     return JsonResponse(data, safe=False)
 
-
 def product_search(request):
     query = request.GET.get("term", "")
 
-    # Check for user location
     location = get_or_set_current_location(request)
-    
+    pnt = None
+    print(location)
+
     if location is not None:
         pnt = GEOSGeometry('POINT(%s %s)' % location)
+
         vendor_qs = Vendor.objects.filter(
             user_profile__location__distance_lte=(pnt, D(km=10000)),
             is_approved=True,
-            user__is_active=True).annotate( distance=Distance("user_profile__location", pnt)).order_by("distance")
+            user__is_active=True
+        ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+
+        products = Product.objects.filter(
+            Q(product_name__icontains=query) | Q(vendor__vendor_name__icontains=query) | Q(category__category_name__icontains=query)
+        ).annotate(
+            distance=Distance("vendor__user_profile__location", pnt)
+        ).select_related('vendor')[:10]
+
     else:
-        pnt = None
-        vendor_qs = Vendor.objects.filter( is_approved=True,  user__is_active=True)
+        vendor_qs = Vendor.objects.filter(is_approved=True, user__is_active=True)
+        products = Product.objects.filter(
+            Q(product_name__icontains=query) | Q(vendor__vendor_name__icontains=query) | Q(category_category__name__icontains=query)
+        ).select_related('vendor')[:10]
 
-    # Filter vendors by search term
+    # Filter vendors by search term — keeps distance annotation from vendor_qs
     vendors = vendor_qs.filter(vendor_name__icontains=query)[:10]
-
-    # Filter products
-    products = Product.objects.filter(
-        Q(product_name__icontains=query) | Q(vendor__vendor_name__icontains=query)).select_related('vendor')[:10]
 
     return JsonResponse({
         "vendors": [
@@ -1432,7 +1458,8 @@ def product_search(request):
                 "name": vendor.vendor_name,
                 "vendor_slug": vendor.vendor_slug,
                 "image": vendor.user_profile.profile_picture.url if vendor.user_profile.profile_picture else "",
-                "distance": round(vendor.distance.km, 1) if pnt else None
+                "distance": round(vendor.distance.km, 1) if pnt and getattr(vendor, 'distance', None) is not None else None,
+
             }
             for vendor in vendors
         ],
