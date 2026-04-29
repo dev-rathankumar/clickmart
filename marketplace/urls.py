@@ -29,7 +29,7 @@ urlpatterns = [
     path('browse/<slug:category_slug>/', views.browse, name='browse'),
     path("live/search/", views.product_search, name="product_search"),
     path("vendor/live/search/", views.product_search_for_vendor, name="vendor_product_search"),
-    path('set-location/', views.set_location, name='set_location'),
+    path('geo/set-location/', views.set_location, name='set_location'),
 
 
 

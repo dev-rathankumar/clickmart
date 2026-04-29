@@ -1106,29 +1106,29 @@ def All_products(request, category_id=None, subcategory_id=None):
         'cart_items': [],
         'cart_product_ids': set(),  # Initialize with empty set
     }
-
     if search_type == 'stores':
-        if get_or_set_current_location(request) is not None:
-            location = get_or_set_current_location(request)
-            if location is not None:
-                lng, lat = location
-                pnt = GEOSGeometry(f'POINT({lng} {lat})', srid=4326)
-                vendors = Vendor.objects.filter(
-                    user_profile__location__distance_lte=(pnt, D(km=10000))
-                ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+        location = get_or_set_current_location(request)
+        if location is not None:
+            lat, lng = location  # correct order
+            pnt = GEOSGeometry(f'POINT({lng} {lat})', srid=4326)
+            vendors = Vendor.objects.filter(
+                is_approved=True,
+                user__is_active=True,
+                user_profile__location__distance_lte=(pnt, D(km=10000))
+            ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
             for v in vendors:
-                v.kms = round(v.distance.km, 1)
+                v.kms = round(v.distance.km, 1)  # inside the if block
         else:
             vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
-        
+
         if search_query:
             vendors = vendors.filter(
                 models.Q(vendor_name__icontains=search_query) |
                 models.Q(store_type__name__icontains=search_query)
             )
 
-        vendors = list(vendors)  # evaluate queryset
-        vendors.sort(key=lambda v: v.is_open() or False, reverse=True)  # Open vendors first
+        vendors = list(vendors)
+        vendors.sort(key=lambda v: v.is_open() or False, reverse=True)
         paginator = Paginator(vendors, 200)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -1445,7 +1445,7 @@ def product_search(request):
     else:
         vendor_qs = Vendor.objects.filter(is_approved=True, user__is_active=True)
         products = Product.objects.filter(
-            Q(product_name__icontains=query) | Q(vendor__vendor_name__icontains=query) | Q(category_category__name__icontains=query)
+            Q(product_name__icontains=query) | Q(vendor__vendor_name__icontains=query) | Q(category__category_name__icontains=query)
         ).select_related('vendor')[:10]
 
     # Filter vendors by search term — keeps distance annotation from vendor_qs

@@ -1252,7 +1252,7 @@
         const storedLng = localStorage.getItem("lng");
         
         if (storedLat && storedLng) {
-            fetch("/set-location/", {
+            fetch("/marketplace/geo/set-location/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

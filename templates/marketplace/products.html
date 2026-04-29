@@ -640,6 +640,12 @@
                                                   {% else %}
                                                   <li style="visibility: hidden;"><strong>Call Us:</strong><span></span></li>
                                                   {% endif %}
+                                                  {% if vendor.kms %}
+                                                    <li>
+                                                        <strong><i class="fi-rs-marker"></i> Distance:</strong>
+                                                        <span>{{ vendor.kms }} km away</span>
+                                                    </li>
+                                                    {% endif %}
                                                     
                                                 </ul>
                                             </div>
